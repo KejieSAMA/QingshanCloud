@@ -36,6 +36,11 @@ pids/
 *.pid.lock
 *.hprof
 hs_err_pid*
+**/migration-output/
+*.migration-report.json
+*.storage-manifest.json
+*.mysqldump.sql
+*.mysqldump.sql.gz
 
 # Secrets stay local; examples and templates can be committed
 .env

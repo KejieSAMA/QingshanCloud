@@ -5,17 +5,34 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.AfterEach;
+import com.x.cloudnext.server.testing.MysqlTestDatabase;
 
 import com.x.cloudnext.server.config.CloudNextProperties;
 import com.x.cloudnext.server.orgsync.model.OrgMembershipSourceRecord;
 
 class JdbcO2OrgReadonlySourceTest {
+    private static final List<String> FIXTURE_TABLES = List.of("ORG_PERSON", "ORG_ROLE_personList", "ORG_ROLE_groupList",
+            "ORG_GROUP_personList", "ORG_GROUP_groupList", "ORG_GROUP_unitList", "ORG_GROUP_identityList");
+
+    @BeforeEach
+    void prepareFixture() throws Exception {
+        MysqlTestDatabase.initialize();
+        removeFixture();
+    }
+
+    @AfterEach
+    void removeFixture() throws Exception {
+        try (java.sql.Connection connection = MysqlTestDatabase.connect(); java.sql.Statement sql = connection.createStatement()) {
+            for (String table : FIXTURE_TABLES) sql.execute("DROP TABLE IF EXISTS `" + table + "`");
+        }
+    }
 
     @Test
     void personExportFailsWhenEmployeeColumnIsMissing() {
@@ -133,15 +150,14 @@ class JdbcO2OrgReadonlySourceTest {
     }
 
     private TestDatabase database() {
-        String url = "jdbc:h2:mem:o2archive_" + UUID.randomUUID().toString().replace("-", "")
-                + ";MODE=MySQL;DB_CLOSE_DELAY=-1";
+        String url = MysqlTestDatabase.url();
         CloudNextProperties properties = new CloudNextProperties();
         properties.getReadonlyJdbc().setUrl(url);
-        properties.getReadonlyJdbc().setUsername("sa");
-        properties.getReadonlyJdbc().setPassword("");
-        properties.getReadonlyJdbc().setDriverClassName("org.h2.Driver");
-        DriverManagerDataSource dataSource = new DriverManagerDataSource(url, "sa", "");
-        dataSource.setDriverClassName("org.h2.Driver");
+        properties.getReadonlyJdbc().setUsername(MysqlTestDatabase.required("CLOUDNEXT_TEST_DB_USERNAME"));
+        properties.getReadonlyJdbc().setPassword(MysqlTestDatabase.required("CLOUDNEXT_TEST_DB_PASSWORD"));
+        properties.getReadonlyJdbc().setDriverClassName("com.mysql.cj.jdbc.Driver");
+        DriverManagerDataSource dataSource = new DriverManagerDataSource(url, properties.getReadonlyJdbc().getUsername(), properties.getReadonlyJdbc().getPassword());
+        dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         return new TestDatabase(new JdbcTemplate(dataSource), new JdbcO2OrgReadonlySource(properties));
     }
 

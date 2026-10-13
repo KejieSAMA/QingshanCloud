@@ -21,6 +21,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.ContextConfiguration;
+import com.x.cloudnext.server.testing.MysqlDatabaseExtension;
+import com.x.cloudnext.server.testing.MysqlTestDatabaseInitializer;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -69,15 +73,9 @@ import com.x.cloudnext.server.workspace.repository.WorkspaceRepository;
  * The {@code DriveStorageService} is replaced with an in-memory map, mirroring
  * the pattern in {@code AbstractDriveIntegrationTest.configureStorageMock}.
  */
-@SpringBootTest(
-        classes = CloudNextServerApplication.class,
-        properties = {
-                "spring.datasource.url=jdbc:h2:mem:cloudnext-workspace-test;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1",
-                "spring.datasource.username=sa",
-                "spring.datasource.password=",
-                "spring.jpa.hibernate.ddl-auto=create-drop",
-                "spring.task.scheduling.enabled=false"
-        })
+@SpringBootTest(classes = CloudNextServerApplication.class)
+@ContextConfiguration(initializers = MysqlTestDatabaseInitializer.class)
+@ExtendWith(MysqlDatabaseExtension.class)
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {
         "cloudnext.iteration.workspaces.enabled=true",

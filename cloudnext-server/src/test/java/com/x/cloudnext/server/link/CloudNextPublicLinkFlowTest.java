@@ -61,7 +61,7 @@ import com.x.cloudnext.server.drive.repository.DrivePublicLinkRepository;
  *
  * <p>Mirrors {@code CloudNextWorkspaceFlowTest}: a self-contained
  * {@code @SpringBootTest} that wires the real Spring context against an
- * H2 in-memory database, mocks {@link DriveStorageService} with an
+ * isolated MySQL database, mocks {@link DriveStorageService} with an
  * in-memory map (so file streams round-trip without touching the disk),
  * and drives both surfaces of the feature through {@link MockMvc}:
  *
@@ -87,15 +87,9 @@ import com.x.cloudnext.server.drive.repository.DrivePublicLinkRepository;
  * persisted past timestamp. This avoids any {@code Thread.sleep}-driven
  * timing flakiness.
  */
-@SpringBootTest(
-        classes = CloudNextServerApplication.class,
-        properties = {
-                "spring.datasource.url=jdbc:h2:mem:cloudnext-public-link-test;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1",
-                "spring.datasource.username=sa",
-                "spring.datasource.password=",
-                "spring.jpa.hibernate.ddl-auto=create-drop",
-                "spring.task.scheduling.enabled=false"
-        })
+@SpringBootTest(classes = CloudNextServerApplication.class)
+@org.springframework.test.context.ContextConfiguration(initializers = com.x.cloudnext.server.testing.MysqlTestDatabaseInitializer.class)
+@org.junit.jupiter.api.extension.ExtendWith(com.x.cloudnext.server.testing.MysqlDatabaseExtension.class)
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {
         // Iteration gate: this is the whole point of the test — flip

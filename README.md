@@ -19,7 +19,9 @@
 
 运行时优先级遵循 Spring Boot：命令行和环境变量可覆盖配置文件。后端不会自动读取 `.env`；需由启动环境注入对应变量。前端 Vite 按标准规则读取 `.env` 文件，浏览器可见变量不得包含服务密钥。
 
-当前保留的数据目录为 `cloudnext-server/cloudnext-server/.data/`，包含 H2 元数据库和本地存储；另一个可能存在的 `cloudnext-server/.data/` 也保留。启动前核对 `CLOUDNEXT_LOCAL_DB_URL`、`CLOUDNEXT_STORAGE_LOCAL_ROOT` 和实际目录，避免连接到空数据库。此次隔离没有移动数据或执行数据库迁移。
+当前源码仅支持 MySQL 8.0：必须提供 `CLOUDNEXT_DB_URL`、`CLOUDNEXT_DB_USERNAME`、`CLOUDNEXT_DB_PASSWORD`，启动只校验表结构，不自动建表，也不回退 H2。正式部署目标为服务器现有 3307 实例中的独立 `qingshancloud` 库。源码更新不代表旧部署已经完成切库，完整步骤见 [MySQL 迁移手册](cloudnext-server/MYSQL_MIGRATION_RUNBOOK.md)。
+
+远程文件内容继续保存在 `D:\QingshanCloud\data\drive-storage`。本机历史 `cloudnext-server/cloudnext-server/.data/` 和另一个可能存在的 `.data/` 均保留；H2 文件仅用于旧库迁移或离线备份，不能直接启动新版应用。数据库迁移不改写文件 ID、Form canonical key 或 storage key。
 
 所有 Form、OnlyOffice、回调和公网入口地址通过配置提供。Form 和 OnlyOffice 是独立外部服务，本项目不需要本地 O2 源码或运行目录。历史 OA canonical ID、归档快照及迁移说明保留用于数据连续性。
 
@@ -53,6 +55,13 @@ npm test -- --exclude "src/next/tests/**"
 node --test src/next/tests/navigation.test.mjs src/next/tests/isolation.test.mjs
 ```
 
-检查使用模拟接口及静态分析，不操作真实文件。Java 测试仅在隔离环境和独立数据库中执行；不要在实际运行目录执行 `clean` 或使用生产数据库测试。
+检查使用模拟接口及静态分析，不操作真实文件。后端源码/建表 SQL 的非编译检查：
+
+```powershell
+node cloudnext-server/tools/mysql-schema.mjs
+node --test cloudnext-server/tools/mysql-contract.test.mjs
+```
+
+Java 测试需要显式授权，在隔离副本中通过 SSH 隧道使用 `qingshancloud_test` 及专用账号。缺少测试配置、连接正式库或账号有跨库权限时拒绝执行，不再使用 H2 内存库。不要在实际运行目录执行 `clean`。
 
 Android 环境说明见 [SETUP](cloudnext-android/docs/SETUP.md)，Form 迁移记录见 [运行手册](cloudnext-server/FORM_MIGRATION_RUNBOOK.md)。

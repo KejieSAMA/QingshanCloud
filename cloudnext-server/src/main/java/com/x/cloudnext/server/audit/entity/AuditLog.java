@@ -54,7 +54,7 @@ public class AuditLog {
 
     /** 额外上下文，JSON 字符串；首版本不做结构约束，由 service 拼装 */
     @Lob
-    @Column(name = "payload", columnDefinition = "CLOB")
+    @Column(name = "payload")
     private String payload;
 
     /** 操作来源 IP；N+1 暂不强制采集（service 层无 request 上下文），留字段为后续扩展 */

@@ -8,7 +8,10 @@ CloudNext 不再需要从本地 O2 目录生成配置。原 `scripts/sync-onlyof
 
 | 配置变量 | 用途 |
 | --- | --- |
-| `CLOUDNEXT_LOCAL_DB_URL`、`CLOUDNEXT_LOCAL_DB_USERNAME`、`CLOUDNEXT_LOCAL_DB_PASSWORD` | 元数据库 |
+| `CLOUDNEXT_DB_URL`、`CLOUDNEXT_DB_USERNAME`、`CLOUDNEXT_DB_PASSWORD` | 必填 MySQL 元数据库配置，不提供 H2 缺省值 |
+| `CLOUDNEXT_LOCAL_DB_URL/USERNAME/PASSWORD` | 旧变量兼容项，只接受 MySQL，新变量优先，即使新值为空也不回退 |
+| `CLOUDNEXT_TEST_DB_URL/USERNAME/PASSWORD`、`CLOUDNEXT_TEST_ENVIRONMENT` | 隔离 MySQL 测试配置，不供正式服务使用 |
+| `CLOUDNEXT_SCHEDULING_ENABLED` | 对应 `cloudnext.scheduling.enabled`；测试及数据库维护时关闭所有定时任务 |
 | `CLOUDNEXT_STORAGE_LOCAL_ROOT` | 当前文件和历史版本的存储目录 |
 | `CLOUDNEXT_FORM_BASE_URL` | API 访问 Form 的服务地址 |
 | `CLOUDNEXT_FORM_SERVICE_TOKEN` | 独立集成服务密钥，仅后端可见 |
@@ -24,7 +27,9 @@ Form 集成使用 HTTPS；本地 HTTP 联调需显式配置 `CLOUDNEXT_FORM_ALLO
 
 ## 启动路径
 
-当前数据保留在本项目内的 `cloudnext-server/.data/`（相对于后端目录）。默认资源配置以此为基准；已有本机覆盖配置和环境变量可能指向其他路径，必须核对最终值。不要因为目录名重复而重命名或合并数据库/存储目录，也不要把历史备份作为当前数据库打开。
+必须先核对实际 MySQL 库与文件存储目录。初次建表显式执行版本化 SQL；正式启动固定 `ddl-auto=validate`，不执行 Hibernate `update/create-drop`。连接池最多 5 个连接，驱动固定为 `com.mysql.cj.jdbc.Driver`，JDBC/Hibernate 时区为 UTC。MySQL 连接失败时启动失败，不创建本地 H2。
+
+新变量优先于旧变量及外部配置中的数据源值。已有 H2 的 `config/application.yml` 仍作为旧部署配置保留，不能原样用于新版；切库时更新数据库项与驱动，其他 Form、OnlyOffice 配置保持不变。JDBC URL 必须明确库名，不允许把用户名或密码嵌入 URL。
 
 PowerShell 从后端目录启动现有 JAR：
 
@@ -36,4 +41,4 @@ Spring Boot 不自动加载 `.env`。使用操作系统环境变量或外部启�
 
 ## 存储与备份
 
-H2 数据库、当前上传内容、历史版本、真实配置及现有发布备份均为本机数据，被 `.gitignore` 排除。跨机器部署必须单独迁移这些数据及配置，不能只克隆源码后创建空数据库。此次目录隔离不变更数据结构，不移动或清理存储对象。
+MySQL 备份、历史 H2、当前上传内容、历史版本和真实配置均不入库。远程元数据目标为独立 `qingshancloud` 库，存储保持 `D:\QingshanCloud\data\drive-storage`；不能只克隆源码后启动空库。MySQL 切换步骤、测试隔离和恢复边界见 [迁移手册](MYSQL_MIGRATION_RUNBOOK.md)。

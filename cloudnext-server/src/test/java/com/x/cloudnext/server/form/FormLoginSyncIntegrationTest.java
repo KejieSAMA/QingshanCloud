@@ -26,6 +26,9 @@ import com.x.cloudnext.server.migration.entity.LegacyArchiveMigrationTask;
 import com.x.cloudnext.server.migration.repository.LegacyArchiveMigrationTaskRepository;
 
 @DataJpaTest(properties={"spring.jpa.show-sql=false", "logging.level.org.hibernate.SQL=OFF", "cloudnext.org-sync.cron=-"}, showSql=false)
+@org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase(replace = org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace.NONE)
+@org.springframework.test.context.ContextConfiguration(initializers = com.x.cloudnext.server.testing.MysqlTestDatabaseInitializer.class)
+@org.junit.jupiter.api.extension.ExtendWith(com.x.cloudnext.server.testing.MysqlDatabaseExtension.class)
 @Import({FormDirectorySyncService.class,FormDirectorySyncTransactionService.class,FormDirectoryApplyService.class,
         FormLoginDirectorySync.class,CanonicalBindingService.class,FormAuthenticationProvider.class,ObjectMapper.class,
         AuthSessionService.class,SsoSessionIssuer.class,SsoBootstrapService.class})
