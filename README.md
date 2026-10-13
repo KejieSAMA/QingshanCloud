@@ -19,7 +19,7 @@
 
 运行时优先级遵循 Spring Boot：命令行和环境变量可覆盖配置文件。后端不会自动读取 `.env`；需由启动环境注入对应变量。前端 Vite 按标准规则读取 `.env` 文件，浏览器可见变量不得包含服务密钥。
 
-当前源码仅支持 MySQL 8.0：必须提供 `CLOUDNEXT_DB_URL`、`CLOUDNEXT_DB_USERNAME`、`CLOUDNEXT_DB_PASSWORD`，启动只校验表结构，不自动建表，也不回退 H2。正式部署目标为服务器现有 3307 实例中的独立 `qingshancloud` 库。源码更新不代表旧部署已经完成切库，完整步骤见 [MySQL 迁移手册](cloudnext-server/MYSQL_MIGRATION_RUNBOOK.md)。
+当前源码仅支持 MySQL 8.0：必须提供 `CLOUDNEXT_DB_URL`、`CLOUDNEXT_DB_USERNAME`、`CLOUDNEXT_DB_PASSWORD`，启动只校验表结构，不自动建表，也不回退 H2。正式部署目标为云盘专用 MySQL 实例中的 `qingshancloud` 库（本次环回 13307），不混用原有 3307 或 Form 的 13306。源码更新不代表旧部署已经完成切库，完整步骤见 [MySQL 迁移手册](cloudnext-server/MYSQL_MIGRATION_RUNBOOK.md)。
 
 远程文件内容继续保存在 `D:\QingshanCloud\data\drive-storage`。本机历史 `cloudnext-server/cloudnext-server/.data/` 和另一个可能存在的 `.data/` 均保留；H2 文件仅用于旧库迁移或离线备份，不能直接启动新版应用。数据库迁移不改写文件 ID、Form canonical key 或 storage key。
 

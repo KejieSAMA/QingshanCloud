@@ -4,11 +4,13 @@
 
 本轮交付源码、版本化建表 SQL、独立迁移工具及测试改造。**提交/拉取代码不代表已切换数据库。** 编译、后端测试、真实迁移及重启需明确发版授权后执行。不要直接用新 JAR 启动旧 H2 配置。
 
-已确认目标：远程现有 MySQL 8.0.43 的 3307 实例；正式库 `qingshancloud`，测试库 `qingshancloud_test`。不使用审批平台独立的 13306 实例，不改其他业务库、不重启 MySQL、不改其全局变量。远程项目文件、备份、工具、临时目录和日志全部在 `D:\QingshanCloud`；当前文件内容仍在 `D:\QingshanCloud\data\drive-storage`。Form、OnlyOffice、端口及公网入口不变。
+最终确认目标：云盘专用 MySQL 8.0.43 实例，本次只监听 `127.0.0.1:13307`；正式库 `qingshancloud`，测试库 `qingshancloud_test`。原方案的 3307 实例临时目录位于 C 盘，Form 的 13306 又与 Form 停启耦合，因此均不使用。不改其他业务库、不重启既有 MySQL、不改其全局变量。专用运行时复制到 `D:\QingshanCloud\runtime\mysql8`，数据库位于 `D:\QingshanCloud\data\mysql`，项目文件、备份、工具、临时目录和日志全部在 D 盘；当前文件内容仍在 `D:\QingshanCloud\data\drive-storage`。Form、OnlyOffice、Web/API 端口及公网入口不变。
 
-## 1. 用户准备数据库和账号
+## 1. 专用实例、数据库和账号
 
-通过现有数据库管理工具创建两个**空库**，均使用 `utf8mb4` / `utf8mb4_0900_bin`。正式与测试使用不同的专用账号，只允许服务器本机连接，不授予角色、全局权限或 `GRANT OPTION`。建库语句：
+已获用户授权创建专用实例及两个**空库**，均使用 `utf8mb4` / `utf8mb4_0900_bin`。初始化前核对独立端口空闲、D 盘路径为空且无链接，不覆盖已有数据库。只复制 MySQL 的 bin/lib/share，不复制既有实例 Data 或配置。专用实例关闭 X 协议、不开放数据库防火墙端口，buffer pool 为 256 MiB、最大连接 60。初始化与账号创建完成后不在启动脚本中重复执行。
+
+正式与测试使用不同的专用账号，只允许服务器本机连接，不授予角色、全局权限或 `GRANT OPTION`。建库语句：
 
 ```sql
 CREATE DATABASE qingshancloud CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin;
@@ -17,7 +19,7 @@ CREATE DATABASE qingshancloud_test CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bi
 
 为两个账号分别授予自己库上的 `SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, REFERENCES, DROP`。`DROP` 用于初始化失败清理和测试夹具，代码只针对已确认的本次对象或测试库；不得授权到 `*.*`。账号 host 需能接受经 `127.0.0.1` TCP 建立的本机连接，实施时核对 `CURRENT_USER()` 和 `SHOW GRANTS`，不能为图方便改成公网可访问。
 
-根目录已忽略的 `.env` 中补充四项（不在聊天、脚本或 Git 中填写真实密码）：
+账号密钥保存于远程严格 ACL 的 `config/mysql-accounts.json`，管理员连接配置为 `config/mysql-admin.cnf`；新实例管理员使用独立随机密码，不复用旧实例管理员凭据。测试进程需要时通过 SSH 在内存读取并注入，不打印密码。也可在本机已忽略的 `.env` 中提供四项（不在聊天、脚本或 Git 中填写真实密码）：
 
 ```dotenv
 CLOUDNEXT_DB_USERNAME=正式专用账号
@@ -26,7 +28,7 @@ CLOUDNEXT_TEST_DB_USERNAME=测试专用账号
 CLOUDNEXT_TEST_DB_PASSWORD=测试密码
 ```
 
-正式 URL 在远程私有运行配置中设置 `jdbc:mysql://127.0.0.1:3307/qingshancloud`。驱动固定为 MySQL，删除旧 H2 URL/驱动环境项，设置 `ddl-auto=validate`。账号配置仅通过私有启动环境注入；Spring Boot 不自动读取 `.env`。
+正式 URL 在远程私有运行配置中设置 `jdbc:mysql://127.0.0.1:13307/qingshancloud`。驱动固定为 MySQL，删除旧 H2 URL/驱动环境项，设置 `ddl-auto=validate`。账号配置仅通过私有启动环境注入；Spring Boot 不自动读取 `.env`。
 
 ## 2. 构建和测试（仅在获明确授权后）
 
@@ -38,11 +40,11 @@ mvn test package
 
 API 产物 `target/cloudnext-server-0.1.0-SNAPSHOT.jar`，迁移工具产物 `target/h2-to-mysql-1.0.0.jar`。检查正式 JAR 的 `BOOT-INF/lib` 不含 `h2-*.jar`；工具为单独可执行 JAR，不部署进 API 类路径。
 
-测试通过已有 SSH 连接建立仅绑定本地环回的转发，例如本地 13307 转发远程 `127.0.0.1:3307`。不修改服务器防火墙、不开放新数据库端口。测试进程私有环境为：
+测试通过已有 SSH 连接建立仅绑定本地环回的转发，例如本地 33407 转发远程 `127.0.0.1:13307`。不修改服务器防火墙、不开放新数据库端口。测试进程私有环境为：
 
 ```dotenv
 CLOUDNEXT_TEST_ENVIRONMENT=isolated-mysql
-CLOUDNEXT_TEST_DB_URL=jdbc:mysql://127.0.0.1:13307/qingshancloud_test
+CLOUDNEXT_TEST_DB_URL=jdbc:mysql://127.0.0.1:33407/qingshancloud_test
 CLOUDNEXT_TEST_DB_USERNAME=测试专用账号
 CLOUDNEXT_TEST_DB_PASSWORD=测试密码
 ```
@@ -101,7 +103,7 @@ java [D盘JVM参数] -jar h2-to-mysql-1.0.0.jar --mode clear-sessions
 - 只有 `VERIFIED` 与 `CUTOVER_READY` 报告齐全后，才更新远程私有环境至 MySQL、新版 JAR 及相应监督脚本发布路径。先在维护状态启动，确认 schema 校验和健康，再恢复调度、解除维护并要求重新登录。不得先切配置再尝试导入。
 - 启动后检查 API、登录/目录和数据库实际名称，人工验收文件、空间与共享；核对其他原有服务状态。前端不需要重建，本轮 API 接口不变。
 
-本次仅使用服务器既有数据库进程；所有连接均为本机环回或 SSH 转发，MySQL 正式池最多 5 连接、迁移单线程。不添加 Windows 服务或任务，不修改既有业务服务启动方式。
+所有连接均为本机环回或 SSH 转发，MySQL 正式池最多 5 连接、迁移单线程。不添加 Windows 服务或任务，不修改既有业务服务启动方式。专用数据库使用独立监督进程及 `ops/mysql-start.ps1`、`mysql-stop.ps1`，API 的 stop 不停止数据库，Form 停启也不影响它。主机重启后手工执行云盘 `ops/start.ps1`，其先启动数据库再启动 API/Web；详见 `scripts/windows-mysql/README.md`。
 
 ## 5. 备份、失败恢复和验收记录
 

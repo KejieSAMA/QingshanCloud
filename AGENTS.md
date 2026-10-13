@@ -7,7 +7,7 @@
 - Form、OnlyOffice、回调、公网入口与数据库地址全部通过配置提供，业务代码不硬编码部署地址。
 - Form 为认证和目录权威源；历史 OA canonical ID、绑定及迁移记录不得因目录清理被重写或删除。
 - 新版后端仅支持 MySQL 8.0，使用 `CLOUDNEXT_DB_URL/USERNAME/PASSWORD`，启动 `ddl-auto=validate`。禁止加入嵌入式数据库回退；旧 H2 仅由独立迁移工具读取。
-- 正式库为服务器 3307 实例的 `qingshancloud`，测试库为独立账号的 `qingshancloud_test`。数据库连接和凭据通过配置注入，禁止生产库运行测试或清表。
+- 正式库为云盘专用 MySQL 实例（本次为环回 13307）的 `qingshancloud`，测试库为独立账号的 `qingshancloud_test`。不得混用原有 3307、Form 的 13306；禁止生产库运行测试或清表。
 - 旧本机 `.data/` 中的数据原样保留；远程存储为 `D:\QingshanCloud\data\drive-storage`。源码改造不等于远程已经切库，先核对部署记录与当前数据源。
 - 不在运行目录执行 Maven `clean`；Java 测试使用隔离副本和独立数据库，禁用生产定时任务。
 - 重启时只操作确认属于云盘的进程，后台启动使用隐藏窗口，并检查 API 健康及 Web 入口。
