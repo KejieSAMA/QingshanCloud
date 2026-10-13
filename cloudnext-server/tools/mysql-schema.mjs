@@ -31,7 +31,8 @@ const tables = walk(path.join(root, 'src/main/java')).filter((f) => f.endsWith('
           : /^(boolean|Boolean)$/.test(m[2]) ? 'BIT(1)' : m[2] === 'Instant' ? 'DATETIME(6)' : null;
       if (!type) throw Error(`Unknown mapping ${table}.${name}: ${m[2]}`);
       // Keep declared defaults, but booleans map to Hibernate's BIT representation.
-      const defaultValue = definition && /\bDEFAULT\s+(.+)$/i.exec(definition)?.[1];
+      const defaultValue = (definition && /\bDEFAULT\s+(.+)$/i.exec(definition)?.[1])
+        || /@(?:org\.hibernate\.annotations\.)?ColumnDefault\("([^"]+)"\)/.exec(a)?.[1];
       return { name, type, defaultValue, nullable: !/nullable\s*=\s*false/.test(col) && !/@Id\b/.test(a),
         primary: /@Id\b/.test(a), unique: /unique\s*=\s*true/.test(col) };
     });

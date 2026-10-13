@@ -64,7 +64,8 @@ public class DriveShare {
      * 当前不在 service 层强制 caller 自己拥有 canReshare 权限，
      * 仅作为前端 toggle + 后端透传字段；下一阶段引入"再共享传播限制"时再校验。
      */
-    @Column(name = "can_reshare", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    @org.hibernate.annotations.ColumnDefault("b'0'")
+    @Column(name = "can_reshare", nullable = false)
     private boolean canReshare = false;
 
     @Column(name = "created_at", nullable = false, length = 64)

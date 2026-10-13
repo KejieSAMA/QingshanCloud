@@ -116,7 +116,7 @@ CREATE TABLE `cloudnext_drive_item_version` (
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin;
 
 CREATE TABLE `cloudnext_drive_public_link` (
-  `record_hidden` BIT(1) NOT NULL DEFAULT FALSE,
+  `record_hidden` BIT(1) NOT NULL DEFAULT b'0',
   `id` VARCHAR(64) NOT NULL,
   `item_id` VARCHAR(64) NOT NULL,
   `creator_person_oa_id` VARCHAR(64) NOT NULL,
@@ -162,7 +162,7 @@ CREATE TABLE `cloudnext_drive_share` (
   `permission` VARCHAR(16) NOT NULL,
   `expires_at` VARCHAR(64) NOT NULL,
   `revoked` BIT(1) NOT NULL,
-  `can_reshare` BIT(1) NOT NULL DEFAULT FALSE,
+  `can_reshare` BIT(1) NOT NULL DEFAULT b'0',
   `created_at` VARCHAR(64) NOT NULL,
   `updated_at` VARCHAR(64) NOT NULL,
   PRIMARY KEY (`id`),

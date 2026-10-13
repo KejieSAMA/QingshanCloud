@@ -56,7 +56,8 @@ import com.x.cloudnext.server.drive.PublicLinkPermission;
                         columnList = "item_id")
         })
 public class DrivePublicLink {
-    @Column(name = "record_hidden", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    @org.hibernate.annotations.ColumnDefault("b'0'")
+    @Column(name = "record_hidden", nullable = false)
     private boolean recordHidden;
     public boolean isRecordHidden() { return recordHidden; }
     public void setRecordHidden(boolean value) { recordHidden = value; }
