@@ -139,6 +139,14 @@ class CloudNextOnlyofficeEditFlowTest extends AbstractDriveIntegrationTest {
         workspace.setCreatorPersonOaId(DEFAULT_OWNER_ID);
         workspace.setCreatorName(DEFAULT_OWNER_NAME);
         workspace.setStatus("ACTIVE");
+
+        // Mirror WorkspaceService's real tree: visibility and recent-opened
+        // tracking require every workspace item to descend from its root.
+        DriveItem root = seedFolder(DEFAULT_OWNER_ID, "", "");
+        root.setScopeType(DriveScopeType.WORKSPACE);
+        root.setScopeId(workspace.getId());
+        syncItem(root);
+        workspace.setRootItemId(root.getId());
         workspaceRepository.saveAndFlush(workspace);
 
         WorkspaceMember viewer = new WorkspaceMember();
@@ -160,7 +168,7 @@ class CloudNextOnlyofficeEditFlowTest extends AbstractDriveIntegrationTest {
 
         DriveItem office = seedFile(
                 DEFAULT_OWNER_ID,
-                "",
+                root.getId(),
                 "workspace.docx",
                 "word",
                 "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
