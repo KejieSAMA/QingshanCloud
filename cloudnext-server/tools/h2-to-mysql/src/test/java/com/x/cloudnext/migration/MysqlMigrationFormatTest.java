@@ -21,6 +21,8 @@ class MysqlMigrationFormatTest {
         MysqlMigration.Table versions = tables.stream().filter(t -> t.name.equals("cloudnext_drive_item_version")).findFirst().orElseThrow();
         assertTrue(versions.columns.stream().anyMatch(c -> c.name.equals("sha256")));
         assertEquals(11, versions.columns.size());
+        MysqlMigration.Table members = tables.stream().filter(t -> t.name.equals("cloudnext_workspace_member")).findFirst().orElseThrow();
+        assertTrue(members.columns.stream().anyMatch(c -> c.name.equals("sort_order") && c.type.equals("INT")));
         assertThrows(IllegalStateException.class, () -> MysqlMigration.parseSchema(sql.replace("`sha256` VARCHAR(64)", "`sha256` UNKNOWN")));
     }
 
