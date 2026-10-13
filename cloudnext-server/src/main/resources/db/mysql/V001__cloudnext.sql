@@ -453,6 +453,7 @@ CREATE TABLE `cloudnext_workspace_member` (
   `role` VARCHAR(16) NOT NULL,
   `created_at` VARCHAR(64) NOT NULL,
   `updated_at` VARCHAR(64) NOT NULL,
+  `sort_order` INT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_ws_member` (`workspace_id`, `person_oa_id`),
   KEY `idx_ws_member_person` (`person_oa_id`, `workspace_id`),

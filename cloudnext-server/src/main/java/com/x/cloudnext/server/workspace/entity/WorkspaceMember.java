@@ -62,6 +62,11 @@ public class WorkspaceMember {
     @Column(name = "updated_at", nullable = false, length = 64)
     private String updatedAt = "";
 
+    // Retain the legacy database value during full migration. Current member
+    // permissions/presentation do not use this optional historical ordering.
+    @Column(name = "sort_order")
+    private Integer legacySortOrder;
+
     @PrePersist
     public void prePersist() {
         String now = Instant.now().toString();
