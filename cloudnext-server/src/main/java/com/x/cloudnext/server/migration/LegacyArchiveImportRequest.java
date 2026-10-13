@@ -1,0 +1,8 @@
+package com.x.cloudnext.server.migration;
+
+import java.util.ArrayList;import java.util.List;import javax.validation.constraints.NotBlank;
+import com.x.cloudnext.server.orgsync.model.OrgMembershipSourceRecord;import com.x.cloudnext.server.orgsync.model.OrgSourceRecord;
+public class LegacyArchiveImportRequest {
+ @NotBlank private String version;private List<OrgSourceRecord> units=new ArrayList<>();private List<OrgSourceRecord> persons=new ArrayList<>();private List<OrgSourceRecord> identities=new ArrayList<>();private List<OrgSourceRecord> roles=new ArrayList<>();private List<OrgSourceRecord> groups=new ArrayList<>();private List<OrgMembershipSourceRecord> memberships=new ArrayList<>();
+ public String getVersion(){return version;}public void setVersion(String v){version=v;}public List<OrgSourceRecord> getUnits(){return units;}public void setUnits(List<OrgSourceRecord> v){units=v==null?new ArrayList<>():v;}public List<OrgSourceRecord> getPersons(){return persons;}public void setPersons(List<OrgSourceRecord> v){persons=v==null?new ArrayList<>():v;}public List<OrgSourceRecord> getIdentities(){return identities;}public void setIdentities(List<OrgSourceRecord> v){identities=v==null?new ArrayList<>():v;}public List<OrgSourceRecord> getRoles(){return roles;}public void setRoles(List<OrgSourceRecord> v){roles=v==null?new ArrayList<>():v;}public List<OrgSourceRecord> getGroups(){return groups;}public void setGroups(List<OrgSourceRecord> v){groups=v==null?new ArrayList<>():v;}public List<OrgMembershipSourceRecord> getMemberships(){return memberships;}public void setMemberships(List<OrgMembershipSourceRecord> v){memberships=v==null?new ArrayList<>():v;}
+}

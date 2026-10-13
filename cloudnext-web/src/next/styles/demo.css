@@ -1,0 +1,617 @@
+
+/* 叠云 · V3 visual system
+   Flat surfaces, forest-green emphasis, readable type.
+   Layout contract: content-scroll never scrolls; table-scroll is the
+   only main content scroller; pager is its non-scrolling sibling.
+   File rows size naturally from content + padding. */
+:is(html[data-experience="desktop"], .desktop-overlays) {
+  color-scheme:light;
+  --bg:#fff; --surface:#fff; --side:#f5f7f6; --soft:#f5f7f6;
+  --ink:#25332d; --text:#46574e; --muted:#67766c; --faint:#87948c;
+  --line:#e3e9e5; --line-strong:#cdd8d1; --row-line:#edf1ee;
+  --accent:#28634c; --accent-ink:#204f3e; --accent-soft:#e8f2ec;
+  --hover:#f5f8f6; --selected:#e7f2eb; --selected-hover:#deece2;
+  --green:#357453; --red:#b24844; --orange:#966323;
+  --radius:6px; --sidebar:236px; --content-x:30px;
+  --row-padding-y:12px;
+  --file-columns:26px minmax(240px,1fr) 156px 104px 86px 132px 36px;
+  --shadow:0 20px 70px #1e372321;
+  --font:Inter,"Segoe UI","PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+
+  /* UI surface tokens: original green palette */
+  --tone-disabled-ink:#99a49d;
+  --tone-brand-bg:#e6eee8;
+  --tone-new-hover-border:#9aafa1;
+  --tone-new-hover-bg:#fdfefd;
+  --tone-sidebar-scroll:#c8d4cc;
+  --tone-nav-ink:#59695f;
+  --tone-nav-icon:#728177;
+  --tone-nav-hover:#ebf0ed;
+  --tone-nav-active:#e3ede6;
+  --tone-nav-count-bg:#e9eeeb;
+  --tone-recent-hover:#eaf0ec;
+  --tone-storage-track:#e0e7e2;
+  --tone-storage-fill:#86a791;
+  --tone-search-bg:#f5f7f6;
+  --tone-search-border:#e8ede9;
+  --tone-search-icon:#77847b;
+  --tone-focus-border:#7d9f8b;
+  --tone-focus-ring:#edf4ef;
+  --tone-placeholder:#6c7a72;
+  --tone-keycap-border:#dfe6e1;
+  --tone-demo-dot:#91a197;
+  --tone-icon-hover:#eef3ef;
+  --tone-icon-pressed:#e1ebe4;
+  --tone-icon-on-border:#d6e0d9;
+  --tone-row-action-hover:#e5eee7;
+  --tone-profile-hover:#f1f5f2;
+  --tone-profile-bg:#e2ece4;
+  --tone-scope-ink:#637667;
+  --tone-scope-border:#e2e9e3;
+  --tone-scope-bg:#fafcfb;
+  --tone-button-hover:#f5f8f6;
+  --tone-button-hover-border:#aebfb3;
+  --tone-button-pressed:#eaf1ed;
+  --tone-accent-hover:#215740;
+  --tone-accent-pressed:#1b4b36;
+  --tone-ghost-hover:#eef4ef;
+  --tone-info-border:#e6ece7;
+  --tone-info-bg:#f8faf8;
+  --tone-info-icon:#809383;
+  --tone-switcher-bg:#f5f7f5;
+  --tone-switcher-active-border:#dfe7e1;
+  --tone-table-scrollbar:#c4d0c7;
+  --tone-count-bg:#eff3f0;
+  --tone-count-ink:#718377;
+  --tone-count-active-bg:#e6efe8;
+  --tone-selectionbar-bg:#f0f6f2;
+  --tone-selectionbar-border:#dce8df;
+  --tone-selection-separator:#d5e3d9;
+  --tone-selection-hover:#e0ece3;
+  --tone-selection-hover-border:#d4e2d8;
+  --tone-header-bg:#f7f9f7;
+  --tone-header-hover:#ecf2ed;
+  --tone-inspected-bg:#f3f8f4;
+  --tone-inspected-mark:#9eb8a7;
+  --tone-checkbox-border:#aabbb0;
+  --tone-checkbox-disabled-border:#d6dfd8;
+  --tone-extension-ink:#6b796e;
+  --tone-extension-hover:#5d826b;
+  --tone-owner-ink:#64746a;
+  --tone-access-ink:#69786d;
+  --tone-shared-ink:#4f775c;
+  --tone-shared-bg:#f0f6f1;
+  --tone-shared-selected-bg:#d9e9dd;
+  --tone-shared-selected-ink:#366447;
+  --tone-more-ink:#7b8b80;
+  --tone-more-hover-ink:#546f5c;
+  --tone-more-hover-border:#d5e2d9;
+  --tone-pager-hover-border:#bfd1c5;
+  --tone-pager-disabled-ink:#a9b2ac;
+  --tone-pager-disabled-bg:#fcfdfc;
+  --tone-subtle-border:#edf1ed;
+  --tone-card-hover-border:#b6cbbd;
+  --tone-card-inspected-border:#99b49f;
+  --tone-preview-surface:#f3f6f3;
+  --tone-folder-preview-bg:#f4f7f3;
+  --tone-continue-hover-border:#a1bba9;
+  --tone-subtle-bg:#fafcf9;
+  --tone-folder-hover-border:#b3c7b8;
+  --tone-folder-hover-bg:#f5f9f5;
+  --tone-space-hover-border:#9ab5a3;
+  --tone-space-hover-bg:#fcfefd;
+  --tone-space-cover-bg:#f0f4f1;
+  --tone-space-cover-ink:#5c8069;
+  --tone-space-cover-border:#e8eee9;
+  --tone-status-neutral-bg:#f1f4f2;
+  --tone-status-off-ink:#7d8880;
+  --tone-status-off-bg:#f1f3f1;
+  --tone-empty-bg:#edf3ed;
+  --tone-empty-border:#e1ebe1;
+  --tone-empty-icon:#6d9277;
+  --tone-detail-icon:#78907e;
+  --tone-detail-scrollbar:#c3d1c7;
+  --tone-detail-preview-bg:#f3f6f2;
+  --tone-detail-preview-border:#e7ede7;
+  --tone-detail-note-bg:#f5f8f4;
+  --tone-detail-access-border:#e4ece3;
+  --tone-detail-access-icon:#6c9276;
+  --tone-modal-overlay:#18291f3d;
+  --tone-modal-border:#dbe4dd;
+  --tone-modal-scrollbar:#c6d4c9;
+  --tone-input-hover-border:#aebfb2;
+  --tone-input-disabled-ink:#929d95;
+  --tone-input-disabled-bg:#f4f6f3;
+  --tone-note-border:#e7eee5;
+  --tone-share-file-bg:#f7f9f6;
+  --tone-share-file-border:#e6ece4;
+  --tone-summary-ink:#54745c;
+  --tone-summary-bg:#eef6ee;
+  --tone-summary-border:#e0ecde;
+  --tone-switch-off:#cbd7cd;
+  --tone-link-result-bg:#f7faf5;
+  --tone-popup-border:#dce6df;
+  --tone-popup-shadow:#213c2b18;
+  --tone-popup-hover:#edf4ee;
+  --tone-popup-icon:#7d9082;
+  --tone-toast-bg:#294633;
+  --tone-toast-border:#3f6048;
+  --tone-toast-shadow:#20392a18;
+  --tone-upload-border:#b1c6b7;
+  --tone-upload-bg:#f6faf4;
+  --tone-upload-hover:#edf5e9;
+  --tone-preview-bg:#f1f4ef;
+  --tone-sample-bg:#fafcf8;
+  --tone-footer-ink:#68796b;
+  --tone-footer-icon:#8a9e8e;
+  --tone-drawer-shadow:#21352312;
+  --tone-sidebar-overlay:#162c2040;
+}
+/* Business blue replaces UI accents AND tinted neutrals, not file contents. */
+:is(html[data-experience="desktop"], .desktop-overlays)[data-primary-color="blue"] {
+  --side:#f5f7fb; --soft:#f5f7fb;
+  --ink:#243149; --text:#465570; --muted:#647389; --faint:#8794a6;
+  --line:#e4e9f1; --line-strong:#ced8e6; --row-line:#edf0f5;
+  --accent:#3264d8; --accent-ink:#244c9f; --accent-soft:#eaf1ff;
+  --hover:#f5f8fd; --selected:#eaf2ff; --selected-hover:#e0ebff;
+  --shadow:0 20px 70px #152e5321;
+  --tone-disabled-ink:#97a3b4;
+  --tone-brand-bg:#e9f0ff;
+  --tone-new-hover-border:#9aaccb;
+  --tone-new-hover-bg:#fcfdff;
+  --tone-sidebar-scroll:#cad3e1;
+  --tone-nav-ink:#59677e;
+  --tone-nav-icon:#748196;
+  --tone-nav-hover:#eef2f9;
+  --tone-nav-active:#e6eeff;
+  --tone-nav-count-bg:#e9edf5;
+  --tone-recent-hover:#edf2fc;
+  --tone-storage-track:#e1e7f1;
+  --tone-storage-fill:#7292d6;
+  --tone-search-bg:#f5f7fb;
+  --tone-search-border:#e7ecf4;
+  --tone-search-icon:#78869a;
+  --tone-focus-border:#7196e9;
+  --tone-focus-ring:#eaf1ff;
+  --tone-placeholder:#6b7a90;
+  --tone-keycap-border:#dfe5ef;
+  --tone-demo-dot:#8b9ebd;
+  --tone-icon-hover:#edf2fc;
+  --tone-icon-pressed:#e0eaff;
+  --tone-icon-on-border:#d2dff5;
+  --tone-row-action-hover:#e5edff;
+  --tone-profile-hover:#f0f4fb;
+  --tone-profile-bg:#e4ecff;
+  --tone-scope-ink:#65768f;
+  --tone-scope-border:#e1e8f3;
+  --tone-scope-bg:#fafbfe;
+  --tone-button-hover:#f5f8fe;
+  --tone-button-hover-border:#aabbd8;
+  --tone-button-pressed:#e9f0ff;
+  --tone-accent-hover:#2556c6;
+  --tone-accent-pressed:#2049a6;
+  --tone-ghost-hover:#eef3fe;
+  --tone-info-border:#e5ebf4;
+  --tone-info-bg:#f8fafe;
+  --tone-info-icon:#7d92b1;
+  --tone-switcher-bg:#f4f6fb;
+  --tone-switcher-active-border:#dbe4f3;
+  --tone-table-scrollbar:#c5d1e3;
+  --tone-count-bg:#eff3fa;
+  --tone-count-ink:#7183a0;
+  --tone-count-active-bg:#e6eeff;
+  --tone-selectionbar-bg:#f0f5ff;
+  --tone-selectionbar-border:#dce6fb;
+  --tone-selection-separator:#d3e0fa;
+  --tone-selection-hover:#e1ebff;
+  --tone-selection-hover-border:#ccdcfa;
+  --tone-header-bg:#f7f9fd;
+  --tone-header-hover:#edf3ff;
+  --tone-inspected-bg:#f3f7ff;
+  --tone-inspected-mark:#a4b9e5;
+  --tone-checkbox-border:#aebbd0;
+  --tone-checkbox-disabled-border:#d6deeb;
+  --tone-extension-ink:#6c7b91;
+  --tone-extension-hover:#5177bb;
+  --tone-owner-ink:#64748c;
+  --tone-access-ink:#68778e;
+  --tone-shared-ink:#526fa6;
+  --tone-shared-bg:#f0f5ff;
+  --tone-shared-selected-bg:#d9e7ff;
+  --tone-shared-selected-ink:#345c9f;
+  --tone-more-ink:#7e8ca2;
+  --tone-more-hover-ink:#526c98;
+  --tone-more-hover-border:#d2def4;
+  --tone-pager-hover-border:#bbcceb;
+  --tone-pager-disabled-ink:#a4afc0;
+  --tone-pager-disabled-bg:#fcfdff;
+  --tone-subtle-border:#edf0f6;
+  --tone-card-hover-border:#b5c7e8;
+  --tone-card-inspected-border:#94afe0;
+  --tone-preview-surface:#f3f6fc;
+  --tone-folder-preview-bg:#f4f7fc;
+  --tone-continue-hover-border:#a2b9e2;
+  --tone-subtle-bg:#fafbfe;
+  --tone-folder-hover-border:#b4c7e7;
+  --tone-folder-hover-bg:#f4f8ff;
+  --tone-space-hover-border:#97b0de;
+  --tone-space-hover-bg:#fcfdff;
+  --tone-space-cover-bg:#f0f4fc;
+  --tone-space-cover-ink:#5f7fae;
+  --tone-space-cover-border:#e6ecf7;
+  --tone-status-neutral-bg:#f1f4f9;
+  --tone-status-off-ink:#7c8799;
+  --tone-status-off-bg:#f1f3f7;
+  --tone-empty-bg:#edf3ff;
+  --tone-empty-border:#e1e9fb;
+  --tone-empty-icon:#7090c8;
+  --tone-detail-icon:#7a90b4;
+  --tone-detail-scrollbar:#c4d1e5;
+  --tone-detail-preview-bg:#f3f6fc;
+  --tone-detail-preview-border:#e6ecf6;
+  --tone-detail-note-bg:#f5f8fe;
+  --tone-detail-access-border:#e2eaf9;
+  --tone-detail-access-icon:#6e8fc6;
+  --tone-modal-overlay:#172b493d;
+  --tone-modal-border:#dbe3f0;
+  --tone-modal-scrollbar:#c6d2e6;
+  --tone-input-hover-border:#aebdda;
+  --tone-input-disabled-ink:#939fb2;
+  --tone-input-disabled-bg:#f4f6fa;
+  --tone-note-border:#e5ecf9;
+  --tone-share-file-bg:#f7f9fd;
+  --tone-share-file-border:#e5ebf6;
+  --tone-summary-ink:#526f9d;
+  --tone-summary-bg:#eef4ff;
+  --tone-summary-border:#dfe9fc;
+  --tone-switch-off:#ced8e9;
+  --tone-link-result-bg:#f7faff;
+  --tone-popup-border:#dce5f3;
+  --tone-popup-shadow:#1c386518;
+  --tone-popup-hover:#edf3ff;
+  --tone-popup-icon:#7d90b0;
+  --tone-toast-bg:#293f68;
+  --tone-toast-border:#405b88;
+  --tone-toast-shadow:#203b6818;
+  --tone-upload-border:#b1c6e9;
+  --tone-upload-bg:#f5f9ff;
+  --tone-upload-hover:#edf4ff;
+  --tone-preview-bg:#f1f4fa;
+  --tone-sample-bg:#fafbff;
+  --tone-footer-ink:#687992;
+  --tone-footer-icon:#8b9ebe;
+  --tone-drawer-shadow:#213a6312;
+  --tone-sidebar-overlay:#162c4d40;
+}
+
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) *{box-sizing:border-box}
+:is(html[data-experience="desktop"], .desktop-overlays),
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) body{height:100%;margin:0}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) body{font:14px/1.55 var(--font);color:var(--ink);background:var(--bg);overflow:hidden;-webkit-font-smoothing:antialiased}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) body[data-density="compact"]{--row-padding-y:8px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) button,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) input,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) select,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) textarea{font:inherit;color:inherit}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) button{cursor:pointer;white-space:nowrap;border:0;background:none;transition:background .14s ease,color .14s ease,border-color .14s ease,box-shadow .14s ease}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) button,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) input,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) select,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) textarea{outline:none}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) button,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) a,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) input{-webkit-tap-highlight-color:transparent}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) button:disabled{cursor:not-allowed;color:var(--tone-disabled-ink);opacity:.62}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) button:focus-visible,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) a:focus-visible,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) [tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) input:focus-visible,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) select:focus-visible,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) input:not([type=checkbox]):focus,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) select:focus,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) textarea:focus{border-color:var(--accent)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) input[type=search]::-webkit-search-cancel-button{display:none}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) svg{display:block;flex-shrink:0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .ic{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .ic.small{width:16px;height:16px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .ic.large{width:24px;height:24px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) h1,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) h2,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) h3,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) p{margin:0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) dl{margin:0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) a{color:var(--accent)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) [hidden]{display:none!important}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .muted{color:var(--muted)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .small-text{font-size:13px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .mono{font-family:"SFMono-Regular",Consolas,monospace;font-variant-numeric:tabular-nums}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .spacer{flex:1}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .flex{display:flex;align-items:center;gap:10px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+/* Persistent app frame */
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .app{display:flex;width:100%;height:100vh;height:100dvh;min-height:0;overflow:hidden}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .main{display:flex;flex-direction:column;flex:1 1 0%;min-width:0;min-height:0;overflow:hidden}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .workspace{display:flex;flex:1 1 0%;min-width:0;min-height:0;position:relative;overflow:hidden}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .content-scroll{display:flex;flex:1 1 0%;min-width:0;min-height:0;padding:28px var(--content-x) 20px;overflow:hidden}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-screen{display:flex;flex-direction:column;flex:1 1 0%;min-width:0;min-height:0;overflow:hidden}
+/* Sidebar: quiet surface, distinct active state, no oversized cards */
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sidebar{width:var(--sidebar);flex:none;display:flex;flex-direction:column;min-height:0;overflow:hidden;padding:0 16px;background:var(--side);border-right:1px solid var(--line);z-index:30}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .brand{height:84px;display:flex;align-items:center;gap:11px;padding:0 10px;flex:none}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .brand-symbol{width:37px;height:39px;display:grid;place-items:center;color:var(--accent);background:var(--tone-brand-bg);border-radius:9px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .brand-symbol svg{width:28px;height:28px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .brand-cn{font-size:23px;line-height:1.18;font-weight:700;letter-spacing:2px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .brand-en{font-size:12px;color:var(--muted);margin-top:4px;white-space:nowrap;letter-spacing:.7px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .new-wrap{flex:0 0 auto;position:relative;margin:3px 0 23px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .new-button{display:flex;align-items:center;gap:10px;width:100%;height:42px;padding:0 14px;border:1px solid var(--line-strong);border-radius:6px;background:#fff;color:var(--accent-ink);font-size:14px;font-weight:600}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .new-button:hover{border-color:var(--tone-new-hover-border);background:var(--tone-new-hover-bg)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .new-button:active{background:var(--accent-soft)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .new-button .spare-new{margin-left:auto;color:var(--muted)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sidebar-middle{flex:1 1 0%;min-height:0;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--tone-sidebar-scroll) transparent;padding-bottom:8px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .nav{display:flex;flex-direction:column;gap:5px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .nav-item{display:flex;align-items:center;gap:12px;width:100%;height:42px;position:relative;border-radius:6px;padding:0 13px;text-align:left;font-size:14px;color:var(--tone-nav-ink)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .nav-item .ic{width:18px;height:18px;color:var(--tone-nav-icon)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .nav-item:hover{background:var(--tone-nav-hover);color:var(--ink)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .nav-item.active{background:var(--tone-nav-active);color:var(--accent-ink);font-weight:650}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .nav-item.active .ic{color:var(--accent)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .nav-item.active:before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;background:var(--accent);border-radius:0 2px 2px 0}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .nav-count{margin-left:auto;min-width:22px;padding:1px 5px;border-radius:4px;text-align:center;color:var(--muted);background:var(--tone-nav-count-bg);font-size:12px;font-weight:500}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .recent-side{margin:25px 2px 0;padding-top:21px;border-top:1px solid var(--line)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .side-label{display:flex;align-items:center;justify-content:space-between;padding:0 10px;margin-bottom:10px;color:var(--muted);font-size:12px;font-weight:550}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .side-label button{display:flex;align-items:center;gap:3px;font-size:12px;padding:3px 0;color:var(--muted)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .side-label button .ic{width:13px;height:13px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .side-label button:hover,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .side-label button.active{color:var(--accent);font-weight:600}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .recent-item{display:flex;align-items:center;gap:10px;padding:10px;width:100%;border-radius:6px;text-align:left}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .recent-item:hover{background:var(--tone-recent-hover)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .recent-info{min-width:0;flex:1}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .recent-name{font-size:13px;color:var(--text);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .recent-time{font-size:12px;line-height:1.4;display:block;margin-top:4px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .side-bottom{margin-top:auto;flex:0 0 auto;padding:18px 10px 18px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .storage-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;color:var(--muted);font-size:12px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .storage-title .ic{width:14px;height:14px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .storage-line{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:9px;font-variant-numeric:tabular-nums}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .storage-line strong{color:var(--text);font-weight:550}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .storage-track{height:4px;background:var(--tone-storage-track);border-radius:4px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .storage-track span{display:block;background:var(--tone-storage-fill);height:4px;width:28.4%;border-radius:4px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .workspace-label{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);margin-top:19px;padding-top:15px;border-top:1px solid var(--line)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .workspace-label .ic{width:15px;height:15px}
+/* Global bar */
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .topbar{height:70px;min-height:70px;flex:0 0 auto;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 var(--content-x);background:#fff}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .search-box{height:39px;width:min(500px,48vw);display:flex;align-items:center;gap:11px;background:var(--tone-search-bg);border:1px solid var(--tone-search-border);border-radius:6px;padding:0 12px;color:var(--tone-search-icon);transition:border-color .15s,background .15s,box-shadow .15s}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .search-box:focus-within{background:#fff;border-color:var(--tone-focus-border);box-shadow:0 0 0 3px var(--tone-focus-ring)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .search-box input{width:100%;min-width:0;padding:0;background:none;border:0;font-size:14px;color:var(--ink);outline:none!important;box-shadow:none!important}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .search-box input::placeholder{color:var(--tone-placeholder)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .search-box>.ic{width:18px;height:18px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .keycap{font:12px/21px var(--font);padding:0 5px;color:var(--muted);border:1px solid var(--tone-keycap-border);border-radius:3px;background:#fff;white-space:nowrap}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .top-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .demo-badge{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:12px;white-space:nowrap;margin-right:4px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .demo-badge:before{content:"";width:5px;height:5px;background:var(--tone-demo-dot);border-radius:50%}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .top-separator{height:20px;width:1px;background:var(--line);margin:0 5px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .icon-button{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;flex:none;color:var(--muted);border:1px solid transparent;border-radius:5px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .icon-button:hover{background:var(--tone-icon-hover);color:var(--accent)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .icon-button:active{background:var(--tone-icon-pressed)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .icon-button.on{background:#fff;color:var(--accent-ink);border-color:var(--tone-icon-on-border)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .avatar{width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;flex:none;font-size:13px;font-weight:550;background:#e5eee7;color:#4f715b}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .avatar.blue{background:#e8eef6;color:#55749a}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .avatar.green{background:#edf0e1;color:#6e7e47}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .avatar.pink{background:#f4e9e3;color:#9a6f58}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .avatar.grey{background:#e9edef;color:#60707e}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .avatar-btn{display:flex;align-items:center;gap:9px;padding:3px 4px 3px 7px;border-radius:6px;margin-left:3px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .avatar-btn:hover{background:var(--tone-profile-hover)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .avatar-btn>.avatar{width:32px;height:32px;background:var(--tone-profile-bg);color:var(--accent-ink)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .profile-name{font-size:13px;font-weight:500;color:var(--text)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .avatar-btn>.ic{width:13px;height:13px;color:var(--muted)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .mobile-menu{display:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .search-clear{width:24px;height:24px}
+/* Page heading */
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-head{display:flex;align-items:center;justify-content:space-between;gap:18px;flex:0 0 auto;margin:0 0 22px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-head>div:first-child{min-width:0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-title-line{display:flex;align-items:center;gap:12px;min-width:0}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-title{font-size:26px;font-weight:650;letter-spacing:-.5px;line-height:1.35;overflow-wrap:anywhere}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-scope{display:inline-flex;align-items:center;gap:5px;flex:none;font-size:12px;line-height:1.5;font-weight:400;color:var(--tone-scope-ink);border:1px solid var(--tone-scope-border);border-radius:4px;padding:3px 7px;background:var(--tone-scope-bg)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-scope .ic{width:13px;height:13px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-subtitle{font-size:14px;color:var(--muted);margin-top:7px;line-height:1.65}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .eyebrow{display:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .head-actions{display:flex;align-items:center;gap:10px;flex:none}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:37px;padding:0 13px;border:1px solid var(--line-strong);border-radius:5px;background:#fff;font-size:14px;font-weight:500;white-space:nowrap;color:var(--text)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .btn .ic{width:17px;height:17px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .btn:hover{background:var(--tone-button-hover);border-color:var(--tone-button-hover-border);color:var(--ink)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .btn:active{background:var(--tone-button-pressed)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .btn.primary{color:#fff;background:var(--accent);border-color:var(--accent)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .btn.primary:hover{background:var(--tone-accent-hover);border-color:var(--tone-accent-hover)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .btn.primary:active{background:var(--tone-accent-pressed)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .btn.danger{color:var(--red);border-color:#e6cfcb;background:#fffafa}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .btn.danger:hover{background:#fbeceb;border-color:#d8ada7}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .btn.ghost{border-color:transparent;background:transparent;padding:0 9px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .btn.ghost:hover{background:var(--tone-ghost-hover)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .btn.small{height:32px;font-size:13px;padding:0 10px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .text-button{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--accent);padding:4px 0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .text-button:hover{color:var(--accent-ink)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .text-button .ic{width:15px;height:15px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .breadcrumb{display:flex;align-items:center;gap:7px;flex:0 0 auto;font-size:13px;color:var(--muted);margin-bottom:13px;flex-wrap:wrap}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .breadcrumb button{padding:0;color:var(--muted)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .breadcrumb button:hover{color:var(--accent)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .breadcrumb .ic{width:13px;height:13px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .breadcrumb span{color:var(--text)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .info-strip{display:flex;align-items:center;gap:9px;flex:0 0 auto;font-size:13px;line-height:1.6;color:var(--muted);padding:10px 13px;margin:0 0 16px;border:1px solid var(--tone-info-border);border-radius:5px;background:var(--tone-info-bg)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .info-strip>.ic{width:16px;height:16px;color:var(--tone-info-icon)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .info-strip>.spacer{min-width:6px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .segmented{display:flex;flex:0 0 auto;gap:22px;border-bottom:1px solid var(--line);margin:0 0 17px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .segmented button{font-size:14px;color:var(--muted);padding:0 1px 12px;border-bottom:2px solid transparent}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .segmented button:hover{color:var(--accent)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .segmented button.active{font-weight:600;color:var(--accent);border-bottom-color:var(--accent)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-screen>.segmented{align-self:flex-start;padding:3px;border:1px solid var(--line);border-radius:6px;gap:3px;background:var(--tone-switcher-bg)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-screen>.segmented button{border:1px solid transparent;padding:6px 15px;font-size:13px;border-radius:4px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-screen>.segmented button.active{background:#fff;border-color:var(--tone-switcher-active-border);color:var(--accent-ink)}
+/* Unified list viewport. No nested table border/radius. */
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .table-page-body{display:flex;flex-direction:column;flex:1 1 0%;min-width:0;min-height:0;overflow:hidden;border:1px solid var(--line);border-radius:0;background:#fff}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .table-shell{display:flex;flex-direction:column;flex:1 1 0%;min-width:0;min-height:0;overflow:hidden;border:0;border-radius:0}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .table-scroll{flex:1 1 0%;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--tone-table-scrollbar) transparent;scrollbar-gutter:stable;background:#fff;border:0;border-radius:0;overflow-anchor:none;scroll-padding-top:52px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .table-scroll:focus-visible{outline-offset:-3px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-table{display:block;min-width:950px;min-height:100%;margin:0;padding:0;border:0;border-radius:0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .table-rows{display:block}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .toolbar,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .selectionbar{display:flex;align-items:center;gap:12px;flex:0 0 auto;min-width:0;min-height:55px;margin:0;padding:0 16px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:#fff}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .filter-tabs{display:flex;align-items:center;gap:24px;min-height:54px;min-width:0;flex:1}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .filter-tab{display:flex;align-items:center;position:relative;gap:7px;height:54px;padding:0 1px;font-size:14px;color:var(--muted);flex-shrink:0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .filter-tab:hover{color:var(--accent)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .filter-tab.active{color:var(--accent-ink);font-weight:600}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .filter-tab.active:after{content:"";position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--accent)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .filter-tab span{display:inline-flex;justify-content:center;align-items:center;min-width:21px;padding:1px 5px;border-radius:4px;font-size:12px;font-weight:500;background:var(--tone-count-bg);color:var(--tone-count-ink);line-height:1.5}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .filter-tab.active span{background:var(--tone-count-active-bg);color:var(--accent)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .toolbar-right{display:flex;align-items:center;gap:11px;margin-left:auto}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .view-switch{display:flex;align-items:center;gap:3px;padding:3px;border:1px solid var(--line);border-radius:5px;background:var(--tone-switcher-bg)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .view-switch .icon-button{width:28px;height:27px;border-radius:3px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .view-switch .ic{width:16px;height:16px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .view-pref{margin-left:0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .view-pref .ic{width:17px;height:17px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .toolbar-heading{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .toolbar-heading .count{font-size:12px;line-height:1.5;font-weight:500;padding:2px 6px;background:var(--accent-soft);border-radius:4px;color:var(--accent)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .toolbar-note{font-size:13px;color:var(--muted);margin-left:auto}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .selectionbar{background:var(--tone-selectionbar-bg);border-bottom-color:var(--tone-selectionbar-border);gap:8px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .selection-count{display:flex;align-items:center;gap:9px;font-size:14px;white-space:nowrap;color:var(--accent-ink);font-weight:600;margin-right:12px;padding-right:18px;border-right:1px solid var(--tone-selection-separator)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .selection-count b{display:grid;place-items:center;min-width:23px;height:23px;border-radius:4px;background:var(--accent);color:white;font-size:12px;font-weight:650;padding:0 5px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .selectionbar .btn{height:33px;border:1px solid transparent;background:transparent;font-size:13px;padding:0 10px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .selectionbar .btn:hover{background:var(--tone-selection-hover);border-color:var(--tone-selection-hover-border)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .selectionbar .selection-danger{color:var(--red)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .selectionbar .selection-danger:hover{background:#f8eae8;border-color:#e8d6d2}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .selectionbar .cancel-selection{margin-left:auto;display:flex;align-items:center;gap:5px;color:var(--muted);font-size:13px;padding:5px 6px;border-radius:4px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .selectionbar .cancel-selection:hover{background:var(--tone-icon-pressed);color:var(--accent-ink)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .cancel-selection .ic{width:15px;height:15px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .list-header,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-row{display:grid;grid-template-columns:var(--file-columns);align-items:center;column-gap:9px;padding-inline:16px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .list-header{position:sticky;top:0;z-index:4;height:auto;min-height:0;color:var(--muted);background:var(--tone-header-bg);border:0;border-bottom:1px solid var(--line);border-radius:0;font-size:13px;box-shadow:0 1px 0 #fff}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .header-cell{display:flex;align-items:center;align-self:stretch;min-width:0}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .list-header button{display:flex;align-items:center;gap:7px;width:100%;align-self:stretch;height:auto;padding:12px 0;text-align:left;border:0;border-radius:0;background:none;font-size:13px;color:var(--muted)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .list-header button:hover{color:var(--accent-ink);background:var(--tone-header-hover)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .list-header .header-sort.active{color:var(--accent-ink);font-weight:600}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .list-header .header-cell:nth-child(2) .header-sort{padding-left:42px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .header-sort .ic{width:14px;height:14px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sort-neutral{opacity:.45}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-row{height:auto;min-height:0;max-height:none;padding-block:var(--row-padding-y);border:0;border-bottom:1px solid var(--row-line);border-radius:0;position:relative;font-size:14px;transition:background .12s,box-shadow .12s}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-row:last-child{border-bottom:1px solid var(--row-line)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-row:hover{background:var(--hover)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-row.selected{background:var(--selected);box-shadow:inset 3px 0 0 var(--accent)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-row.selected:hover{background:var(--selected-hover)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-row.is-inspected:not(.selected){background:var(--tone-inspected-bg);box-shadow:inset 2px 0 0 var(--tone-inspected-mark)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-row:focus-visible{outline-offset:-2px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-row>*{min-width:0}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-check{appearance:none;width:17px;height:17px;border:1px solid var(--tone-checkbox-border);border-radius:3px;margin:0;cursor:pointer;display:grid;place-content:center;background:#fff;transition:background .12s,border-color .12s}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-check:hover{border-color:var(--accent)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-check:checked,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-check:indeterminate{background:var(--accent);border-color:var(--accent)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-check:checked:after{content:"";width:7px;height:4px;border:solid #fff;border-width:0 0 1.7px 1.7px;transform:rotate(-45deg) translate(.3px,-.5px)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-check:indeterminate:after{content:"";width:8px;height:2px;background:white;transform:none;border:0;border-radius:1px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-check:disabled{cursor:not-allowed;border-color:var(--tone-checkbox-disabled-border);background:var(--tone-switcher-bg)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-name-cell{display:flex;align-items:center;gap:12px;min-width:0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-name-button{display:block;min-width:0;text-align:left;padding:0;color:var(--ink)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-name-button:hover{color:var(--accent)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-name{font-size:15px;line-height:1.6;font-weight:500;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-ext{font-weight:400;color:var(--tone-extension-ink)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-name-button:hover .file-ext{color:var(--tone-extension-hover)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-row .file-name-button{white-space:normal;overflow:visible;padding:0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-row .file-name{white-space:normal;overflow:visible;overflow-wrap:anywhere}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-row.selected .file-name,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-row.selected .file-ext{color:var(--accent-ink)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-secondary{font-size:13px;margin-top:3px;line-height:1.5;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-row .file-secondary{white-space:normal;overflow-wrap:anywhere}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-star{display:inline-flex;vertical-align:middle;margin-left:6px;color:#bd9853}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-star .ic{width:12px;height:12px;fill:#bd985326;stroke-width:1.6}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .filetype{width:30px;height:35px;display:inline-flex;align-items:center;justify-content:center;flex:none;color:var(--file-color,#5378bb);position:relative}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .filetype svg{width:100%;height:100%}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .filetype.mini{width:26px;height:31px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .filetype.large{width:43px;height:51px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-icon{width:31px;height:27px;fill:currentColor;stroke:none;flex:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-icon.big{width:48px;height:40px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .cell-muted{font-size:13px;line-height:1.55;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .owner-cell{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--tone-owner-ink)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .owner-cell .avatar{width:24px;height:24px;font-size:12px;border-radius:5px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .access-label{display:inline-flex;align-items:center;gap:5px;font-size:12px;line-height:1.55;white-space:nowrap;color:var(--tone-access-ink);padding:3px 0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .access-label .ic{width:13px;height:13px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .access-label.shared{color:var(--tone-shared-ink);background:var(--tone-shared-bg);padding:3px 7px;border-radius:4px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .selected .access-label.shared{background:var(--tone-shared-selected-bg);color:var(--tone-shared-selected-ink)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .col-owner,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .col-size,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .col-access{display:flex;align-items:center}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .row-action .icon-button{color:var(--tone-more-ink);border-color:transparent;width:30px;height:30px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-row:hover .row-action .icon-button,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-row.selected .row-action .icon-button{color:var(--tone-more-hover-ink)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .row-action .icon-button:hover{background:var(--tone-row-action-hover);border-color:var(--tone-more-hover-border)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .row-action .ic{width:17px;height:17px}
+/* Paginator remains in normal flow, never overlays any row */
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .table-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:0 0 auto;min-width:0;margin:0;padding:13px 16px;border:0;border-top:1px solid var(--line);border-radius:0;position:static;background:#fff}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pager-meta{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pager-meta strong{font-weight:600;color:var(--text)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pager-controls,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-size-label,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-number-group{display:flex;align-items:center;gap:6px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pager-controls{flex-wrap:wrap;justify-content:flex-end}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-number-group{gap:5px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-size-label{margin-right:10px;font-size:13px;color:var(--muted);white-space:nowrap;gap:8px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-size-select{background:#fff;border:1px solid var(--line);border-radius:5px;padding:4px 8px;font-size:13px;height:32px;color:var(--text)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pager-btn{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:32px;padding:0 10px;border:1px solid transparent;border-radius:5px;font-size:13px;background:#fff;color:var(--text)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pager-btn[data-action=pagePrev],
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pager-btn[data-action=pageNext]{border-color:var(--line);gap:5px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pager-btn .ic{width:13px;height:13px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pager-btn:hover:not(:disabled){background:var(--hover);border-color:var(--tone-pager-hover-border)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pager-btn.current{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pager-btn.current:hover{color:#fff;background:var(--accent-ink)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pager-btn:disabled{opacity:1;color:var(--tone-pager-disabled-ink);background:var(--tone-pager-disabled-bg);border-color:var(--tone-subtle-border)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pager-gap{color:var(--muted);padding:0 3px}
+/* Files as cards and lightweight home content */
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-content{padding:20px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px;margin:0;padding:0}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-file{border:1px solid var(--line);border-radius:7px;position:relative;overflow:hidden;min-width:0;background:#fff;transition:border-color .15s,background .15s}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-file:hover{border-color:var(--tone-card-hover-border)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-file.selected{border-color:var(--accent);background:var(--selected);box-shadow:inset 0 0 0 1px var(--accent)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-file.is-inspected{border-color:var(--tone-card-inspected-border)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-tools{position:absolute;z-index:2;top:11px;left:12px;right:10px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-tools input,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-tools button{pointer-events:auto}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-tools input{opacity:0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-file:hover .grid-tools input,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-file:focus-within .grid-tools input,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-file.selected input{opacity:1}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-tools .icon-button{background:#ffffffed;height:28px;width:28px;opacity:0;border:1px solid var(--line)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-file:hover .grid-tools .icon-button,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-file:focus-within .grid-tools .icon-button{opacity:1}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-preview{height:163px;overflow:hidden;position:relative;background:var(--tone-preview-surface);cursor:pointer;display:block;width:100%;text-align:left;padding:20px 24px 0}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-caption{padding:15px 14px;display:flex;gap:10px;align-items:center;border-top:1px solid var(--line);min-width:0}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-caption .file-name{font-size:14px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-caption .file-secondary{font-size:12px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-caption .filetype{width:27px;height:32px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-preview{display:flex;align-items:center;justify-content:center;padding:0;background:var(--tone-folder-preview-bg)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-preview .folder-icon{width:75px;height:64px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .home-content{padding:23px 21px 0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .home-continue{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:26px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .continue-card{border:1px solid var(--line);border-radius:7px;overflow:hidden;min-width:0;background:#fff;transition:border-color .14s}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .continue-card:hover{border-color:var(--tone-continue-hover-border)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .continue-card .grid-preview{height:142px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .continue-card .grid-caption{padding:14px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 15px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .section-heading h2{font-size:15px;font-weight:600}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:29px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-card{min-width:0;border:1px solid var(--line);border-radius:6px;padding:16px;background:var(--tone-subtle-bg);text-align:left;position:relative;display:flex;flex-direction:column;gap:13px;overflow:hidden}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-card:hover{border-color:var(--tone-folder-hover-border);background:var(--tone-folder-hover-bg)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-card>span{min-width:0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-top{display:flex;align-items:center;justify-content:space-between}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-title{display:block;font-size:14px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-meta{font-size:12px;color:var(--muted);margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-people{display:flex;align-items:center;gap:4px;color:var(--muted);font-size:12px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-people .ic{width:13px;height:13px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-arrow{color:var(--accent);opacity:0;position:absolute;right:13px;top:17px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-arrow .ic{width:15px;height:15px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-card:hover .folder-arrow{opacity:1}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-card:hover .folder-people{opacity:0}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .home-table-section{min-width:950px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .home-table-section>.section-heading{padding:0 16px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .home-table-section .file-table{min-height:0}
+/* Local preview illustrations (document content, not interface labels) */
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .doc-thumb{background:#fff;width:100%;max-width:177px;min-height:215px;margin:0 auto;padding:20px 17px;color:#3b5244;border:1px solid #e1e8e2;text-align:left;transform:rotate(-2deg)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .doc-thumb .thumb-eyebrow{font-size:7px;letter-spacing:1px;margin-bottom:11px;color:#688571}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .doc-thumb h3{font-size:12px;line-height:1.6;font-weight:650;margin-bottom:13px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .thumb-line{height:3px;margin:6px 0;background:#e5ebe6;border-radius:1px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .thumb-line.short{width:66%}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .thumb-band{height:27px;background:#eaf1e9;margin:12px 0}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sheet-thumb{border:1px solid #dce7de;background:#fff;width:100%;min-width:160px;min-height:160px;padding:15px 10px;transform:rotate(1.5deg)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sheet-thumb h3{font-size:10px;margin-bottom:11px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sheet-mini-grid{display:grid;grid-template-columns:1.2fr repeat(3,1fr);font-size:6px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sheet-mini-grid span{border:1px solid #e6eee8;padding:6px 3px;color:#708674}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sheet-mini-grid span:nth-child(-n+4){background:#e6efe6;color:#496e4e}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .poster-thumb{position:absolute;inset:0;background:#d6dfc9;overflow:hidden;color:#354e39;text-align:left}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .poster-head{font-weight:750;font-size:32px;line-height:1.02;letter-spacing:-1.5px;position:absolute;top:23px;left:23px;z-index:1}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .poster-foot{font-size:8px;letter-spacing:2px;position:absolute;bottom:16px;left:23px;z-index:1}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .poster-circle{width:152px;height:152px;position:absolute;right:-31px;bottom:-63px;border:28px solid #a7bb9e;border-radius:50%}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .poster-pill{width:46px;height:126px;background:#eed287;transform:rotate(28deg);position:absolute;right:28px;top:-14px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .fig-thumb{position:absolute;inset:0;background:#edeef3;padding:20px;display:flex;align-items:center;justify-content:center;gap:13px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .mini-phone{width:65px;height:131px;background:#fff;border-radius:8px;padding:9px 6px;border:2px solid #dcdfe8}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .mini-phone:nth-child(2){transform:translateY(16px)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .mini-phone:before{content:"";display:block;width:17px;height:3px;margin:0 auto 10px;background:#cbd2d3;border-radius:3px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .phone-hero{height:35px;background:#dce7dd;border-radius:4px;margin-bottom:8px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .phone-line{height:4px;background:#edf0ed;margin:5px 0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .phone-button{height:12px;background:#849c8d;border-radius:3px;margin-top:11px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pdf-thumb{color:#826a59}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pdf-thumb .thumb-band{background:#f2e8de}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pdf-thumb .thumb-eyebrow{color:#9c846e}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .preview-generic{display:flex;align-items:center;justify-content:center;height:100%}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .preview-generic .filetype{width:60px;height:72px}
+/* Collaboration spaces */
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .spaces-content{padding:23px 22px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .space-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .space-card{border:1px solid var(--line);border-radius:7px;overflow:hidden;text-align:left;min-width:0;background:#fff;padding:0;transition:border-color .15s,background .15s}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .space-card:hover{border-color:var(--tone-space-hover-border);background:var(--tone-space-hover-bg)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .space-cover{height:81px;display:flex;align-items:center;gap:12px;padding:18px 20px;background:var(--tone-space-cover-bg);color:var(--tone-space-cover-ink);border-bottom:1px solid var(--tone-space-cover-border)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .space-cover.green{background:#f1f5ea;color:#74875a}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .space-cover.sand{background:#f8f3ea;color:#a38a5f}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .space-cover>.ic{width:31px;height:31px;stroke-width:1.45}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .space-cover-label{font-size:12px;margin-left:auto;color:inherit;opacity:.8}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .space-body{padding:20px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .space-title{font-size:18px;font-weight:600;color:var(--ink)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .space-desc{font-size:13px;color:var(--muted);margin:7px 0 22px;line-height:1.7}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .space-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);padding-top:15px;border-top:1px solid var(--line);flex-wrap:wrap}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .space-foot>.ic{width:16px;height:16px;margin-left:auto}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .avatar-stack{display:flex;padding-left:5px;flex:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .avatar-stack .avatar{border:2px solid #fff;margin-left:-5px;width:27px;height:27px;font-size:12px;border-radius:50%}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .spaces-content>.info-strip{margin-top:20px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .spaces-bottom{border-top:1px solid var(--line);margin-top:30px;padding-top:24px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .spaces-bottom h3{font-size:15px;margin-bottom:12px;font-weight:600}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .activity-row{display:flex;align-items:center;gap:13px;padding:16px 0;border-bottom:1px solid var(--row-line);font-size:14px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .activity-row strong{font-weight:500}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .activity-row .muted{font-size:13px;margin-top:4px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .activity-row .time{margin-left:auto;font-size:13px;color:var(--muted);white-space:nowrap}
+/* External links */
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .links-list{width:100%;min-width:850px;border:0;border-radius:0;border-spacing:0;border-collapse:separate;table-layout:fixed;margin:0}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .links-list th{position:sticky;top:0;z-index:4;height:auto;background:var(--tone-header-bg);border:0;border-bottom:1px solid var(--line);padding:12px 16px;text-align:left;font-size:13px;font-weight:400;color:var(--muted)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .links-list th:first-child{width:41%}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .links-list th:last-child{width:140px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .links-list td{height:auto;padding:calc(var(--row-padding-y) + 3px) 16px;border:0;border-bottom:1px solid var(--row-line);font-size:13px;color:var(--text)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .links-list tr:hover td{background:var(--hover)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .links-list .file-name-button{white-space:normal;overflow:visible}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .links-list .file-name{font-size:15px;max-width:none;white-space:normal;overflow-wrap:anywhere}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .links-list .file-secondary{font-size:13px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .links-list .link-sort{display:flex;gap:7px;align-items:center;font-size:13px;padding:0;color:var(--muted)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .links-list .link-sort .ic{width:14px;height:14px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .links-list .link-sort:hover{color:var(--accent)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .status{font-size:12px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;padding:3px 8px;border-radius:4px;color:var(--muted);background:var(--tone-status-neutral-bg)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .status:before{content:"";width:5px;height:5px;display:block;background:currentColor;border-radius:50%}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .status.good{color:#46805a;background:#edf5ef}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .status.warn{color:#976b32;background:#fbf4e9}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .status.off{color:var(--tone-status-off-ink);background:var(--tone-status-off-bg)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .link-actions{display:flex;gap:11px;align-items:center}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .link-actions button{color:var(--accent);font-size:13px;padding:4px 0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .link-actions button:hover{text-decoration:underline;text-underline-offset:3px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .link-actions [data-action=revokeLink]{color:var(--muted)}
+/* Empty states */
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;text-align:center;color:var(--muted);gap:12px;padding:46px 24px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .empty-symbol{width:65px;height:65px;display:grid;place-items:center;background:var(--tone-empty-bg);border:1px solid var(--tone-empty-border);border-radius:12px;margin-bottom:6px;color:var(--tone-empty-icon)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .empty-symbol .ic{width:29px;height:29px;stroke-width:1.35}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .empty h3{font-size:17px;font-weight:550;color:var(--text)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .empty p{font-size:14px;max-width:390px;line-height:1.8}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .empty .btn{margin-top:6px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .empty-in-table{min-width:950px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .empty-in-table .empty{border:0;border-radius:0;padding:54px 24px}
+/* Details drawer: stable header & actions; distinct object context */
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .details{width:326px;flex:none;min-height:0;min-width:0;display:flex;flex-direction:column;background:#fff;border-left:1px solid var(--line);overflow:hidden}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-top{display:flex;align-items:center;justify-content:space-between;flex:none;padding:18px 20px;border-bottom:1px solid var(--line);font-size:15px;font-weight:600}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-top .detail-title{display:flex;align-items:center;gap:8px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-title>.ic{width:16px;height:16px;color:var(--tone-detail-icon)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-scroll{flex:1;min-height:0;overflow:auto;scrollbar-width:thin;padding:20px;scrollbar-color:var(--tone-detail-scrollbar) transparent;overscroll-behavior:contain}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-preview{height:158px;position:relative;overflow:hidden;background:var(--tone-detail-preview-bg);border:1px solid var(--tone-detail-preview-border);border-radius:7px;padding:20px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-preview .folder-icon{width:70px;height:58px;position:absolute;left:calc(50% - 35px);top:calc(50% - 29px)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-preview .doc-thumb{max-width:155px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-preview .sheet-thumb{max-width:200px;margin:auto}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-name{font-size:17px;font-weight:600;line-height:1.65;overflow-wrap:anywhere;margin:17px 0 5px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-submeta{font-size:13px;color:var(--muted);margin-bottom:15px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-section{border-top:1px solid var(--line);padding-top:19px;margin-top:21px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-section h3{font-size:13px;font-weight:600;margin-bottom:13px;display:flex;align-items:center;justify-content:space-between}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-section h3 .muted{font-weight:400;font-size:12px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-kv{display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;gap:16px;margin:13px 0;line-height:1.65}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-kv dt{color:var(--muted);white-space:nowrap}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-kv dd{margin:0;text-align:right;color:var(--text);overflow-wrap:anywhere}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-access{display:flex;align-items:center;gap:9px;padding:11px 12px;background:var(--tone-detail-note-bg);border:1px solid var(--tone-detail-access-border);border-radius:5px;font-size:13px;color:var(--text)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-access>.ic{color:var(--tone-detail-access-icon);width:17px;height:17px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-access span{flex:1}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .detail-access small{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .version-row{display:flex;align-items:flex-start;gap:11px;font-size:13px;margin-top:15px;color:var(--text)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .version-dot{margin-top:6px;width:6px;height:6px;background:var(--accent);border-radius:50%;flex:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .version-row p{font-size:12px;color:var(--muted);margin-top:4px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .drawer-share{flex:none;display:flex;flex-direction:column;gap:9px;padding:16px 20px;background:#fff;border-top:1px solid var(--line)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .drawer-share .btn{width:100%}
+/* Modal & form language */
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .shade{position:fixed;inset:0;background:var(--tone-modal-overlay);z-index:80;display:flex;align-items:center;justify-content:center;padding:28px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .modal{width:580px;max-width:100%;display:flex;flex-direction:column;max-height:calc(100dvh - 56px);background:#fff;border:1px solid var(--tone-modal-border);border-radius:10px;box-shadow:var(--shadow);animation:appear .16s ease-out;overflow:hidden}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .modal.wide{width:900px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .modal.preview-modal{width:1080px;height:min(860px,calc(100dvh - 56px))}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .modal-top{display:flex;align-items:center;gap:11px;padding:19px 25px 17px;flex:none;border-bottom:1px solid var(--line)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .modal-top h2{font-size:18px;font-weight:600;flex:1;min-width:0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .modal-top .ic{flex:none}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .modal-body{padding:24px 26px;overflow:auto;min-height:0;scrollbar-width:thin;scrollbar-color:var(--tone-modal-scrollbar) transparent}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .modal-foot{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:16px 25px;border-top:1px solid var(--line);flex:none;background:var(--tone-subtle-bg)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .field{display:block;margin-bottom:21px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .field:last-child{margin-bottom:0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .field>span,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .field>label{display:block;font-size:14px;font-weight:500;margin-bottom:9px;color:var(--text)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .input{height:40px;border:1px solid var(--line-strong);border-radius:5px;background:#fff;padding:0 11px;width:100%;font-size:14px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .input:hover{border-color:var(--tone-input-hover-border)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .input:disabled{color:var(--tone-input-disabled-ink);background:var(--tone-input-disabled-bg)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .input-area{height:140px;resize:vertical;padding:11px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .field small{font-size:12px;color:var(--muted);display:block;margin-top:8px;line-height:1.75}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .form-note{font-size:13px;color:var(--muted);line-height:1.8;background:var(--tone-detail-note-bg);border:1px solid var(--tone-note-border);padding:12px 14px;border-radius:5px;margin:0 0 21px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .error-text{font-size:13px;color:var(--red);margin-bottom:10px;min-height:0}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .share-file{display:flex;align-items:center;gap:14px;margin:0 0 23px;padding:15px;background:var(--tone-share-file-bg);border:1px solid var(--tone-share-file-border);border-radius:7px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .share-file strong{font-size:15px;font-weight:550;color:var(--ink)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .share-file p{font-size:13px;color:var(--muted);margin-top:5px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .invite-row{display:flex;align-items:center;gap:9px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .invite-row .input{flex:1;min-width:0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .invite-row select.role-select{width:100px;flex:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .invite-row .btn{height:40px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .member-list{margin-top:20px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .member{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--row-line)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .member>.avatar{width:33px;height:33px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .member-info{flex:1;min-width:0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .member-name{font-size:14px;color:var(--text)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .member-sub{font-size:12px;color:var(--muted);margin-top:3px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .member-role{font-size:13px;color:var(--muted);white-space:nowrap}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .member .icon-button{width:28px;height:28px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .share-summary{font-size:13px;line-height:1.8;color:var(--tone-summary-ink);background:var(--tone-summary-bg);padding:13px 14px;border:1px solid var(--tone-summary-border);border-radius:5px;margin-top:21px;display:flex;gap:9px;align-items:flex-start}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .share-summary .ic{width:17px;height:17px;margin-top:3px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .toggle-line{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:16px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .toggle-line strong{font-size:14px;font-weight:500;color:var(--text)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .toggle-line p{font-size:13px;color:var(--muted);margin-top:5px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .switch{position:relative;appearance:none;width:37px;height:22px;flex:none;background:var(--tone-switch-off);border-radius:22px;border:0;cursor:pointer}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .switch:before{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:white;transition:transform .15s}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .switch:checked{background:var(--accent)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .switch:checked:before{transform:translateX(15px)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .link-result{background:var(--tone-link-result-bg);border:1px solid var(--line);padding:17px;border-radius:6px;overflow-wrap:anywhere;font-size:14px;line-height:1.9}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .link-result code{display:block;font-size:13px;user-select:all;margin:7px 0;color:var(--accent)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .popup{position:fixed;min-width:206px;background:#fff;border:1px solid var(--tone-popup-border);border-radius:7px;padding:6px;box-shadow:0 9px 30px var(--tone-popup-shadow);z-index:100;max-width:290px;max-height:calc(100dvh - 16px);overflow:auto;scrollbar-width:thin}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .popup button{display:flex;align-items:center;width:100%;gap:10px;min-height:37px;height:auto;padding:8px 10px;text-align:left;font-size:13px;border-radius:4px;color:var(--text)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .popup button:hover{background:var(--tone-popup-hover);color:var(--accent)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .popup button .ic{width:16px;height:16px;color:var(--tone-popup-icon)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .popup .menu-sep{height:1px;background:var(--line);margin:6px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .popup .danger{color:var(--red)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .popup .danger:hover{background:#fcf0ee;color:var(--red)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .popup .danger .ic{color:inherit}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .toast{position:fixed;bottom:92px;left:calc(50% + var(--sidebar)/2);transform:translateX(-50%);padding:13px 18px;background:var(--tone-toast-bg);color:#fff;font-size:14px;border:1px solid var(--tone-toast-border);border-radius:7px;box-shadow:0 6px 18px var(--tone-toast-shadow);z-index:150;max-width:min(580px,85vw);display:flex;align-items:center;gap:9px;line-height:1.7}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .toast .ic{width:17px;height:17px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .upload-zone{border:1px dashed var(--tone-upload-border);background:var(--tone-upload-bg);border-radius:7px;padding:37px 18px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:13px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .upload-zone .ic{width:34px;height:34px;color:var(--accent);stroke-width:1.35}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .upload-zone strong{font-size:15px;font-weight:500}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .upload-zone p{font-size:13px;color:var(--muted);line-height:1.8}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .upload-zone:hover,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .upload-zone.over{border-color:var(--accent);background:var(--tone-upload-hover)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .transfer-item{display:flex;gap:12px;align-items:center;padding:17px 0;border-bottom:1px solid var(--line)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .transfer-item strong{font-size:14px;font-weight:500}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .transfer-item p{font-size:12px;color:var(--muted);margin-top:4px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .transfer-item>.ic{color:var(--green);margin-left:auto;width:17px;height:17px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .help-block{margin-bottom:23px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .help-block h3{font-size:15px;font-weight:600;margin-bottom:8px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .help-block p{font-size:14px;color:var(--muted);line-height:1.9}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .keyboard-row{display:flex;justify-content:space-between;font-size:14px;padding:11px 0;border-bottom:1px solid var(--line)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .tiny-note{font-size:12px;line-height:1.85;color:var(--muted)}
+/* Preview: content first, legible examples */
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .preview-body{background:var(--tone-preview-bg);overflow:auto;flex:1;min-height:0;display:flex;align-items:flex-start;justify-content:center;scrollbar-width:thin}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .paper{background:#fff;width:650px;max-width:100%;padding:46px 52px;min-height:650px;border:1px solid #dfe7db;color:var(--ink)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .paper-overline{color:var(--accent);font-size:12px;letter-spacing:1.4px;margin-bottom:18px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .paper h1{font-size:28px;letter-spacing:-.5px;margin:0 0 14px;line-height:1.5}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .paper-meta{font-size:13px;color:var(--muted);padding-bottom:24px;border-bottom:1px solid var(--line)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .paper h2{font-size:17px;margin:26px 0 12px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .paper p{font-size:14px;line-height:2;color:#576e5b;margin:9px 0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .paper .callout{border-left:3px solid #6f9379;padding:13px 16px;background:#f0f6ec;font-size:14px;line-height:1.9;margin:21px 0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .paper ol{padding-left:20px;font-size:14px;line-height:2;color:#576e5b}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .paper-footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);display:flex;justify-content:space-between;color:var(--muted);font-size:12px;gap:10px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sample-pill{font-size:12px;padding:3px 7px;border:1px solid var(--line);border-radius:4px;color:var(--muted);white-space:nowrap;background:var(--tone-sample-bg)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .preview-modal .modal-top{padding:16px 22px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .preview-modal .modal-top h2{font-size:15px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .preview-bottom{font-size:12px;display:flex;justify-content:space-between;color:var(--muted);gap:12px;align-items:center;padding:13px 23px;border-top:1px solid var(--line);background:#fff}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sheet-preview{min-width:580px;max-width:100%;background:#fff;border:1px solid var(--line);padding:27px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sheet-preview h2{font-size:21px;margin:8px 0 23px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sheet-preview table{width:100%;border-collapse:collapse;font-size:14px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sheet-preview td,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sheet-preview th{padding:12px;border:1px solid var(--line);text-align:left}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sheet-preview th{background:#edf5e9;font-weight:500}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sheet-preview p{font-size:13px;color:var(--muted);margin-top:21px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .large-poster{position:relative;width:510px;max-width:100%;height:580px;overflow:hidden}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .large-poster .poster-head{font-size:85px;left:36px;top:45px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .large-poster .poster-foot{font-size:12px;left:40px;bottom:40px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .large-poster .poster-circle{width:480px;height:480px;right:-70px;bottom:-180px;border-width:95px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .large-poster .poster-pill{width:114px;height:400px;right:52px;top:-48px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .poster-subtitle{position:absolute;top:239px;left:42px;font-size:15px;letter-spacing:3px;line-height:2}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .fig-large{position:relative;width:570px;height:510px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .fig-large .mini-phone{width:160px;height:320px;border-width:4px;border-radius:20px;padding:22px 13px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .fig-large .phone-hero{height:110px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .fig-large .phone-line{height:10px;margin:15px 0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .fig-large .phone-button{height:28px;margin-top:18px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .fig-large .mini-phone:before{width:42px;height:7px;margin-bottom:24px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .local-image{max-width:100%;max-height:100%;object-fit:contain}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .user-text{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.9 var(--font);max-width:730px;background:#fff;padding:27px;width:100%;border:1px solid var(--line)}
+/* Subtle footer (not a second toolbar) */
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .app-status{flex:0 0 auto;min-height:29px;display:flex;align-items:center;gap:7px;border-top:1px solid var(--tone-subtle-border);padding:5px var(--content-x);font-size:12px;line-height:1.5;color:var(--tone-footer-ink);background:var(--tone-subtle-bg)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .app-status .ic{width:13px;height:13px;color:var(--tone-footer-icon)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .app-status span:last-child{margin-left:auto;white-space:nowrap}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sidebar-scrim{display:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .body-no-motion *{animation:none!important;transition:none!important}
+@keyframes appear{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+/* Scale without shrinking text or fixing file-row heights */
+@media(min-width:1700px){:is(html[data-experience="desktop"], .desktop-overlays){--sidebar:244px;--content-x:36px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .content-scroll{padding-top:30px;padding-bottom:24px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-preview{height:183px}}
+@media(max-width:1590px){:where(:is(html[data-experience="desktop"], .desktop-overlays)) .details{position:absolute;right:0;top:0;bottom:0;width:326px;z-index:35;box-shadow:-12px 0 36px var(--tone-drawer-shadow)}}
+@media(max-width:1200px){:is(html[data-experience="desktop"], .desktop-overlays){--sidebar:216px;--content-x:24px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .demo-badge{display:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .top-right{gap:7px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .search-box{width:min(430px,48vw)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-strip{grid-template-columns:repeat(2,minmax(0,1fr))}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .space-grid{grid-template-columns:repeat(2,minmax(0,1fr))}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .profile-name{display:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .table-pager{flex-wrap:wrap;gap:9px;padding:11px 14px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-title{font-size:25px}}
+@media(max-height:790px){:where(:is(html[data-experience="desktop"], .desktop-overlays)) .brand{height:74px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .new-wrap{margin:2px 0 19px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .nav-item{height:39px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .nav{gap:4px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .recent-side{margin-top:21px;padding-top:17px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .recent-item{padding-block:9px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .side-bottom{padding-top:14px;padding-bottom:14px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .storage-title{margin-bottom:8px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .workspace-label{margin-top:15px;padding-top:12px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .topbar{height:66px;min-height:66px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .content-scroll{padding-top:22px;padding-bottom:17px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-head{margin-bottom:19px}}
+@media(max-width:900px){:where(:is(html[data-experience="desktop"], .desktop-overlays)) .head-actions{gap:7px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .head-actions .btn{padding-inline:10px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .filter-tabs{gap:18px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-scope{display:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .toolbar-note{font-size:12px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .home-continue{grid-template-columns:repeat(2,minmax(0,1fr))}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .home-continue .continue-card:last-child{display:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .table-pager .pager-meta{width:100%}}
+@media(max-width:780px){:is(html[data-experience="desktop"], .desktop-overlays){--sidebar:232px;--content-x:16px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sidebar{position:fixed;top:0;bottom:0;left:0;transform:translateX(-100%);transition:transform .16s;width:232px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sidebar.is-open{transform:translateX(0)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sidebar-scrim.is-open{display:block;position:fixed;inset:0;background:var(--tone-sidebar-overlay);z-index:25}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .mobile-menu{display:flex}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .topbar{height:60px;min-height:60px;gap:8px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .search-box{width:auto;flex:1;height:36px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .keycap{display:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .top-right{gap:3px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .top-separator{display:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .top-right>.icon-button[data-action=help]{display:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .avatar-btn{padding:2px;margin:0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .avatar-btn>.ic{display:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .topbar .avatar{width:29px;height:29px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .content-scroll{padding-top:18px;padding-bottom:12px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-head{flex-wrap:wrap;align-items:flex-start;gap:11px;margin-bottom:16px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-title{font-size:24px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-subtitle{font-size:13px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .head-actions{flex-wrap:wrap}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .btn{height:35px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .toolbar,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .selectionbar{gap:6px;padding-inline:12px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .toolbar-right{gap:4px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .filter-tabs{overflow:auto;scrollbar-width:none;gap:17px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .filter-tab{font-size:13px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .filter-tab span{display:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .view-pref{display:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .selectionbar{flex-wrap:wrap;padding-block:9px;gap:5px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .selection-count{margin-right:0;padding-right:10px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .selectionbar .cancel-selection{font-size:12px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .selectionbar .btn{padding-inline:6px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .table-pager{padding:10px 12px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pager-controls{flex:1 1 auto}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-size-label{margin-right:6px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pager-btn{padding-inline:7px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .space-grid{grid-template-columns:1fr}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .spaces-content{padding:17px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .home-content{padding:18px 16px 0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .home-continue{grid-template-columns:1fr}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .home-continue .continue-card{display:block!important}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-strip{grid-template-columns:repeat(2,minmax(0,1fr))}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .folder-card{padding:13px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .activity-row{flex-wrap:wrap}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .activity-row .time{font-size:12px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-content{padding:14px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .file-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-preview{height:146px;padding-inline:15px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-caption{padding:12px;gap:8px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .grid-caption .file-name{font-size:14px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .details{width:min(336px,95vw)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .app-status{padding-inline:16px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .app-status span:last-child{display:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .toast{left:50%;font-size:13px;bottom:118px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .shade{padding:14px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .modal{max-height:calc(100dvh - 28px)}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .modal-top{padding:17px 19px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .modal-body{padding:21px 19px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .modal-foot{padding:15px 19px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .preview-body{padding:17px;justify-content:flex-start}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .paper{padding:29px 25px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .preview-modal .modal-top{flex-wrap:wrap;padding:12px 16px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .preview-modal .modal-top .btn{height:30px;font-size:13px;padding:0 9px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .preview-bottom{padding:12px 16px;font-size:12px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .preview-bottom span:first-child{max-width:70%}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sheet-preview{min-width:500px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .sample-pill{font-size:12px}}
+@media(max-width:460px){:where(:is(html[data-experience="desktop"], .desktop-overlays)) .table-pager{flex-direction:column;align-items:stretch}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pager-controls{justify-content:space-between;gap:4px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-number-group{gap:3px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .pager-btn{padding-inline:6px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-size-label{gap:4px;margin-right:0}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .toolbar{padding-inline:10px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .filter-tabs{gap:15px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .topbar{padding-inline:10px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .top-right>.icon-button{display:none}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .view-switch{gap:1px;padding:2px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .view-switch .icon-button{width:26px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-subtitle{line-height:1.7}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-head .btn{font-size:13px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .info-strip{align-items:flex-start}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .info-strip>.ic{margin-top:2px}}
+@media(max-height:620px) and (min-width:781px){:where(:is(html[data-experience="desktop"], .desktop-overlays)) .content-scroll{padding-top:14px;padding-bottom:11px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .page-head{margin-bottom:13px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .info-strip,
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .segmented{margin-bottom:11px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .brand{height:68px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .side-bottom{padding-block:10px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .topbar{height:61px;min-height:61px}}
+@media(prefers-reduced-motion:reduce){:where(:is(html[data-experience="desktop"], .desktop-overlays)) *{animation:none!important;transition:none!important}}
+
+
+/* Primary colour selector: native radios support keyboard and screen readers.
+   Changing an option is a preview only until Save preferences is clicked. */
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .primary-colors{border:0;margin:0 0 23px;padding:0;min-inline-size:0}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .primary-colors legend{padding:0;margin-bottom:11px;font-size:14px;font-weight:500;color:var(--text)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .primary-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-option{position:relative;display:block;min-width:0;cursor:pointer}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-radio{position:absolute;width:1px;height:1px;opacity:0;margin:0}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-card{display:flex;align-items:center;gap:12px;padding:13px 14px;min-height:71px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);transition:background .14s,border-color .14s,box-shadow .14s}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-option:hover .theme-card{background:var(--hover);border-color:var(--tone-button-hover-border)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-radio:checked+.theme-card{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-radio:focus-visible+.theme-card{outline:2px solid var(--accent);outline-offset:3px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-swatch{width:29px;height:29px;border-radius:7px;background:var(--swatch);box-shadow:inset 0 0 0 1px #00000008;flex:none}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-option[data-color="green"]{--swatch:#28634c}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-option[data-color="blue"]{--swatch:#3264d8}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-name{flex:1;min-width:0;display:block}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-name strong{display:block;font-size:14px;font-weight:600;color:var(--text);line-height:1.5}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-name small{display:block;font-size:12px;line-height:1.5;color:var(--muted);margin-top:3px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-check{opacity:0;color:var(--accent);flex:none}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-check .ic{width:17px;height:17px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-radio:checked+.theme-card .theme-check{opacity:1}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-preview-note{font-size:12px;line-height:1.7;color:var(--muted);margin-top:10px;min-height:21px}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .prefs-bottom-note{font-size:12px;line-height:1.7;color:var(--muted);padding-top:15px;margin-top:2px;border-top:1px solid var(--line)}
+:where(:is(html[data-experience="desktop"], .desktop-overlays)) .prefs-reset{display:inline-flex;margin-top:10px}
+@media(max-width:460px){:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-card{padding:12px 10px;gap:9px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .primary-options{gap:9px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-swatch{width:24px;height:24px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-name small{font-size:12px}:where(:is(html[data-experience="desktop"], .desktop-overlays)) .theme-check .ic{width:15px;height:15px}}

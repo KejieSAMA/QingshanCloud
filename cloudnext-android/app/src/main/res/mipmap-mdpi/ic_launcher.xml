@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- API 24-25 fallback：把背景色和前景画在一起的方形向量图。API 26+ 走 mipmap-anydpi-v26/ic_launcher.xml -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <path
+        android:fillColor="#0057FF"
+        android:pathData="M0,0 L108,0 L108,108 L0,108 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillAlpha="0.18"
+        android:pathData="M36,62 C30,62 26,57.5 26,52 C26,46.5 30,42 36,42 C36.5,36 41,32 47,32 C52.5,32 57,35.5 58.5,40.5 C59.5,40.2 60.5,40 61.5,40 C68,40 73,45 73,51 C73,57 68,62 61.5,62 Z" />
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M46,46 L46,72 L50,72 L50,55 L62,72 L66,72 L66,46 L62,46 L62,63 L50,46 Z" />
+</vector>

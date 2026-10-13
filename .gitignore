@@ -1,0 +1,77 @@
+# Dependencies and generated outputs
+node_modules/
+jspm_packages/
+**/target/
+**/dist/
+**/build/
+**/out/
+coverage/
+.nyc_output/
+.vite/
+.cache/
+.npm/
+.eslintcache
+*.tsbuildinfo
+*.class
+
+# CloudNext runtime data, uploads, release snapshots and local configuration
+/cloudnext-runtime-logs/
+**/.data/
+/cloudnext-server/config/*
+!/cloudnext-server/config/*.example.yml
+!/cloudnext-server/config/*.example.yaml
+!/cloudnext-server/config/*.example.json
+*.mv.db
+*.trace.db
+*.lock.db
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+logs/
+pids/
+*.log
+*.log.*
+*.pid
+*.pid.lock
+*.hprof
+hs_err_pid*
+
+# Secrets stay local; examples and templates can be committed
+.env
+.env.*
+!.env.example
+!.env.*.example
+!.env.template
+!.env.*.template
+local.properties
+*.keystore
+*.jks
+*.p12
+*.pfx
+
+# Android generated artifacts (keep gradle/wrapper/gradle-wrapper.jar)
+.gradle/
+.kotlin/
+.externalNativeBuild/
+.cxx/
+captures/
+*.apk
+*.aab
+
+# Editor, assistant worktrees and OS caches
+.idea/
+.vscode/
+.cursor/
+.claude/
+.codex-tmp/
+*.iml
+*.swp
+*.swo
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+[Dd]esktop.ini
+
+# Commit package-lock.json, source, tests, design references and migration docs.

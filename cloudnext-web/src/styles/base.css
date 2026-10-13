@@ -1,0 +1,7 @@
+/* Platform-neutral document rules only. Experience styles are explicitly scoped. */
+*{box-sizing:border-box}
+html,body,#app{margin:0;min-height:100%;width:100%}
+html[data-experience=preview],html[data-experience=preview] body,html[data-experience=preview] #app{height:100%;font-family:"Segoe UI","Microsoft YaHei",sans-serif}
+#boot-error{position:fixed;bottom:16px;left:16px;right:16px;padding:14px;background:#fff4f3;color:#9c2924;border:1px solid #ebc5c2;z-index:200;font:14px/1.5 sans-serif}
+
+.desktop-overlays{font-family:var(--font);font-size:14px;line-height:1.5;color:var(--text)}

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug 构建专用 — 覆盖 main 的限制版。
+  允许全局 cleartext HTTP，方便：
+    - 内网 dev server / 自签证书域名（OnlyOffice DocumentServer 等）
+    - Chrome DevTools 远程调试时 WebView 加载任意子资源
+  release 构建会用 src/main/res/xml/network_security_config.xml 的严格版（仅白名单 cleartext）。
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

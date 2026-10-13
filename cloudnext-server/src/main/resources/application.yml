@@ -1,0 +1,94 @@
+server:
+  port: ${PORT:8088}
+
+spring:
+  application:
+    name: cloudnext-server
+  jackson:
+    default-property-inclusion: non_null
+  servlet:
+    multipart:
+      max-file-size: ${CLOUDNEXT_MAX_FILE_SIZE:100MB}
+      max-request-size: ${CLOUDNEXT_MAX_REQUEST_SIZE:100MB}
+  datasource:
+    url: ${CLOUDNEXT_LOCAL_DB_URL:jdbc:h2:file:./cloudnext-server/.data/cloudnext;MODE=MySQL;DATABASE_TO_LOWER=TRUE;AUTO_SERVER=TRUE}
+    username: ${CLOUDNEXT_LOCAL_DB_USERNAME:sa}
+    password: ${CLOUDNEXT_LOCAL_DB_PASSWORD:}
+    driver-class-name: ${CLOUDNEXT_LOCAL_DB_DRIVER:org.h2.Driver}
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+
+cloudnext:
+  readonly-jdbc:
+    url: ${CLOUDNEXT_OA_JDBC_URL:}
+    username: ${CLOUDNEXT_OA_JDBC_USERNAME:}
+    password: ${CLOUDNEXT_OA_JDBC_PASSWORD:}
+    driver-class-name: ${CLOUDNEXT_OA_JDBC_DRIVER:com.mysql.cj.jdbc.Driver}
+  org-sync:
+    batch-size: ${CLOUDNEXT_ORG_SYNC_BATCH_SIZE:500}
+    interval-minutes: ${CLOUDNEXT_ORG_SYNC_INTERVAL_MINUTES:5}
+    cron: ${CLOUDNEXT_ORG_SYNC_CRON:0 0/5 * * * *}
+  auth:
+    mode: ${CLOUDNEXT_AUTH_MODE:form}
+    provider: ${CLOUDNEXT_AUTH_PROVIDER:FORM}
+    # O2 仅供迁移期显式回退，Form 模式不会访问这些端点。
+    o2-base-url: ${CLOUDNEXT_O2_BASE_URL:}
+    login-path: ${CLOUDNEXT_O2_LOGIN_PATH:/jaxrs/authentication}
+    rsa-public-key-path: ${CLOUDNEXT_O2_RSA_PUBLIC_KEY_PATH:/jaxrs/authentication/captchaRSAPublicKey}
+    form-base-url: ${CLOUDNEXT_FORM_BASE_URL:}
+    form-verify-password-path: ${CLOUDNEXT_FORM_VERIFY_PASSWORD_PATH:/internal/v1/cloudnext/auth/verify-password}
+    form-exchange-ticket-path: ${CLOUDNEXT_FORM_EXCHANGE_TICKET_PATH:/internal/v1/cloudnext/auth/exchange-ticket}
+    form-directory-snapshot-path: ${CLOUDNEXT_FORM_DIRECTORY_SNAPSHOT_PATH:/internal/v1/cloudnext/directory/snapshot}
+    form-service-token: ${CLOUDNEXT_FORM_SERVICE_TOKEN:}
+    form-sso-start-url: ${CLOUDNEXT_FORM_SSO_START_URL:}
+    form-sso-audience: ${CLOUDNEXT_FORM_SSO_AUDIENCE:cloudnext}
+    form-sso-enabled: ${CLOUDNEXT_FORM_SSO_ENABLED:true}
+    form-shadow-sync-enabled: ${CLOUDNEXT_FORM_SHADOW_SYNC_ENABLED:false}
+    allow-insecure-http: ${CLOUDNEXT_FORM_ALLOW_INSECURE_HTTP:false}
+    sso-bootstrap-ttl-seconds: ${CLOUDNEXT_SSO_BOOTSTRAP_TTL_SECONDS:60}
+    session-ttl-minutes: ${CLOUDNEXT_AUTH_SESSION_TTL_MINUTES:480}
+    remember-session-ttl-days: ${CLOUDNEXT_AUTH_REMEMBER_TTL_DAYS:30}
+    connect-timeout-ms: ${CLOUDNEXT_AUTH_CONNECT_TIMEOUT_MS:5000}
+    read-timeout-ms: ${CLOUDNEXT_AUTH_READ_TIMEOUT_MS:10000}
+  object-storage:
+    endpoint: ${CLOUDNEXT_OBJECT_STORAGE_ENDPOINT:}
+    bucket: ${CLOUDNEXT_OBJECT_STORAGE_BUCKET:}
+  endpoints:
+    callback-base-url: ${CLOUDNEXT_CALLBACK_BASE_URL:}
+    web-base-url: ${CLOUDNEXT_WEB_BASE_URL:}
+  drive:
+    preview-ticket-ttl-seconds: ${CLOUDNEXT_PREVIEW_TICKET_TTL_SECONDS:600}
+    onlyoffice-edit-ticket-ttl-seconds: ${CLOUDNEXT_ONLYOFFICE_EDIT_TICKET_TTL_SECONDS:86400}
+    trash-retention-days: ${CLOUDNEXT_TRASH_RETENTION_DAYS:30}
+    trash-cleanup-cron: ${CLOUDNEXT_TRASH_CLEANUP_CRON:0 0 3 * * *}
+    onlyoffice:
+      document-server-url: ${CLOUDNEXT_ONLYOFFICE_DOCUMENT_SERVER_URL:}
+      docservice-api: ${CLOUDNEXT_ONLYOFFICE_DOCSERVICE_API:}
+      jwt-enabled: ${CLOUDNEXT_ONLYOFFICE_JWT_ENABLED:false}
+      jwt-secret: ${CLOUDNEXT_ONLYOFFICE_JWT_SECRET:}
+      jwt-header: ${CLOUDNEXT_ONLYOFFICE_JWT_HEADER:Authorization}
+  iteration:
+    onlyoffice-edit:
+      enabled: ${CLOUDNEXT_ONLYOFFICE_EDIT_ENABLED:false}
+    search:
+      # N+2.5 默认打开高级搜索（应用启动后 /api/search/files 应返回 401，而不是 404）。
+      # 仅在确有需要禁用时把 CLOUDNEXT_SEARCH_ENABLED 设为 false（无需显式设置 true）。
+      # 排查 404：先确认后端已完成启动；再确认环境变量未被外部覆盖为 false。
+      enabled: ${CLOUDNEXT_SEARCH_ENABLED:true}
+  admin:
+    # canonical person key 优先；仅当该项为空时回退旧 OA personId 白名单。
+    person-keys: ${CLOUDNEXT_ADMIN_PERSON_KEYS:}
+    person-oa-ids: ${CLOUDNEXT_ADMIN_PERSON_OA_IDS:}
+  cutover:
+    # 仅通过部署配置进入维护窗口；应用不会自动切换或改写业务外键。
+    maintenance-mode: ${CLOUDNEXT_CUTOVER_MAINTENANCE_MODE:false}
+    # 维护窗口锁定的最终 OA 归档版本；clear-sessions 只接受该版本已 VERIFIED。
+    migration-version: ${CLOUDNEXT_CUTOVER_MIGRATION_VERSION:}
+  storage:
+    local:
+      root: ${CLOUDNEXT_STORAGE_LOCAL_ROOT:./cloudnext-server/.data/drive-storage}

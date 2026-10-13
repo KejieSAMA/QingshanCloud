@@ -1,0 +1,6 @@
+# 复制为 local.properties 后填入实际路径
+sdk.dir=C\:\\Users\\<你>\\AppData\\Local\\Android\\Sdk
+
+# 后端地址：模拟器走 10.0.2.2 转发到宿主机 8088
+cloudnext.api.base.url.debug=http://10.0.2.2:8088/
+cloudnext.api.base.url.release=https://your-prod-host/

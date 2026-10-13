@@ -1,0 +1,39 @@
+# Copy to application.yml for a NEW deployment and configure through the environment.
+# Existing deployments must keep their real application.yml and current data paths.
+server:
+  port: ${PORT:8088}
+
+spring:
+  datasource:
+    url: ${CLOUDNEXT_LOCAL_DB_URL:jdbc:h2:file:./cloudnext-server/.data/cloudnext;MODE=MySQL;DATABASE_TO_LOWER=TRUE;AUTO_SERVER=TRUE}
+    username: ${CLOUDNEXT_LOCAL_DB_USERNAME:sa}
+    password: ${CLOUDNEXT_LOCAL_DB_PASSWORD:}
+    driver-class-name: ${CLOUDNEXT_LOCAL_DB_DRIVER:org.h2.Driver}
+
+cloudnext:
+  auth:
+    mode: form
+    provider: FORM
+    form-base-url: ${CLOUDNEXT_FORM_BASE_URL:}
+    form-service-token: ${CLOUDNEXT_FORM_SERVICE_TOKEN:}
+    form-sso-start-url: ${CLOUDNEXT_FORM_SSO_START_URL:}
+    form-sso-enabled: ${CLOUDNEXT_FORM_SSO_ENABLED:true}
+    allow-insecure-http: ${CLOUDNEXT_FORM_ALLOW_INSECURE_HTTP:false}
+  endpoints:
+    callback-base-url: ${CLOUDNEXT_CALLBACK_BASE_URL:}
+    web-base-url: ${CLOUDNEXT_WEB_BASE_URL:}
+  iteration:
+    onlyoffice-edit:
+      enabled: ${CLOUDNEXT_ONLYOFFICE_EDIT_ENABLED:false}
+  drive:
+    onlyoffice:
+      document-server-url: ${CLOUDNEXT_ONLYOFFICE_DOCUMENT_SERVER_URL:}
+      docservice-api: ${CLOUDNEXT_ONLYOFFICE_DOCSERVICE_API:}
+      jwt-enabled: ${CLOUDNEXT_ONLYOFFICE_JWT_ENABLED:false}
+      jwt-secret: ${CLOUDNEXT_ONLYOFFICE_JWT_SECRET:}
+      jwt-header: ${CLOUDNEXT_ONLYOFFICE_JWT_HEADER:Authorization}
+  storage:
+    local:
+      root: ${CLOUDNEXT_STORAGE_LOCAL_ROOT:./cloudnext-server/.data/drive-storage}
+  admin:
+    person-keys: ${CLOUDNEXT_ADMIN_PERSON_KEYS:}

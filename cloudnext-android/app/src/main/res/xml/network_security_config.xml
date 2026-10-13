@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- 模拟器 / 内网开发：明文 HTTP 仅在 debug build 允许 -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="false">10.0.2.2</domain>
+        <domain includeSubdomains="false">localhost</domain>
+        <!-- 内网穿透 / dev 公网测试地址。debug + release 都允许 HTTP cleartext，
+             正式生产换 HTTPS 域名后请删掉此条。 -->
+        <domain includeSubdomains="false">36.248.137.14</domain>
+    </domain-config>
+</network-security-config>

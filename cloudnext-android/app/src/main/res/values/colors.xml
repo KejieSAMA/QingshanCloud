@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 与 designsystem CnPalette 一致 -->
+    <color name="cn_primary">#0057FF</color>
+    <color name="cn_background">#F7F8FA</color>
+</resources>

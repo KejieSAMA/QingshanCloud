@@ -1,0 +1,3 @@
+package com.x.cloudnext.server.migration.repository;
+import java.util.Optional;import javax.persistence.LockModeType;import org.springframework.data.jpa.repository.JpaRepository;import org.springframework.data.jpa.repository.Lock;import org.springframework.data.jpa.repository.Query;import org.springframework.data.repository.query.Param;import com.x.cloudnext.server.migration.entity.LegacyArchiveMigrationTask;
+public interface LegacyArchiveMigrationTaskRepository extends JpaRepository<LegacyArchiveMigrationTask,String>{long countByStatus(String status);@Lock(LockModeType.PESSIMISTIC_WRITE)@Query("select t from LegacyArchiveMigrationTask t where t.version=:version")Optional<LegacyArchiveMigrationTask> findForUpdate(@Param("version")String version);}

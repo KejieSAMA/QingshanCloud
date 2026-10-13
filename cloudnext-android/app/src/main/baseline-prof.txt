@@ -1,0 +1,65 @@
+# Baseline Profile for CloudNext Android (M6)
+#
+# 覆盖冷启动到登录态首屏的关键类。AOT 编译这些类的方法 → 启动时跳过 JIT，减少首屏耗时。
+#
+# 来源：
+# - 应用层：CloudNextApplication / MainActivity / 顶层 NavHost
+# - 鉴权：TokenStore / SessionInfoStore / AuthRepository / LoginScreen
+# - 主题：CnTheme / CnPalette / CnTokens / MaterialTheme 关键类
+# - 路由：Navigation Compose 2.8 typesafe 关键
+# - 启动相关 OkHttp / Retrofit 初始化
+#
+# 后续可用 Macrobenchmark 模块自动生成更精确的 profile，本文件作为手写起点。
+
+# 应用层
+HSPLcom/x/cloudnext/android/CloudNextApplication;-><init>()V
+HSPLcom/x/cloudnext/android/CloudNextApplication;->onCreate()V
+HSPLcom/x/cloudnext/android/CloudNextApplication;->getWorkManagerConfiguration()Landroidx/work/Configuration;
+HSPLcom/x/cloudnext/android/CloudNextApplication;->newImageLoader()Lcoil/ImageLoader;
+HSPLcom/x/cloudnext/android/MainActivity;-><init>()V
+HSPLcom/x/cloudnext/android/MainActivity;->onCreate(Landroid/os/Bundle;)V
+
+# Hilt 注入入口
+HSPLcom/x/cloudnext/android/CloudNextApplication_HiltComponents$**;->**(**)**
+HSPLcom/x/cloudnext/android/MainActivity_GeneratedInjector;->**(**)**
+
+# 网络层（启动后第一个请求）
+HSPLcom/x/cloudnext/android/network/di/NetworkModule;->**(**)**
+HSPLcom/x/cloudnext/android/network/interceptor/AuthHeaderInterceptor;-><init>**
+HSPLcom/x/cloudnext/android/network/interceptor/AuthHeaderInterceptor;->intercept(Lokhttp3/Interceptor$Chain;)Lokhttp3/Response;
+HSPLcom/x/cloudnext/android/network/interceptor/SessionExpiredInterceptor;->intercept(Lokhttp3/Interceptor$Chain;)Lokhttp3/Response;
+
+# Token / Session 存储（启动 warm-up）
+HSPLcom/x/cloudnext/android/datastore/TokenStore;->**(**)**
+HSPLcom/x/cloudnext/android/datastore/SessionInfoStore;->**(**)**
+HSPLcom/x/cloudnext/android/datastore/PreferencesRepository;->**(**)**
+
+# 主题
+HSPLcom/x/cloudnext/android/designsystem/CnThemeKt;->CnTheme(ZLkotlin/jvm/functions/Function2;Landroidx/compose/runtime/Composer;II)V
+HSPLcom/x/cloudnext/android/designsystem/ColorKt;->**(**)**
+HSPLcom/x/cloudnext/android/designsystem/CnTokens;-><init>**
+HSPLcom/x/cloudnext/android/designsystem/CnTokensKt;->**(**)**
+
+# 路由
+HSPLcom/x/cloudnext/android/navigation/CloudNextNavHostKt;->**(**)**
+HSPLcom/x/cloudnext/android/navigation/Routes**;->**(**)**
+
+# 登录页（多数用户冷启动后第一帧）
+HSPLcom/x/cloudnext/android/feature/login/LoginScreenKt;->**(**)**
+HSPLcom/x/cloudnext/android/feature/login/LoginViewModel;->**(**)**
+
+# Home 页（已登录用户冷启动后第一帧）
+HSPLcom/x/cloudnext/android/feature/home/HomeScreenKt;->**(**)**
+HSPLcom/x/cloudnext/android/feature/home/HomeViewModel;->**(**)**
+
+# 核心 UI 组件（首屏必绘）
+HSPLcom/x/cloudnext/android/ui/CnTopBarKt;->**(**)**
+HSPLcom/x/cloudnext/android/ui/CnBottomTabsKt;->**(**)**
+HSPLcom/x/cloudnext/android/ui/CnEmptyKt;->**(**)**
+HSPLcom/x/cloudnext/android/ui/CnLoadingKt;->**(**)**
+HSPLcom/x/cloudnext/android/ui/CnFileCardKt;->**(**)**
+HSPLcom/x/cloudnext/android/ui/CnDrawerKt;->**(**)**
+
+# RootViewModel 冷启 token 体检
+HSPLcom/x/cloudnext/android/viewmodel/RootViewModel;-><init>**
+HSPLcom/x/cloudnext/android/viewmodel/RootViewModel;->refreshSession**

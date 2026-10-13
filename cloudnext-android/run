@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# Gradle 包装脚本，自动指向 JDK 17。
+#
+# 用法：
+#   ./run                       # 默认 :app:assembleDebug
+#   ./run clean                 # 任何 gradle task
+#   ./run :app:assembleRelease  # release 包
+#   ./run :feature:login:test
+#
+# JDK 17 路径优先级：
+#   1) 环境变量 CLOUDNEXT_JDK17 覆盖
+#   2) 本机默认 Eclipse Adoptium 17 安装路径
+#   3) JAVA_HOME（若已指向 17）
+
+set -e
+
+# 候选 JDK 17 路径（按优先级）
+CANDIDATES=(
+  "$CLOUDNEXT_JDK17"
+  "/c/Program Files/Eclipse Adoptium/jdk-17.0.18.8-hotspot"
+  "/c/Program Files/Eclipse Adoptium/jdk-17"
+  "/c/Program Files/Java/jdk-17"
+  "$JAVA_HOME"
+)
+
+JDK17=""
+for path in "${CANDIDATES[@]}"; do
+  if [ -n "$path" ] && [ -x "$path/bin/java" ]; then
+    # 校验真的是 17 系列
+    version=$("$path/bin/java" -version 2>&1 | head -1)
+    case "$version" in
+      *\"17.*\"*|*\"17\"*)
+        JDK17="$path"
+        break
+        ;;
+    esac
+  fi
+done
+
+if [ -z "$JDK17" ]; then
+  echo "ERROR: 找不到 JDK 17。" >&2
+  echo "请安装 JDK 17，或设置 CLOUDNEXT_JDK17 环境变量指向 JDK 17 根目录。" >&2
+  echo "已试探的路径：" >&2
+  for path in "${CANDIDATES[@]}"; do
+    [ -n "$path" ] && echo "  - $path" >&2
+  done
+  exit 1
+fi
+
+export JAVA_HOME="$JDK17"
+echo "→ JAVA_HOME=$JAVA_HOME"
+
+# 默认任务：debug 包
+if [ "$#" -eq 0 ]; then
+  set -- ":app:assembleDebug"
+fi
+
+exec ./gradlew "$@"

@@ -1,0 +1,59 @@
+html[data-experience="mobile"] {
+  --m-touch-h: 44px;
+  --m-tap-h: 48px;
+  --m-icon: 22px;
+
+  --m-sp-1: 4px;
+  --m-sp-2: 8px;
+  --m-sp-3: 12px;
+  --m-sp-4: 16px;
+  --m-sp-5: 20px;
+
+  --m-fs-title: 17px;
+  --m-fs-section: 15px;
+  --m-fs-body: 14px;
+  --m-fs-meta: 12px;
+
+  --m-rad-card: 12px;
+  --m-rad-chip: 999px;
+
+  --m-shadow-bar: 0 1px 0 rgba(15, 23, 42, 0.06);
+  --m-shadow-fab: 0 6px 16px rgba(0, 87, 255, 0.28);
+  --m-shadow-sheet: 0 -8px 24px rgba(15, 23, 42, 0.12);
+
+  --m-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --m-safe-top: env(safe-area-inset-top, 0px);
+  --m-tabbar-h: 56px;
+  --m-topbar-h: 48px;
+}
+
+:where(html[data-experience="mobile"]) .m-shell,
+:where(html[data-experience="mobile"]) .m-shell *,
+:where(html[data-experience="mobile"]) .m-drawer,
+:where(html[data-experience="mobile"]) .m-drawer *,
+:where(html[data-experience="mobile"]) .m-sheet,
+:where(html[data-experience="mobile"]) .m-sheet * {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:where(html[data-experience="mobile"]) .m-shell button,
+:where(html[data-experience="mobile"]) .m-tap {
+  touch-action: manipulation;
+  user-select: none;
+}
+
+:where(html[data-experience="mobile"]) .m-scroll {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+:where(html[data-experience="mobile"]) .m-divider {
+  height: 1px;
+  background: rgba(15, 23, 42, 0.06);
+}
+
+@keyframes m-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

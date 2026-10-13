@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- cacheDir/upload_camera/ — 拍照上传临时文件 -->
+    <cache-path
+        name="upload_camera"
+        path="upload_camera/" />
+</paths>

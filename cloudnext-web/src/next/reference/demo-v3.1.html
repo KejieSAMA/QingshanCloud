@@ -1,0 +1,1103 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light"><title>叠云 · 企业网盘 · 主题配色 V3.1</title><style>
+/* 叠云 · V3 visual system
+   Flat surfaces, forest-green emphasis, readable type.
+   Layout contract: content-scroll never scrolls; table-scroll is the
+   only main content scroller; pager is its non-scrolling sibling.
+   File rows size naturally from content + padding. */
+:root {
+  color-scheme:light;
+  --bg:#fff; --surface:#fff; --side:#f5f7f6; --soft:#f5f7f6;
+  --ink:#25332d; --text:#46574e; --muted:#67766c; --faint:#87948c;
+  --line:#e3e9e5; --line-strong:#cdd8d1; --row-line:#edf1ee;
+  --accent:#28634c; --accent-ink:#204f3e; --accent-soft:#e8f2ec;
+  --hover:#f5f8f6; --selected:#e7f2eb; --selected-hover:#deece2;
+  --green:#357453; --red:#b24844; --orange:#966323;
+  --radius:6px; --sidebar:236px; --content-x:30px;
+  --row-padding-y:12px;
+  --file-columns:26px minmax(240px,1fr) 156px 104px 86px 132px 36px;
+  --shadow:0 20px 70px #1e372321;
+  --font:Inter,"Segoe UI","PingFang SC","Microsoft YaHei","Noto Sans CJK SC",sans-serif;
+
+  /* UI surface tokens: original green palette */
+  --tone-disabled-ink:#99a49d;
+  --tone-brand-bg:#e6eee8;
+  --tone-new-hover-border:#9aafa1;
+  --tone-new-hover-bg:#fdfefd;
+  --tone-sidebar-scroll:#c8d4cc;
+  --tone-nav-ink:#59695f;
+  --tone-nav-icon:#728177;
+  --tone-nav-hover:#ebf0ed;
+  --tone-nav-active:#e3ede6;
+  --tone-nav-count-bg:#e9eeeb;
+  --tone-recent-hover:#eaf0ec;
+  --tone-storage-track:#e0e7e2;
+  --tone-storage-fill:#86a791;
+  --tone-search-bg:#f5f7f6;
+  --tone-search-border:#e8ede9;
+  --tone-search-icon:#77847b;
+  --tone-focus-border:#7d9f8b;
+  --tone-focus-ring:#edf4ef;
+  --tone-placeholder:#6c7a72;
+  --tone-keycap-border:#dfe6e1;
+  --tone-demo-dot:#91a197;
+  --tone-icon-hover:#eef3ef;
+  --tone-icon-pressed:#e1ebe4;
+  --tone-icon-on-border:#d6e0d9;
+  --tone-row-action-hover:#e5eee7;
+  --tone-profile-hover:#f1f5f2;
+  --tone-profile-bg:#e2ece4;
+  --tone-scope-ink:#637667;
+  --tone-scope-border:#e2e9e3;
+  --tone-scope-bg:#fafcfb;
+  --tone-button-hover:#f5f8f6;
+  --tone-button-hover-border:#aebfb3;
+  --tone-button-pressed:#eaf1ed;
+  --tone-accent-hover:#215740;
+  --tone-accent-pressed:#1b4b36;
+  --tone-ghost-hover:#eef4ef;
+  --tone-info-border:#e6ece7;
+  --tone-info-bg:#f8faf8;
+  --tone-info-icon:#809383;
+  --tone-switcher-bg:#f5f7f5;
+  --tone-switcher-active-border:#dfe7e1;
+  --tone-table-scrollbar:#c4d0c7;
+  --tone-count-bg:#eff3f0;
+  --tone-count-ink:#718377;
+  --tone-count-active-bg:#e6efe8;
+  --tone-selectionbar-bg:#f0f6f2;
+  --tone-selectionbar-border:#dce8df;
+  --tone-selection-separator:#d5e3d9;
+  --tone-selection-hover:#e0ece3;
+  --tone-selection-hover-border:#d4e2d8;
+  --tone-header-bg:#f7f9f7;
+  --tone-header-hover:#ecf2ed;
+  --tone-inspected-bg:#f3f8f4;
+  --tone-inspected-mark:#9eb8a7;
+  --tone-checkbox-border:#aabbb0;
+  --tone-checkbox-disabled-border:#d6dfd8;
+  --tone-extension-ink:#6b796e;
+  --tone-extension-hover:#5d826b;
+  --tone-owner-ink:#64746a;
+  --tone-access-ink:#69786d;
+  --tone-shared-ink:#4f775c;
+  --tone-shared-bg:#f0f6f1;
+  --tone-shared-selected-bg:#d9e9dd;
+  --tone-shared-selected-ink:#366447;
+  --tone-more-ink:#7b8b80;
+  --tone-more-hover-ink:#546f5c;
+  --tone-more-hover-border:#d5e2d9;
+  --tone-pager-hover-border:#bfd1c5;
+  --tone-pager-disabled-ink:#a9b2ac;
+  --tone-pager-disabled-bg:#fcfdfc;
+  --tone-subtle-border:#edf1ed;
+  --tone-card-hover-border:#b6cbbd;
+  --tone-card-inspected-border:#99b49f;
+  --tone-preview-surface:#f3f6f3;
+  --tone-folder-preview-bg:#f4f7f3;
+  --tone-continue-hover-border:#a1bba9;
+  --tone-subtle-bg:#fafcf9;
+  --tone-folder-hover-border:#b3c7b8;
+  --tone-folder-hover-bg:#f5f9f5;
+  --tone-space-hover-border:#9ab5a3;
+  --tone-space-hover-bg:#fcfefd;
+  --tone-space-cover-bg:#f0f4f1;
+  --tone-space-cover-ink:#5c8069;
+  --tone-space-cover-border:#e8eee9;
+  --tone-status-neutral-bg:#f1f4f2;
+  --tone-status-off-ink:#7d8880;
+  --tone-status-off-bg:#f1f3f1;
+  --tone-empty-bg:#edf3ed;
+  --tone-empty-border:#e1ebe1;
+  --tone-empty-icon:#6d9277;
+  --tone-detail-icon:#78907e;
+  --tone-detail-scrollbar:#c3d1c7;
+  --tone-detail-preview-bg:#f3f6f2;
+  --tone-detail-preview-border:#e7ede7;
+  --tone-detail-note-bg:#f5f8f4;
+  --tone-detail-access-border:#e4ece3;
+  --tone-detail-access-icon:#6c9276;
+  --tone-modal-overlay:#18291f3d;
+  --tone-modal-border:#dbe4dd;
+  --tone-modal-scrollbar:#c6d4c9;
+  --tone-input-hover-border:#aebfb2;
+  --tone-input-disabled-ink:#929d95;
+  --tone-input-disabled-bg:#f4f6f3;
+  --tone-note-border:#e7eee5;
+  --tone-share-file-bg:#f7f9f6;
+  --tone-share-file-border:#e6ece4;
+  --tone-summary-ink:#54745c;
+  --tone-summary-bg:#eef6ee;
+  --tone-summary-border:#e0ecde;
+  --tone-switch-off:#cbd7cd;
+  --tone-link-result-bg:#f7faf5;
+  --tone-popup-border:#dce6df;
+  --tone-popup-shadow:#213c2b18;
+  --tone-popup-hover:#edf4ee;
+  --tone-popup-icon:#7d9082;
+  --tone-toast-bg:#294633;
+  --tone-toast-border:#3f6048;
+  --tone-toast-shadow:#20392a18;
+  --tone-upload-border:#b1c6b7;
+  --tone-upload-bg:#f6faf4;
+  --tone-upload-hover:#edf5e9;
+  --tone-preview-bg:#f1f4ef;
+  --tone-sample-bg:#fafcf8;
+  --tone-footer-ink:#68796b;
+  --tone-footer-icon:#8a9e8e;
+  --tone-drawer-shadow:#21352312;
+  --tone-sidebar-overlay:#162c2040;
+}
+/* Business blue replaces UI accents AND tinted neutrals, not file contents. */
+:root[data-primary-color="blue"] {
+  --side:#f5f7fb; --soft:#f5f7fb;
+  --ink:#243149; --text:#465570; --muted:#647389; --faint:#8794a6;
+  --line:#e4e9f1; --line-strong:#ced8e6; --row-line:#edf0f5;
+  --accent:#3264d8; --accent-ink:#244c9f; --accent-soft:#eaf1ff;
+  --hover:#f5f8fd; --selected:#eaf2ff; --selected-hover:#e0ebff;
+  --shadow:0 20px 70px #152e5321;
+  --tone-disabled-ink:#97a3b4;
+  --tone-brand-bg:#e9f0ff;
+  --tone-new-hover-border:#9aaccb;
+  --tone-new-hover-bg:#fcfdff;
+  --tone-sidebar-scroll:#cad3e1;
+  --tone-nav-ink:#59677e;
+  --tone-nav-icon:#748196;
+  --tone-nav-hover:#eef2f9;
+  --tone-nav-active:#e6eeff;
+  --tone-nav-count-bg:#e9edf5;
+  --tone-recent-hover:#edf2fc;
+  --tone-storage-track:#e1e7f1;
+  --tone-storage-fill:#7292d6;
+  --tone-search-bg:#f5f7fb;
+  --tone-search-border:#e7ecf4;
+  --tone-search-icon:#78869a;
+  --tone-focus-border:#7196e9;
+  --tone-focus-ring:#eaf1ff;
+  --tone-placeholder:#6b7a90;
+  --tone-keycap-border:#dfe5ef;
+  --tone-demo-dot:#8b9ebd;
+  --tone-icon-hover:#edf2fc;
+  --tone-icon-pressed:#e0eaff;
+  --tone-icon-on-border:#d2dff5;
+  --tone-row-action-hover:#e5edff;
+  --tone-profile-hover:#f0f4fb;
+  --tone-profile-bg:#e4ecff;
+  --tone-scope-ink:#65768f;
+  --tone-scope-border:#e1e8f3;
+  --tone-scope-bg:#fafbfe;
+  --tone-button-hover:#f5f8fe;
+  --tone-button-hover-border:#aabbd8;
+  --tone-button-pressed:#e9f0ff;
+  --tone-accent-hover:#2556c6;
+  --tone-accent-pressed:#2049a6;
+  --tone-ghost-hover:#eef3fe;
+  --tone-info-border:#e5ebf4;
+  --tone-info-bg:#f8fafe;
+  --tone-info-icon:#7d92b1;
+  --tone-switcher-bg:#f4f6fb;
+  --tone-switcher-active-border:#dbe4f3;
+  --tone-table-scrollbar:#c5d1e3;
+  --tone-count-bg:#eff3fa;
+  --tone-count-ink:#7183a0;
+  --tone-count-active-bg:#e6eeff;
+  --tone-selectionbar-bg:#f0f5ff;
+  --tone-selectionbar-border:#dce6fb;
+  --tone-selection-separator:#d3e0fa;
+  --tone-selection-hover:#e1ebff;
+  --tone-selection-hover-border:#ccdcfa;
+  --tone-header-bg:#f7f9fd;
+  --tone-header-hover:#edf3ff;
+  --tone-inspected-bg:#f3f7ff;
+  --tone-inspected-mark:#a4b9e5;
+  --tone-checkbox-border:#aebbd0;
+  --tone-checkbox-disabled-border:#d6deeb;
+  --tone-extension-ink:#6c7b91;
+  --tone-extension-hover:#5177bb;
+  --tone-owner-ink:#64748c;
+  --tone-access-ink:#68778e;
+  --tone-shared-ink:#526fa6;
+  --tone-shared-bg:#f0f5ff;
+  --tone-shared-selected-bg:#d9e7ff;
+  --tone-shared-selected-ink:#345c9f;
+  --tone-more-ink:#7e8ca2;
+  --tone-more-hover-ink:#526c98;
+  --tone-more-hover-border:#d2def4;
+  --tone-pager-hover-border:#bbcceb;
+  --tone-pager-disabled-ink:#a4afc0;
+  --tone-pager-disabled-bg:#fcfdff;
+  --tone-subtle-border:#edf0f6;
+  --tone-card-hover-border:#b5c7e8;
+  --tone-card-inspected-border:#94afe0;
+  --tone-preview-surface:#f3f6fc;
+  --tone-folder-preview-bg:#f4f7fc;
+  --tone-continue-hover-border:#a2b9e2;
+  --tone-subtle-bg:#fafbfe;
+  --tone-folder-hover-border:#b4c7e7;
+  --tone-folder-hover-bg:#f4f8ff;
+  --tone-space-hover-border:#97b0de;
+  --tone-space-hover-bg:#fcfdff;
+  --tone-space-cover-bg:#f0f4fc;
+  --tone-space-cover-ink:#5f7fae;
+  --tone-space-cover-border:#e6ecf7;
+  --tone-status-neutral-bg:#f1f4f9;
+  --tone-status-off-ink:#7c8799;
+  --tone-status-off-bg:#f1f3f7;
+  --tone-empty-bg:#edf3ff;
+  --tone-empty-border:#e1e9fb;
+  --tone-empty-icon:#7090c8;
+  --tone-detail-icon:#7a90b4;
+  --tone-detail-scrollbar:#c4d1e5;
+  --tone-detail-preview-bg:#f3f6fc;
+  --tone-detail-preview-border:#e6ecf6;
+  --tone-detail-note-bg:#f5f8fe;
+  --tone-detail-access-border:#e2eaf9;
+  --tone-detail-access-icon:#6e8fc6;
+  --tone-modal-overlay:#172b493d;
+  --tone-modal-border:#dbe3f0;
+  --tone-modal-scrollbar:#c6d2e6;
+  --tone-input-hover-border:#aebdda;
+  --tone-input-disabled-ink:#939fb2;
+  --tone-input-disabled-bg:#f4f6fa;
+  --tone-note-border:#e5ecf9;
+  --tone-share-file-bg:#f7f9fd;
+  --tone-share-file-border:#e5ebf6;
+  --tone-summary-ink:#526f9d;
+  --tone-summary-bg:#eef4ff;
+  --tone-summary-border:#dfe9fc;
+  --tone-switch-off:#ced8e9;
+  --tone-link-result-bg:#f7faff;
+  --tone-popup-border:#dce5f3;
+  --tone-popup-shadow:#1c386518;
+  --tone-popup-hover:#edf3ff;
+  --tone-popup-icon:#7d90b0;
+  --tone-toast-bg:#293f68;
+  --tone-toast-border:#405b88;
+  --tone-toast-shadow:#203b6818;
+  --tone-upload-border:#b1c6e9;
+  --tone-upload-bg:#f5f9ff;
+  --tone-upload-hover:#edf4ff;
+  --tone-preview-bg:#f1f4fa;
+  --tone-sample-bg:#fafbff;
+  --tone-footer-ink:#687992;
+  --tone-footer-icon:#8b9ebe;
+  --tone-drawer-shadow:#213a6312;
+  --tone-sidebar-overlay:#162c4d40;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{font:14px/1.55 var(--font);color:var(--ink);background:var(--bg);overflow:hidden;-webkit-font-smoothing:antialiased}
+body[data-density="compact"]{--row-padding-y:8px}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;white-space:nowrap;border:0;background:none;transition:background .14s ease,color .14s ease,border-color .14s ease,box-shadow .14s ease}
+button,input,select,textarea{outline:none}
+button,a,input{-webkit-tap-highlight-color:transparent}
+button:disabled{cursor:not-allowed;color:var(--tone-disabled-ink);opacity:.62}
+button:focus-visible,a:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input:not([type=checkbox]):focus,select:focus,textarea:focus{border-color:var(--accent)}
+input[type=search]::-webkit-search-cancel-button{display:none}
+svg{display:block;flex-shrink:0}.ic{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.small{width:16px;height:16px}.ic.large{width:24px;height:24px}
+h1,h2,h3,p{margin:0}dl{margin:0}a{color:var(--accent)}[hidden]{display:none!important}
+.muted{color:var(--muted)}.small-text{font-size:13px}.mono{font-family:"SFMono-Regular",Consolas,monospace;font-variant-numeric:tabular-nums}
+.spacer{flex:1}.flex{display:flex;align-items:center;gap:10px}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+/* Persistent app frame */
+.app{display:flex;width:100%;height:100vh;height:100dvh;min-height:0;overflow:hidden}
+.main{display:flex;flex-direction:column;flex:1 1 0%;min-width:0;min-height:0;overflow:hidden}
+.workspace{display:flex;flex:1 1 0%;min-width:0;min-height:0;position:relative;overflow:hidden}
+.content-scroll{display:flex;flex:1 1 0%;min-width:0;min-height:0;padding:28px var(--content-x) 20px;overflow:hidden}
+.page-screen{display:flex;flex-direction:column;flex:1 1 0%;min-width:0;min-height:0;overflow:hidden}
+/* Sidebar: quiet surface, distinct active state, no oversized cards */
+.sidebar{width:var(--sidebar);flex:none;display:flex;flex-direction:column;min-height:0;overflow:hidden;padding:0 16px;background:var(--side);border-right:1px solid var(--line);z-index:30}
+.brand{height:84px;display:flex;align-items:center;gap:11px;padding:0 10px;flex:none}
+.brand-symbol{width:37px;height:39px;display:grid;place-items:center;color:var(--accent);background:var(--tone-brand-bg);border-radius:9px}
+.brand-symbol svg{width:28px;height:28px}
+.brand-cn{font-size:23px;line-height:1.18;font-weight:700;letter-spacing:2px}
+.brand-en{font-size:12px;color:var(--muted);margin-top:4px;white-space:nowrap;letter-spacing:.7px}
+.new-wrap{flex:0 0 auto;position:relative;margin:3px 0 23px}
+.new-button{display:flex;align-items:center;gap:10px;width:100%;height:42px;padding:0 14px;border:1px solid var(--line-strong);border-radius:6px;background:#fff;color:var(--accent-ink);font-size:14px;font-weight:600}
+.new-button:hover{border-color:var(--tone-new-hover-border);background:var(--tone-new-hover-bg)}.new-button:active{background:var(--accent-soft)}
+.new-button .spare-new{margin-left:auto;color:var(--muted)}
+.sidebar-middle{flex:1 1 0%;min-height:0;overflow:auto;scrollbar-width:thin;scrollbar-color:var(--tone-sidebar-scroll) transparent;padding-bottom:8px}
+.nav{display:flex;flex-direction:column;gap:5px}
+.nav-item{display:flex;align-items:center;gap:12px;width:100%;height:42px;position:relative;border-radius:6px;padding:0 13px;text-align:left;font-size:14px;color:var(--tone-nav-ink)}
+.nav-item .ic{width:18px;height:18px;color:var(--tone-nav-icon)}
+.nav-item:hover{background:var(--tone-nav-hover);color:var(--ink)}
+.nav-item.active{background:var(--tone-nav-active);color:var(--accent-ink);font-weight:650}
+.nav-item.active .ic{color:var(--accent)}
+.nav-item.active:before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;background:var(--accent);border-radius:0 2px 2px 0}
+.nav-count{margin-left:auto;min-width:22px;padding:1px 5px;border-radius:4px;text-align:center;color:var(--muted);background:var(--tone-nav-count-bg);font-size:12px;font-weight:500}
+.recent-side{margin:25px 2px 0;padding-top:21px;border-top:1px solid var(--line)}
+.side-label{display:flex;align-items:center;justify-content:space-between;padding:0 10px;margin-bottom:10px;color:var(--muted);font-size:12px;font-weight:550}
+.side-label button{display:flex;align-items:center;gap:3px;font-size:12px;padding:3px 0;color:var(--muted)}
+.side-label button .ic{width:13px;height:13px}.side-label button:hover,.side-label button.active{color:var(--accent);font-weight:600}
+.recent-item{display:flex;align-items:center;gap:10px;padding:10px;width:100%;border-radius:6px;text-align:left}
+.recent-item:hover{background:var(--tone-recent-hover)}.recent-info{min-width:0;flex:1}
+.recent-name{font-size:13px;color:var(--text);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.recent-time{font-size:12px;line-height:1.4;display:block;margin-top:4px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.side-bottom{margin-top:auto;flex:0 0 auto;padding:18px 10px 18px}
+.storage-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;color:var(--muted);font-size:12px}.storage-title .ic{width:14px;height:14px}
+.storage-line{display:flex;justify-content:space-between;color:var(--muted);font-size:12px;margin-top:9px;font-variant-numeric:tabular-nums}
+.storage-line strong{color:var(--text);font-weight:550}
+.storage-track{height:4px;background:var(--tone-storage-track);border-radius:4px}.storage-track span{display:block;background:var(--tone-storage-fill);height:4px;width:28.4%;border-radius:4px}
+.workspace-label{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);margin-top:19px;padding-top:15px;border-top:1px solid var(--line)}.workspace-label .ic{width:15px;height:15px}
+/* Global bar */
+.topbar{height:70px;min-height:70px;flex:0 0 auto;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 var(--content-x);background:#fff}
+.search-box{height:39px;width:min(500px,48vw);display:flex;align-items:center;gap:11px;background:var(--tone-search-bg);border:1px solid var(--tone-search-border);border-radius:6px;padding:0 12px;color:var(--tone-search-icon);transition:border-color .15s,background .15s,box-shadow .15s}
+.search-box:focus-within{background:#fff;border-color:var(--tone-focus-border);box-shadow:0 0 0 3px var(--tone-focus-ring)}
+.search-box input{width:100%;min-width:0;padding:0;background:none;border:0;font-size:14px;color:var(--ink);outline:none!important;box-shadow:none!important}
+.search-box input::placeholder{color:var(--tone-placeholder)}.search-box>.ic{width:18px;height:18px}
+.keycap{font:12px/21px var(--font);padding:0 5px;color:var(--muted);border:1px solid var(--tone-keycap-border);border-radius:3px;background:#fff;white-space:nowrap}
+.top-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.demo-badge{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:12px;white-space:nowrap;margin-right:4px}
+.demo-badge:before{content:"";width:5px;height:5px;background:var(--tone-demo-dot);border-radius:50%}
+.top-separator{height:20px;width:1px;background:var(--line);margin:0 5px}
+.icon-button{width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;flex:none;color:var(--muted);border:1px solid transparent;border-radius:5px}
+.icon-button:hover{background:var(--tone-icon-hover);color:var(--accent)}.icon-button:active{background:var(--tone-icon-pressed)}
+.icon-button.on{background:#fff;color:var(--accent-ink);border-color:var(--tone-icon-on-border)}
+.avatar{width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;flex:none;font-size:13px;font-weight:550;background:#e5eee7;color:#4f715b}
+.avatar.blue{background:#e8eef6;color:#55749a}.avatar.green{background:#edf0e1;color:#6e7e47}.avatar.pink{background:#f4e9e3;color:#9a6f58}.avatar.grey{background:#e9edef;color:#60707e}
+.avatar-btn{display:flex;align-items:center;gap:9px;padding:3px 4px 3px 7px;border-radius:6px;margin-left:3px}.avatar-btn:hover{background:var(--tone-profile-hover)}
+.avatar-btn>.avatar{width:32px;height:32px;background:var(--tone-profile-bg);color:var(--accent-ink)}
+.profile-name{font-size:13px;font-weight:500;color:var(--text)}.avatar-btn>.ic{width:13px;height:13px;color:var(--muted)}
+.mobile-menu{display:none}.search-clear{width:24px;height:24px}
+/* Page heading */
+.page-head{display:flex;align-items:center;justify-content:space-between;gap:18px;flex:0 0 auto;margin:0 0 22px}
+.page-head>div:first-child{min-width:0}.page-title-line{display:flex;align-items:center;gap:12px;min-width:0}
+.page-title{font-size:26px;font-weight:650;letter-spacing:-.5px;line-height:1.35;overflow-wrap:anywhere}
+.page-scope{display:inline-flex;align-items:center;gap:5px;flex:none;font-size:12px;line-height:1.5;font-weight:400;color:var(--tone-scope-ink);border:1px solid var(--tone-scope-border);border-radius:4px;padding:3px 7px;background:var(--tone-scope-bg)}
+.page-scope .ic{width:13px;height:13px}.page-subtitle{font-size:14px;color:var(--muted);margin-top:7px;line-height:1.65}
+.eyebrow{display:none}.head-actions{display:flex;align-items:center;gap:10px;flex:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:37px;padding:0 13px;border:1px solid var(--line-strong);border-radius:5px;background:#fff;font-size:14px;font-weight:500;white-space:nowrap;color:var(--text)}
+.btn .ic{width:17px;height:17px}.btn:hover{background:var(--tone-button-hover);border-color:var(--tone-button-hover-border);color:var(--ink)}.btn:active{background:var(--tone-button-pressed)}
+.btn.primary{color:#fff;background:var(--accent);border-color:var(--accent)}.btn.primary:hover{background:var(--tone-accent-hover);border-color:var(--tone-accent-hover)}.btn.primary:active{background:var(--tone-accent-pressed)}
+.btn.danger{color:var(--red);border-color:#e6cfcb;background:#fffafa}.btn.danger:hover{background:#fbeceb;border-color:#d8ada7}
+.btn.ghost{border-color:transparent;background:transparent;padding:0 9px}.btn.ghost:hover{background:var(--tone-ghost-hover)}.btn.small{height:32px;font-size:13px;padding:0 10px}
+.text-button{display:inline-flex;align-items:center;gap:5px;font-size:13px;color:var(--accent);padding:4px 0}.text-button:hover{color:var(--accent-ink)}.text-button .ic{width:15px;height:15px}
+.breadcrumb{display:flex;align-items:center;gap:7px;flex:0 0 auto;font-size:13px;color:var(--muted);margin-bottom:13px;flex-wrap:wrap}.breadcrumb button{padding:0;color:var(--muted)}.breadcrumb button:hover{color:var(--accent)}.breadcrumb .ic{width:13px;height:13px}.breadcrumb span{color:var(--text)}
+.info-strip{display:flex;align-items:center;gap:9px;flex:0 0 auto;font-size:13px;line-height:1.6;color:var(--muted);padding:10px 13px;margin:0 0 16px;border:1px solid var(--tone-info-border);border-radius:5px;background:var(--tone-info-bg)}.info-strip>.ic{width:16px;height:16px;color:var(--tone-info-icon)}.info-strip>.spacer{min-width:6px}
+.segmented{display:flex;flex:0 0 auto;gap:22px;border-bottom:1px solid var(--line);margin:0 0 17px}
+.segmented button{font-size:14px;color:var(--muted);padding:0 1px 12px;border-bottom:2px solid transparent}.segmented button:hover{color:var(--accent)}.segmented button.active{font-weight:600;color:var(--accent);border-bottom-color:var(--accent)}
+.page-screen>.segmented{align-self:flex-start;padding:3px;border:1px solid var(--line);border-radius:6px;gap:3px;background:var(--tone-switcher-bg)}
+.page-screen>.segmented button{border:1px solid transparent;padding:6px 15px;font-size:13px;border-radius:4px}.page-screen>.segmented button.active{background:#fff;border-color:var(--tone-switcher-active-border);color:var(--accent-ink)}
+/* Unified list viewport. No nested table border/radius. */
+.table-page-body{display:flex;flex-direction:column;flex:1 1 0%;min-width:0;min-height:0;overflow:hidden;border:1px solid var(--line);border-radius:0;background:#fff}
+.table-shell{display:flex;flex-direction:column;flex:1 1 0%;min-width:0;min-height:0;overflow:hidden;border:0;border-radius:0}
+.table-scroll{flex:1 1 0%;min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:var(--tone-table-scrollbar) transparent;scrollbar-gutter:stable;background:#fff;border:0;border-radius:0;overflow-anchor:none;scroll-padding-top:52px}
+.table-scroll:focus-visible{outline-offset:-3px}
+.file-table{display:block;min-width:950px;min-height:100%;margin:0;padding:0;border:0;border-radius:0}.table-rows{display:block}
+.toolbar,.selectionbar{display:flex;align-items:center;gap:12px;flex:0 0 auto;min-width:0;min-height:55px;margin:0;padding:0 16px;border:0;border-bottom:1px solid var(--line);border-radius:0;background:#fff}
+.filter-tabs{display:flex;align-items:center;gap:24px;min-height:54px;min-width:0;flex:1}
+.filter-tab{display:flex;align-items:center;position:relative;gap:7px;height:54px;padding:0 1px;font-size:14px;color:var(--muted);flex-shrink:0}.filter-tab:hover{color:var(--accent)}
+.filter-tab.active{color:var(--accent-ink);font-weight:600}.filter-tab.active:after{content:"";position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--accent)}
+.filter-tab span{display:inline-flex;justify-content:center;align-items:center;min-width:21px;padding:1px 5px;border-radius:4px;font-size:12px;font-weight:500;background:var(--tone-count-bg);color:var(--tone-count-ink);line-height:1.5}.filter-tab.active span{background:var(--tone-count-active-bg);color:var(--accent)}
+.toolbar-right{display:flex;align-items:center;gap:11px;margin-left:auto}
+.view-switch{display:flex;align-items:center;gap:3px;padding:3px;border:1px solid var(--line);border-radius:5px;background:var(--tone-switcher-bg)}
+.view-switch .icon-button{width:28px;height:27px;border-radius:3px}.view-switch .ic{width:16px;height:16px}
+.view-pref{margin-left:0}.view-pref .ic{width:17px;height:17px}
+.toolbar-heading{font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px}.toolbar-heading .count{font-size:12px;line-height:1.5;font-weight:500;padding:2px 6px;background:var(--accent-soft);border-radius:4px;color:var(--accent)}
+.toolbar-note{font-size:13px;color:var(--muted);margin-left:auto}
+.selectionbar{background:var(--tone-selectionbar-bg);border-bottom-color:var(--tone-selectionbar-border);gap:8px}
+.selection-count{display:flex;align-items:center;gap:9px;font-size:14px;white-space:nowrap;color:var(--accent-ink);font-weight:600;margin-right:12px;padding-right:18px;border-right:1px solid var(--tone-selection-separator)}
+.selection-count b{display:grid;place-items:center;min-width:23px;height:23px;border-radius:4px;background:var(--accent);color:white;font-size:12px;font-weight:650;padding:0 5px}
+.selectionbar .btn{height:33px;border:1px solid transparent;background:transparent;font-size:13px;padding:0 10px}.selectionbar .btn:hover{background:var(--tone-selection-hover);border-color:var(--tone-selection-hover-border)}
+.selectionbar .selection-danger{color:var(--red)}.selectionbar .selection-danger:hover{background:#f8eae8;border-color:#e8d6d2}
+.selectionbar .cancel-selection{margin-left:auto;display:flex;align-items:center;gap:5px;color:var(--muted);font-size:13px;padding:5px 6px;border-radius:4px}.selectionbar .cancel-selection:hover{background:var(--tone-icon-pressed);color:var(--accent-ink)}.cancel-selection .ic{width:15px;height:15px}
+.list-header,.file-row{display:grid;grid-template-columns:var(--file-columns);align-items:center;column-gap:9px;padding-inline:16px}
+.list-header{position:sticky;top:0;z-index:4;height:auto;min-height:0;color:var(--muted);background:var(--tone-header-bg);border:0;border-bottom:1px solid var(--line);border-radius:0;font-size:13px;box-shadow:0 1px 0 #fff}
+.header-cell{display:flex;align-items:center;align-self:stretch;min-width:0}
+.list-header button{display:flex;align-items:center;gap:7px;width:100%;align-self:stretch;height:auto;padding:12px 0;text-align:left;border:0;border-radius:0;background:none;font-size:13px;color:var(--muted)}
+.list-header button:hover{color:var(--accent-ink);background:var(--tone-header-hover)}
+.list-header .header-sort.active{color:var(--accent-ink);font-weight:600}.list-header .header-cell:nth-child(2) .header-sort{padding-left:42px}.header-sort .ic{width:14px;height:14px}.sort-neutral{opacity:.45}
+.file-row{height:auto;min-height:0;max-height:none;padding-block:var(--row-padding-y);border:0;border-bottom:1px solid var(--row-line);border-radius:0;position:relative;font-size:14px;transition:background .12s,box-shadow .12s}
+.file-row:last-child{border-bottom:1px solid var(--row-line)}.file-row:hover{background:var(--hover)}
+.file-row.selected{background:var(--selected);box-shadow:inset 3px 0 0 var(--accent)}.file-row.selected:hover{background:var(--selected-hover)}
+.file-row.is-inspected:not(.selected){background:var(--tone-inspected-bg);box-shadow:inset 2px 0 0 var(--tone-inspected-mark)}
+.file-row:focus-visible{outline-offset:-2px}.file-row>*{min-width:0}
+.file-check{appearance:none;width:17px;height:17px;border:1px solid var(--tone-checkbox-border);border-radius:3px;margin:0;cursor:pointer;display:grid;place-content:center;background:#fff;transition:background .12s,border-color .12s}
+.file-check:hover{border-color:var(--accent)}.file-check:checked,.file-check:indeterminate{background:var(--accent);border-color:var(--accent)}
+.file-check:checked:after{content:"";width:7px;height:4px;border:solid #fff;border-width:0 0 1.7px 1.7px;transform:rotate(-45deg) translate(.3px,-.5px)}
+.file-check:indeterminate:after{content:"";width:8px;height:2px;background:white;transform:none;border:0;border-radius:1px}
+.file-check:disabled{cursor:not-allowed;border-color:var(--tone-checkbox-disabled-border);background:var(--tone-switcher-bg)}
+.file-name-cell{display:flex;align-items:center;gap:12px;min-width:0}.file-name-button{display:block;min-width:0;text-align:left;padding:0;color:var(--ink)}.file-name-button:hover{color:var(--accent)}
+.file-name{font-size:15px;line-height:1.6;font-weight:500;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
+.file-ext{font-weight:400;color:var(--tone-extension-ink)}.file-name-button:hover .file-ext{color:var(--tone-extension-hover)}
+.file-row .file-name-button{white-space:normal;overflow:visible;padding:0}.file-row .file-name{white-space:normal;overflow:visible;overflow-wrap:anywhere}
+.file-row.selected .file-name,.file-row.selected .file-ext{color:var(--accent-ink)}
+.file-secondary{font-size:13px;margin-top:3px;line-height:1.5;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400}
+.file-row .file-secondary{white-space:normal;overflow-wrap:anywhere}.file-star{display:inline-flex;vertical-align:middle;margin-left:6px;color:#bd9853}.file-star .ic{width:12px;height:12px;fill:#bd985326;stroke-width:1.6}
+.filetype{width:30px;height:35px;display:inline-flex;align-items:center;justify-content:center;flex:none;color:var(--file-color,#5378bb);position:relative}.filetype svg{width:100%;height:100%}.filetype.mini{width:26px;height:31px}.filetype.large{width:43px;height:51px}
+.folder-icon{width:31px;height:27px;fill:currentColor;stroke:none;flex:none}.folder-icon.big{width:48px;height:40px}
+.cell-muted{font-size:13px;line-height:1.55;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.owner-cell{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--tone-owner-ink)}.owner-cell .avatar{width:24px;height:24px;font-size:12px;border-radius:5px}
+.access-label{display:inline-flex;align-items:center;gap:5px;font-size:12px;line-height:1.55;white-space:nowrap;color:var(--tone-access-ink);padding:3px 0}.access-label .ic{width:13px;height:13px}
+.access-label.shared{color:var(--tone-shared-ink);background:var(--tone-shared-bg);padding:3px 7px;border-radius:4px}.selected .access-label.shared{background:var(--tone-shared-selected-bg);color:var(--tone-shared-selected-ink)}
+.col-owner,.col-size,.col-access{display:flex;align-items:center}
+.row-action .icon-button{color:var(--tone-more-ink);border-color:transparent;width:30px;height:30px}.file-row:hover .row-action .icon-button,.file-row.selected .row-action .icon-button{color:var(--tone-more-hover-ink)}.row-action .icon-button:hover{background:var(--tone-row-action-hover);border-color:var(--tone-more-hover-border)}
+.row-action .ic{width:17px;height:17px}
+/* Paginator remains in normal flow, never overlays any row */
+.table-pager{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:0 0 auto;min-width:0;margin:0;padding:13px 16px;border:0;border-top:1px solid var(--line);border-radius:0;position:static;background:#fff}
+.pager-meta{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}.pager-meta strong{font-weight:600;color:var(--text)}
+.pager-controls,.page-size-label,.page-number-group{display:flex;align-items:center;gap:6px}.pager-controls{flex-wrap:wrap;justify-content:flex-end}.page-number-group{gap:5px}
+.page-size-label{margin-right:10px;font-size:13px;color:var(--muted);white-space:nowrap;gap:8px}
+.page-size-select{background:#fff;border:1px solid var(--line);border-radius:5px;padding:4px 8px;font-size:13px;height:32px;color:var(--text)}
+.pager-btn{display:inline-flex;align-items:center;justify-content:center;min-width:32px;height:32px;padding:0 10px;border:1px solid transparent;border-radius:5px;font-size:13px;background:#fff;color:var(--text)}
+.pager-btn[data-action=pagePrev],.pager-btn[data-action=pageNext]{border-color:var(--line);gap:5px}.pager-btn .ic{width:13px;height:13px}
+.pager-btn:hover:not(:disabled){background:var(--hover);border-color:var(--tone-pager-hover-border)}
+.pager-btn.current{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}.pager-btn.current:hover{color:#fff;background:var(--accent-ink)}
+.pager-btn:disabled{opacity:1;color:var(--tone-pager-disabled-ink);background:var(--tone-pager-disabled-bg);border-color:var(--tone-subtle-border)}.pager-gap{color:var(--muted);padding:0 3px}
+/* Files as cards and lightweight home content */
+.grid-content{padding:20px}.file-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px;margin:0;padding:0}
+.grid-file{border:1px solid var(--line);border-radius:7px;position:relative;overflow:hidden;min-width:0;background:#fff;transition:border-color .15s,background .15s}
+.grid-file:hover{border-color:var(--tone-card-hover-border)}.grid-file.selected{border-color:var(--accent);background:var(--selected);box-shadow:inset 0 0 0 1px var(--accent)}.grid-file.is-inspected{border-color:var(--tone-card-inspected-border)}
+.grid-tools{position:absolute;z-index:2;top:11px;left:12px;right:10px;display:flex;align-items:center;justify-content:space-between;pointer-events:none}
+.grid-tools input,.grid-tools button{pointer-events:auto}.grid-tools input{opacity:0}.grid-file:hover .grid-tools input,.grid-file:focus-within .grid-tools input,.grid-file.selected input{opacity:1}
+.grid-tools .icon-button{background:#ffffffed;height:28px;width:28px;opacity:0;border:1px solid var(--line)}.grid-file:hover .grid-tools .icon-button,.grid-file:focus-within .grid-tools .icon-button{opacity:1}
+.grid-preview{height:163px;overflow:hidden;position:relative;background:var(--tone-preview-surface);cursor:pointer;display:block;width:100%;text-align:left;padding:20px 24px 0}
+.grid-caption{padding:15px 14px;display:flex;gap:10px;align-items:center;border-top:1px solid var(--line);min-width:0}
+.grid-caption .file-name{font-size:14px}.grid-caption .file-secondary{font-size:12px}.grid-caption .filetype{width:27px;height:32px}
+.folder-preview{display:flex;align-items:center;justify-content:center;padding:0;background:var(--tone-folder-preview-bg)}.folder-preview .folder-icon{width:75px;height:64px}
+.home-content{padding:23px 21px 0}.home-continue{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-bottom:26px}
+.continue-card{border:1px solid var(--line);border-radius:7px;overflow:hidden;min-width:0;background:#fff;transition:border-color .14s}.continue-card:hover{border-color:var(--tone-continue-hover-border)}
+.continue-card .grid-preview{height:142px}.continue-card .grid-caption{padding:14px}.section-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 15px}.section-heading h2{font-size:15px;font-weight:600}
+.folder-strip{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:29px}
+.folder-card{min-width:0;border:1px solid var(--line);border-radius:6px;padding:16px;background:var(--tone-subtle-bg);text-align:left;position:relative;display:flex;flex-direction:column;gap:13px;overflow:hidden}
+.folder-card:hover{border-color:var(--tone-folder-hover-border);background:var(--tone-folder-hover-bg)}.folder-card>span{min-width:0}.folder-top{display:flex;align-items:center;justify-content:space-between}.folder-title{display:block;font-size:14px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.folder-meta{font-size:12px;color:var(--muted);margin-top:5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.folder-people{display:flex;align-items:center;gap:4px;color:var(--muted);font-size:12px}.folder-people .ic{width:13px;height:13px}
+.folder-arrow{color:var(--accent);opacity:0;position:absolute;right:13px;top:17px}.folder-arrow .ic{width:15px;height:15px}.folder-card:hover .folder-arrow{opacity:1}.folder-card:hover .folder-people{opacity:0}
+.home-table-section{min-width:950px}.home-table-section>.section-heading{padding:0 16px}.home-table-section .file-table{min-height:0}
+/* Local preview illustrations (document content, not interface labels) */
+.doc-thumb{background:#fff;width:100%;max-width:177px;min-height:215px;margin:0 auto;padding:20px 17px;color:#3b5244;border:1px solid #e1e8e2;text-align:left;transform:rotate(-2deg)}
+.doc-thumb .thumb-eyebrow{font-size:7px;letter-spacing:1px;margin-bottom:11px;color:#688571}.doc-thumb h3{font-size:12px;line-height:1.6;font-weight:650;margin-bottom:13px}.thumb-line{height:3px;margin:6px 0;background:#e5ebe6;border-radius:1px}.thumb-line.short{width:66%}.thumb-band{height:27px;background:#eaf1e9;margin:12px 0}
+.sheet-thumb{border:1px solid #dce7de;background:#fff;width:100%;min-width:160px;min-height:160px;padding:15px 10px;transform:rotate(1.5deg)}.sheet-thumb h3{font-size:10px;margin-bottom:11px}.sheet-mini-grid{display:grid;grid-template-columns:1.2fr repeat(3,1fr);font-size:6px}.sheet-mini-grid span{border:1px solid #e6eee8;padding:6px 3px;color:#708674}.sheet-mini-grid span:nth-child(-n+4){background:#e6efe6;color:#496e4e}
+.poster-thumb{position:absolute;inset:0;background:#d6dfc9;overflow:hidden;color:#354e39;text-align:left}.poster-head{font-weight:750;font-size:32px;line-height:1.02;letter-spacing:-1.5px;position:absolute;top:23px;left:23px;z-index:1}.poster-foot{font-size:8px;letter-spacing:2px;position:absolute;bottom:16px;left:23px;z-index:1}.poster-circle{width:152px;height:152px;position:absolute;right:-31px;bottom:-63px;border:28px solid #a7bb9e;border-radius:50%}.poster-pill{width:46px;height:126px;background:#eed287;transform:rotate(28deg);position:absolute;right:28px;top:-14px}
+.fig-thumb{position:absolute;inset:0;background:#edeef3;padding:20px;display:flex;align-items:center;justify-content:center;gap:13px}.mini-phone{width:65px;height:131px;background:#fff;border-radius:8px;padding:9px 6px;border:2px solid #dcdfe8}.mini-phone:nth-child(2){transform:translateY(16px)}.mini-phone:before{content:"";display:block;width:17px;height:3px;margin:0 auto 10px;background:#cbd2d3;border-radius:3px}.phone-hero{height:35px;background:#dce7dd;border-radius:4px;margin-bottom:8px}.phone-line{height:4px;background:#edf0ed;margin:5px 0}.phone-button{height:12px;background:#849c8d;border-radius:3px;margin-top:11px}
+.pdf-thumb{color:#826a59}.pdf-thumb .thumb-band{background:#f2e8de}.pdf-thumb .thumb-eyebrow{color:#9c846e}.preview-generic{display:flex;align-items:center;justify-content:center;height:100%}.preview-generic .filetype{width:60px;height:72px}
+/* Collaboration spaces */
+.spaces-content{padding:23px 22px}.space-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;align-items:start}
+.space-card{border:1px solid var(--line);border-radius:7px;overflow:hidden;text-align:left;min-width:0;background:#fff;padding:0;transition:border-color .15s,background .15s}.space-card:hover{border-color:var(--tone-space-hover-border);background:var(--tone-space-hover-bg)}
+.space-cover{height:81px;display:flex;align-items:center;gap:12px;padding:18px 20px;background:var(--tone-space-cover-bg);color:var(--tone-space-cover-ink);border-bottom:1px solid var(--tone-space-cover-border)}
+.space-cover.green{background:#f1f5ea;color:#74875a}.space-cover.sand{background:#f8f3ea;color:#a38a5f}.space-cover>.ic{width:31px;height:31px;stroke-width:1.45}.space-cover-label{font-size:12px;margin-left:auto;color:inherit;opacity:.8}
+.space-body{padding:20px}.space-title{font-size:18px;font-weight:600;color:var(--ink)}.space-desc{font-size:13px;color:var(--muted);margin:7px 0 22px;line-height:1.7}
+.space-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:12px;color:var(--muted);padding-top:15px;border-top:1px solid var(--line);flex-wrap:wrap}
+.space-foot>.ic{width:16px;height:16px;margin-left:auto}.avatar-stack{display:flex;padding-left:5px;flex:none}.avatar-stack .avatar{border:2px solid #fff;margin-left:-5px;width:27px;height:27px;font-size:12px;border-radius:50%}
+.spaces-content>.info-strip{margin-top:20px}.spaces-bottom{border-top:1px solid var(--line);margin-top:30px;padding-top:24px}.spaces-bottom h3{font-size:15px;margin-bottom:12px;font-weight:600}
+.activity-row{display:flex;align-items:center;gap:13px;padding:16px 0;border-bottom:1px solid var(--row-line);font-size:14px}.activity-row strong{font-weight:500}.activity-row .muted{font-size:13px;margin-top:4px}.activity-row .time{margin-left:auto;font-size:13px;color:var(--muted);white-space:nowrap}
+/* External links */
+.links-list{width:100%;min-width:850px;border:0;border-radius:0;border-spacing:0;border-collapse:separate;table-layout:fixed;margin:0}
+.links-list th{position:sticky;top:0;z-index:4;height:auto;background:var(--tone-header-bg);border:0;border-bottom:1px solid var(--line);padding:12px 16px;text-align:left;font-size:13px;font-weight:400;color:var(--muted)}
+.links-list th:first-child{width:41%}.links-list th:last-child{width:140px}.links-list td{height:auto;padding:calc(var(--row-padding-y) + 3px) 16px;border:0;border-bottom:1px solid var(--row-line);font-size:13px;color:var(--text)}.links-list tr:hover td{background:var(--hover)}
+.links-list .file-name-button{white-space:normal;overflow:visible}.links-list .file-name{font-size:15px;max-width:none;white-space:normal;overflow-wrap:anywhere}.links-list .file-secondary{font-size:13px}.links-list .link-sort{display:flex;gap:7px;align-items:center;font-size:13px;padding:0;color:var(--muted)}.links-list .link-sort .ic{width:14px;height:14px}.links-list .link-sort:hover{color:var(--accent)}
+.status{font-size:12px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;padding:3px 8px;border-radius:4px;color:var(--muted);background:var(--tone-status-neutral-bg)}.status:before{content:"";width:5px;height:5px;display:block;background:currentColor;border-radius:50%}.status.good{color:#46805a;background:#edf5ef}.status.warn{color:#976b32;background:#fbf4e9}.status.off{color:var(--tone-status-off-ink);background:var(--tone-status-off-bg)}
+.link-actions{display:flex;gap:11px;align-items:center}.link-actions button{color:var(--accent);font-size:13px;padding:4px 0}.link-actions button:hover{text-decoration:underline;text-underline-offset:3px}.link-actions [data-action=revokeLink]{color:var(--muted)}
+/* Empty states */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;text-align:center;color:var(--muted);gap:12px;padding:46px 24px}.empty-symbol{width:65px;height:65px;display:grid;place-items:center;background:var(--tone-empty-bg);border:1px solid var(--tone-empty-border);border-radius:12px;margin-bottom:6px;color:var(--tone-empty-icon)}.empty-symbol .ic{width:29px;height:29px;stroke-width:1.35}.empty h3{font-size:17px;font-weight:550;color:var(--text)}.empty p{font-size:14px;max-width:390px;line-height:1.8}.empty .btn{margin-top:6px}.empty-in-table{min-width:950px}.empty-in-table .empty{border:0;border-radius:0;padding:54px 24px}
+/* Details drawer: stable header & actions; distinct object context */
+.details{width:326px;flex:none;min-height:0;min-width:0;display:flex;flex-direction:column;background:#fff;border-left:1px solid var(--line);overflow:hidden}
+.detail-top{display:flex;align-items:center;justify-content:space-between;flex:none;padding:18px 20px;border-bottom:1px solid var(--line);font-size:15px;font-weight:600}.detail-top .detail-title{display:flex;align-items:center;gap:8px}.detail-title>.ic{width:16px;height:16px;color:var(--tone-detail-icon)}
+.detail-scroll{flex:1;min-height:0;overflow:auto;scrollbar-width:thin;padding:20px;scrollbar-color:var(--tone-detail-scrollbar) transparent;overscroll-behavior:contain}
+.detail-preview{height:158px;position:relative;overflow:hidden;background:var(--tone-detail-preview-bg);border:1px solid var(--tone-detail-preview-border);border-radius:7px;padding:20px}.detail-preview .folder-icon{width:70px;height:58px;position:absolute;left:calc(50% - 35px);top:calc(50% - 29px)}.detail-preview .doc-thumb{max-width:155px}.detail-preview .sheet-thumb{max-width:200px;margin:auto}
+.detail-name{font-size:17px;font-weight:600;line-height:1.65;overflow-wrap:anywhere;margin:17px 0 5px}.detail-submeta{font-size:13px;color:var(--muted);margin-bottom:15px}
+.detail-section{border-top:1px solid var(--line);padding-top:19px;margin-top:21px}.detail-section h3{font-size:13px;font-weight:600;margin-bottom:13px;display:flex;align-items:center;justify-content:space-between}.detail-section h3 .muted{font-weight:400;font-size:12px}
+.detail-kv{display:flex;justify-content:space-between;align-items:flex-start;font-size:13px;gap:16px;margin:13px 0;line-height:1.65}.detail-kv dt{color:var(--muted);white-space:nowrap}.detail-kv dd{margin:0;text-align:right;color:var(--text);overflow-wrap:anywhere}
+.detail-access{display:flex;align-items:center;gap:9px;padding:11px 12px;background:var(--tone-detail-note-bg);border:1px solid var(--tone-detail-access-border);border-radius:5px;font-size:13px;color:var(--text)}.detail-access>.ic{color:var(--tone-detail-access-icon);width:17px;height:17px}.detail-access span{flex:1}.detail-access small{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+.version-row{display:flex;align-items:flex-start;gap:11px;font-size:13px;margin-top:15px;color:var(--text)}.version-dot{margin-top:6px;width:6px;height:6px;background:var(--accent);border-radius:50%;flex:none}.version-row p{font-size:12px;color:var(--muted);margin-top:4px}
+.drawer-share{flex:none;display:flex;flex-direction:column;gap:9px;padding:16px 20px;background:#fff;border-top:1px solid var(--line)}.drawer-share .btn{width:100%}
+/* Modal & form language */
+.shade{position:fixed;inset:0;background:var(--tone-modal-overlay);z-index:80;display:flex;align-items:center;justify-content:center;padding:28px}
+.modal{width:580px;max-width:100%;display:flex;flex-direction:column;max-height:calc(100dvh - 56px);background:#fff;border:1px solid var(--tone-modal-border);border-radius:10px;box-shadow:var(--shadow);animation:appear .16s ease-out;overflow:hidden}
+.modal.wide{width:900px}.modal.preview-modal{width:1080px;height:min(860px,calc(100dvh - 56px))}
+.modal-top{display:flex;align-items:center;gap:11px;padding:19px 25px 17px;flex:none;border-bottom:1px solid var(--line)}.modal-top h2{font-size:18px;font-weight:600;flex:1;min-width:0}.modal-top .ic{flex:none}
+.modal-body{padding:24px 26px;overflow:auto;min-height:0;scrollbar-width:thin;scrollbar-color:var(--tone-modal-scrollbar) transparent}.modal-foot{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:16px 25px;border-top:1px solid var(--line);flex:none;background:var(--tone-subtle-bg)}
+.field{display:block;margin-bottom:21px}.field:last-child{margin-bottom:0}.field>span,.field>label{display:block;font-size:14px;font-weight:500;margin-bottom:9px;color:var(--text)}
+.input{height:40px;border:1px solid var(--line-strong);border-radius:5px;background:#fff;padding:0 11px;width:100%;font-size:14px}.input:hover{border-color:var(--tone-input-hover-border)}.input:disabled{color:var(--tone-input-disabled-ink);background:var(--tone-input-disabled-bg)}.input-area{height:140px;resize:vertical;padding:11px}
+.field small{font-size:12px;color:var(--muted);display:block;margin-top:8px;line-height:1.75}.form-note{font-size:13px;color:var(--muted);line-height:1.8;background:var(--tone-detail-note-bg);border:1px solid var(--tone-note-border);padding:12px 14px;border-radius:5px;margin:0 0 21px}.error-text{font-size:13px;color:var(--red);margin-bottom:10px;min-height:0}
+.share-file{display:flex;align-items:center;gap:14px;margin:0 0 23px;padding:15px;background:var(--tone-share-file-bg);border:1px solid var(--tone-share-file-border);border-radius:7px}.share-file strong{font-size:15px;font-weight:550;color:var(--ink)}.share-file p{font-size:13px;color:var(--muted);margin-top:5px}
+.invite-row{display:flex;align-items:center;gap:9px}.invite-row .input{flex:1;min-width:0}.invite-row select.role-select{width:100px;flex:none}.invite-row .btn{height:40px}
+.member-list{margin-top:20px}.member{display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid var(--row-line)}.member>.avatar{width:33px;height:33px}.member-info{flex:1;min-width:0}.member-name{font-size:14px;color:var(--text)}.member-sub{font-size:12px;color:var(--muted);margin-top:3px}.member-role{font-size:13px;color:var(--muted);white-space:nowrap}.member .icon-button{width:28px;height:28px}
+.share-summary{font-size:13px;line-height:1.8;color:var(--tone-summary-ink);background:var(--tone-summary-bg);padding:13px 14px;border:1px solid var(--tone-summary-border);border-radius:5px;margin-top:21px;display:flex;gap:9px;align-items:flex-start}.share-summary .ic{width:17px;height:17px;margin-top:3px}
+.toggle-line{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:16px}.toggle-line strong{font-size:14px;font-weight:500;color:var(--text)}.toggle-line p{font-size:13px;color:var(--muted);margin-top:5px}
+.switch{position:relative;appearance:none;width:37px;height:22px;flex:none;background:var(--tone-switch-off);border-radius:22px;border:0;cursor:pointer}.switch:before{content:"";position:absolute;left:3px;top:3px;width:16px;height:16px;border-radius:50%;background:white;transition:transform .15s}.switch:checked{background:var(--accent)}.switch:checked:before{transform:translateX(15px)}
+.link-result{background:var(--tone-link-result-bg);border:1px solid var(--line);padding:17px;border-radius:6px;overflow-wrap:anywhere;font-size:14px;line-height:1.9}.link-result code{display:block;font-size:13px;user-select:all;margin:7px 0;color:var(--accent)}
+.popup{position:fixed;min-width:206px;background:#fff;border:1px solid var(--tone-popup-border);border-radius:7px;padding:6px;box-shadow:0 9px 30px var(--tone-popup-shadow);z-index:100;max-width:290px;max-height:calc(100dvh - 16px);overflow:auto;scrollbar-width:thin}
+.popup button{display:flex;align-items:center;width:100%;gap:10px;min-height:37px;height:auto;padding:8px 10px;text-align:left;font-size:13px;border-radius:4px;color:var(--text)}.popup button:hover{background:var(--tone-popup-hover);color:var(--accent)}.popup button .ic{width:16px;height:16px;color:var(--tone-popup-icon)}.popup .menu-sep{height:1px;background:var(--line);margin:6px}.popup .danger{color:var(--red)}.popup .danger:hover{background:#fcf0ee;color:var(--red)}.popup .danger .ic{color:inherit}
+.toast{position:fixed;bottom:92px;left:calc(50% + var(--sidebar)/2);transform:translateX(-50%);padding:13px 18px;background:var(--tone-toast-bg);color:#fff;font-size:14px;border:1px solid var(--tone-toast-border);border-radius:7px;box-shadow:0 6px 18px var(--tone-toast-shadow);z-index:150;max-width:min(580px,85vw);display:flex;align-items:center;gap:9px;line-height:1.7}.toast .ic{width:17px;height:17px}
+.upload-zone{border:1px dashed var(--tone-upload-border);background:var(--tone-upload-bg);border-radius:7px;padding:37px 18px;text-align:center;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:13px}.upload-zone .ic{width:34px;height:34px;color:var(--accent);stroke-width:1.35}.upload-zone strong{font-size:15px;font-weight:500}.upload-zone p{font-size:13px;color:var(--muted);line-height:1.8}.upload-zone:hover,.upload-zone.over{border-color:var(--accent);background:var(--tone-upload-hover)}
+.transfer-item{display:flex;gap:12px;align-items:center;padding:17px 0;border-bottom:1px solid var(--line)}.transfer-item strong{font-size:14px;font-weight:500}.transfer-item p{font-size:12px;color:var(--muted);margin-top:4px}.transfer-item>.ic{color:var(--green);margin-left:auto;width:17px;height:17px}
+.help-block{margin-bottom:23px}.help-block h3{font-size:15px;font-weight:600;margin-bottom:8px}.help-block p{font-size:14px;color:var(--muted);line-height:1.9}.keyboard-row{display:flex;justify-content:space-between;font-size:14px;padding:11px 0;border-bottom:1px solid var(--line)}
+.tiny-note{font-size:12px;line-height:1.85;color:var(--muted)}
+/* Preview: content first, legible examples */
+.preview-body{background:var(--tone-preview-bg);overflow:auto;flex:1;min-height:0;padding:32px;display:flex;align-items:flex-start;justify-content:center;scrollbar-width:thin}
+.paper{background:#fff;width:650px;max-width:100%;padding:46px 52px;min-height:650px;border:1px solid #dfe7db;color:var(--ink)}.paper-overline{color:var(--accent);font-size:12px;letter-spacing:1.4px;margin-bottom:18px}.paper h1{font-size:28px;letter-spacing:-.5px;margin:0 0 14px;line-height:1.5}.paper-meta{font-size:13px;color:var(--muted);padding-bottom:24px;border-bottom:1px solid var(--line)}.paper h2{font-size:17px;margin:26px 0 12px}.paper p{font-size:14px;line-height:2;color:#576e5b;margin:9px 0}.paper .callout{border-left:3px solid #6f9379;padding:13px 16px;background:#f0f6ec;font-size:14px;line-height:1.9;margin:21px 0}.paper ol{padding-left:20px;font-size:14px;line-height:2;color:#576e5b}.paper-footer{margin-top:34px;padding-top:14px;border-top:1px solid var(--line);display:flex;justify-content:space-between;color:var(--muted);font-size:12px;gap:10px}
+.sample-pill{font-size:12px;padding:3px 7px;border:1px solid var(--line);border-radius:4px;color:var(--muted);white-space:nowrap;background:var(--tone-sample-bg)}.preview-modal .modal-top{padding:16px 22px}.preview-modal .modal-top h2{font-size:15px}.preview-bottom{font-size:12px;display:flex;justify-content:space-between;color:var(--muted);gap:12px;align-items:center;padding:13px 23px;border-top:1px solid var(--line);background:#fff}
+.sheet-preview{min-width:580px;max-width:100%;background:#fff;border:1px solid var(--line);padding:27px}.sheet-preview h2{font-size:21px;margin:8px 0 23px}.sheet-preview table{width:100%;border-collapse:collapse;font-size:14px}.sheet-preview td,.sheet-preview th{padding:12px;border:1px solid var(--line);text-align:left}.sheet-preview th{background:#edf5e9;font-weight:500}.sheet-preview p{font-size:13px;color:var(--muted);margin-top:21px}
+.large-poster{position:relative;width:510px;max-width:100%;height:580px;overflow:hidden}.large-poster .poster-head{font-size:85px;left:36px;top:45px}.large-poster .poster-foot{font-size:12px;left:40px;bottom:40px}.large-poster .poster-circle{width:480px;height:480px;right:-70px;bottom:-180px;border-width:95px}.large-poster .poster-pill{width:114px;height:400px;right:52px;top:-48px}.poster-subtitle{position:absolute;top:239px;left:42px;font-size:15px;letter-spacing:3px;line-height:2}
+.fig-large{position:relative;width:570px;height:510px}.fig-large .mini-phone{width:160px;height:320px;border-width:4px;border-radius:20px;padding:22px 13px}.fig-large .phone-hero{height:110px}.fig-large .phone-line{height:10px;margin:15px 0}.fig-large .phone-button{height:28px;margin-top:18px}.fig-large .mini-phone:before{width:42px;height:7px;margin-bottom:24px}
+.local-image{max-width:100%;max-height:100%;object-fit:contain}.user-text{white-space:pre-wrap;overflow-wrap:anywhere;font:14px/1.9 var(--font);max-width:730px;background:#fff;padding:27px;width:100%;border:1px solid var(--line)}
+/* Subtle footer (not a second toolbar) */
+.app-status{flex:0 0 auto;min-height:29px;display:flex;align-items:center;gap:7px;border-top:1px solid var(--tone-subtle-border);padding:5px var(--content-x);font-size:12px;line-height:1.5;color:var(--tone-footer-ink);background:var(--tone-subtle-bg)}
+.app-status .ic{width:13px;height:13px;color:var(--tone-footer-icon)}.app-status span:last-child{margin-left:auto;white-space:nowrap}
+.sidebar-scrim{display:none}.body-no-motion *{animation:none!important;transition:none!important}
+@keyframes appear{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+/* Scale without shrinking text or fixing file-row heights */
+@media(min-width:1700px){:root{--sidebar:244px;--content-x:36px}.content-scroll{padding-top:30px;padding-bottom:24px}.file-grid{grid-template-columns:repeat(auto-fill,minmax(230px,1fr))}.grid-preview{height:183px}}
+@media(max-width:1590px){.details{position:absolute;right:0;top:0;bottom:0;width:326px;z-index:35;box-shadow:-12px 0 36px var(--tone-drawer-shadow)}}
+@media(max-width:1200px){:root{--sidebar:216px;--content-x:24px}.demo-badge{display:none}.top-right{gap:7px}.search-box{width:min(430px,48vw)}.folder-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.space-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.profile-name{display:none}.table-pager{flex-wrap:wrap;gap:9px;padding:11px 14px}.page-title{font-size:25px}}
+@media(max-height:790px){.brand{height:74px}.new-wrap{margin:2px 0 19px}.nav-item{height:39px}.nav{gap:4px}.recent-side{margin-top:21px;padding-top:17px}.recent-item{padding-block:9px}.side-bottom{padding-top:14px;padding-bottom:14px}.storage-title{margin-bottom:8px}.workspace-label{margin-top:15px;padding-top:12px}.topbar{height:66px;min-height:66px}.content-scroll{padding-top:22px;padding-bottom:17px}.page-head{margin-bottom:19px}}
+@media(max-width:900px){.head-actions{gap:7px}.head-actions .btn{padding-inline:10px}.filter-tabs{gap:18px}.page-scope{display:none}.toolbar-note{font-size:12px}.home-continue{grid-template-columns:repeat(2,minmax(0,1fr))}.home-continue .continue-card:last-child{display:none}.table-pager .pager-meta{width:100%}}
+@media(max-width:780px){:root{--sidebar:232px;--content-x:16px}.sidebar{position:fixed;top:0;bottom:0;left:0;transform:translateX(-100%);transition:transform .16s;width:232px}.sidebar.is-open{transform:translateX(0)}.sidebar-scrim.is-open{display:block;position:fixed;inset:0;background:var(--tone-sidebar-overlay);z-index:25}.mobile-menu{display:flex}.topbar{height:60px;min-height:60px;gap:8px}.search-box{width:auto;flex:1;height:36px}.keycap{display:none}.top-right{gap:3px}.top-separator{display:none}.top-right>.icon-button[data-action=help]{display:none}.avatar-btn{padding:2px;margin:0}.avatar-btn>.ic{display:none}.topbar .avatar{width:29px;height:29px}.content-scroll{padding-top:18px;padding-bottom:12px}.page-head{flex-wrap:wrap;align-items:flex-start;gap:11px;margin-bottom:16px}.page-title{font-size:24px}.page-subtitle{font-size:13px}.head-actions{flex-wrap:wrap}.btn{height:35px}.toolbar,.selectionbar{gap:6px;padding-inline:12px}.toolbar-right{gap:4px}.filter-tabs{overflow:auto;scrollbar-width:none;gap:17px}.filter-tab{font-size:13px}.filter-tab span{display:none}.view-pref{display:none}.selectionbar{flex-wrap:wrap;padding-block:9px;gap:5px}.selection-count{margin-right:0;padding-right:10px}.selectionbar .cancel-selection{font-size:12px}.selectionbar .btn{padding-inline:6px}.table-pager{padding:10px 12px}.pager-controls{flex:1 1 auto}.page-size-label{margin-right:6px}.pager-btn{padding-inline:7px}.space-grid{grid-template-columns:1fr}.spaces-content{padding:17px}.home-content{padding:18px 16px 0}.home-continue{grid-template-columns:1fr}.home-continue .continue-card{display:block!important}.folder-strip{grid-template-columns:repeat(2,minmax(0,1fr))}.folder-card{padding:13px}.activity-row{flex-wrap:wrap}.activity-row .time{font-size:12px}.grid-content{padding:14px}.file-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.grid-preview{height:146px;padding-inline:15px}.grid-caption{padding:12px;gap:8px}.grid-caption .file-name{font-size:14px}.details{width:min(336px,95vw)}.app-status{padding-inline:16px}.app-status span:last-child{display:none}.toast{left:50%;font-size:13px;bottom:118px}.shade{padding:14px}.modal{max-height:calc(100dvh - 28px)}.modal-top{padding:17px 19px}.modal-body{padding:21px 19px}.modal-foot{padding:15px 19px}.preview-body{padding:17px;justify-content:flex-start}.paper{padding:29px 25px}.preview-modal .modal-top{flex-wrap:wrap;padding:12px 16px}.preview-modal .modal-top .btn{height:30px;font-size:13px;padding:0 9px}.preview-bottom{padding:12px 16px;font-size:12px}.preview-bottom span:first-child{max-width:70%}.sheet-preview{min-width:500px}.sample-pill{font-size:12px}}
+@media(max-width:460px){.table-pager{flex-direction:column;align-items:stretch}.pager-controls{justify-content:space-between;gap:4px}.page-number-group{gap:3px}.pager-btn{padding-inline:6px}.page-size-label{gap:4px;margin-right:0}.toolbar{padding-inline:10px}.filter-tabs{gap:15px}.topbar{padding-inline:10px}.top-right>.icon-button{display:none}.view-switch{gap:1px;padding:2px}.view-switch .icon-button{width:26px}.page-subtitle{line-height:1.7}.page-head .btn{font-size:13px}.info-strip{align-items:flex-start}.info-strip>.ic{margin-top:2px}}
+@media(max-height:620px) and (min-width:781px){.content-scroll{padding-top:14px;padding-bottom:11px}.page-head{margin-bottom:13px}.info-strip,.segmented{margin-bottom:11px}.brand{height:68px}.side-bottom{padding-block:10px}.topbar{height:61px;min-height:61px}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+
+/* Primary colour selector: native radios support keyboard and screen readers.
+   Changing an option is a preview only until Save preferences is clicked. */
+.primary-colors{border:0;margin:0 0 23px;padding:0;min-inline-size:0}
+.primary-colors legend{padding:0;margin-bottom:11px;font-size:14px;font-weight:500;color:var(--text)}
+.primary-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.theme-option{position:relative;display:block;min-width:0;cursor:pointer}
+.theme-radio{position:absolute;width:1px;height:1px;opacity:0;margin:0}
+.theme-card{display:flex;align-items:center;gap:12px;padding:13px 14px;min-height:71px;border:1px solid var(--line-strong);border-radius:6px;background:var(--surface);transition:background .14s,border-color .14s,box-shadow .14s}
+.theme-option:hover .theme-card{background:var(--hover);border-color:var(--tone-button-hover-border)}
+.theme-radio:checked+.theme-card{border-color:var(--accent);background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.theme-radio:focus-visible+.theme-card{outline:2px solid var(--accent);outline-offset:3px}
+.theme-swatch{width:29px;height:29px;border-radius:7px;background:var(--swatch);box-shadow:inset 0 0 0 1px #00000008;flex:none}
+.theme-option[data-color="green"]{--swatch:#28634c}
+.theme-option[data-color="blue"]{--swatch:#3264d8}
+.theme-name{flex:1;min-width:0;display:block}
+.theme-name strong{display:block;font-size:14px;font-weight:600;color:var(--text);line-height:1.5}
+.theme-name small{display:block;font-size:12px;line-height:1.5;color:var(--muted);margin-top:3px}
+.theme-check{opacity:0;color:var(--accent);flex:none}
+.theme-check .ic{width:17px;height:17px}
+.theme-radio:checked+.theme-card .theme-check{opacity:1}
+.theme-preview-note{font-size:12px;line-height:1.7;color:var(--muted);margin-top:10px;min-height:21px}
+.prefs-bottom-note{font-size:12px;line-height:1.7;color:var(--muted);padding-top:15px;margin-top:2px;border-top:1px solid var(--line)}
+.prefs-reset{display:inline-flex;margin-top:10px}
+@media(max-width:460px){.theme-card{padding:12px 10px;gap:9px}.primary-options{gap:9px}.theme-swatch{width:24px;height:24px}.theme-name small{font-size:12px}.theme-check .ic{width:15px;height:15px}}
+</style></head><body class="utility">
+<div class="app">
+  <aside class="sidebar" id="sidebar" aria-label="主导航">
+    <div class="brand" aria-label="叠云企业网盘"><div class="brand-symbol"><svg viewBox="0 0 34 34" fill="none" aria-hidden="true"><path d="m4 12 13-7 13 7-13 7z" fill="currentColor"/><path d="m4 18 13 7 13-7M4 24l13 7 13-7" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div><div class="brand-cn">叠云</div><div class="brand-en">企业文件工作台</div></div></div>
+    <div class="new-wrap"><button class="new-button" data-action="newMenu" aria-label="新建文件或上传"><span data-ic="plus"></span><span>新建</span><span class="spare-new" style="display:flex"><svg class="ic small" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></span></button></div>
+    <div class="sidebar-middle">
+    <nav class="nav" id="nav" aria-label="文件工作区"></nav>
+    <section class="recent-side" aria-label="最近打开"><div class="side-label"><span>最近打开</span><button id="recentAll" data-action="nav" data-view="recent" title="查看全部最近打开的文件">全部<span data-ic="right"></span></button></div><div id="recentItems"></div></section>
+    </div>
+    <div class="side-bottom">
+      <div title="固定示例用量，不会随本地文件变化">
+        <div class="storage-title"><span>存储空间</span><span data-ic="building"></span></div>
+        <div class="storage-track" role="meter" aria-label="示例已用空间" aria-valuenow="28.4" aria-valuemin="0" aria-valuemax="100" aria-valuetext="示例已用 28.4 GB，共 100 GB"><span></span></div>
+        <div class="storage-line"><span><strong>28.4 GB</strong> / 100 GB</span><span>示例</span></div>
+      </div>
+      <div class="workspace-label"><span data-ic="building"></span><span>叠云工作空间</span><span class="spacer"></span><span data-ic="lock"></span></div>
+    </div>
+  </aside>
+  <div class="sidebar-scrim" id="sidebarScrim"></div>
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-button mobile-menu" data-action="mobileMenu" aria-label="打开左侧导航"><span data-ic="menu"></span></button>
+      <div class="search-box" role="search"><span data-ic="search"></span><input id="search" type="search" autocomplete="off" placeholder="搜索文件、文件夹或空间" aria-label="搜索所有可访问的示例文件"><button id="clearSearch" class="icon-button search-clear" data-action="clearSearch" title="清除搜索" aria-label="清除搜索" hidden><span data-ic="close"></span></button><kbd class="keycap">Ctrl K</kbd></div>
+      <div class="top-right"><span class="demo-badge" title="离线原型，不连接真实云端服务">演示模式</span><span class="top-separator"></span><button class="icon-button" data-action="transfers" title="本地文件记录" aria-label="本地文件记录"><span data-ic="transfer"></span></button><button class="icon-button" data-action="help" title="使用说明" aria-label="使用说明"><span data-ic="help"></span></button><button class="avatar-btn" data-action="userMenu" title="林沐 · 界面偏好" aria-label="林沐的账号与界面偏好"><span class="avatar">沐</span><span class="profile-name">林沐</span><span data-ic="down"></span></button></div>
+    </header>
+    <!-- content-scroll 仅分配空间；内容滚动由渲染后的 table-scroll 承担。 -->
+    <div class="workspace"><div class="content-scroll" id="content" tabindex="-1" aria-label="文件内容区域"></div><aside class="details" id="details" aria-label="文件详情" hidden></aside></div>
+    <footer class="app-status"><span data-ic="shield"></span><span>离线演示 · 文件不会上传，分享仅作示意</span><span id="statusView"></span></footer>
+  </main>
+</div>
+<div class="shade" id="modalHost" hidden></div><div class="popup" id="popup" role="menu" hidden></div><div class="toast" id="toast" role="status" aria-live="polite" hidden></div><input type="file" id="uploadInput" multiple hidden>
+
+<script>
+
+const CONFIG={"theme": "utility", "body": "utility", "label": "V3.1 · 主题配色", "eyebrow": "WORKSPACE / FILE EXPLORER", "file": "02_紧凑工具_叠云网盘_主题配色V3.1.html", "tag": "FILE WORKSPACE"};
+'use strict';
+const PATHS={
+ home:'M3 10 12 3l9 7M5 9v11h5v-6h4v6h5V9',file:'M6 3h8l4 4v14H6zM14 3v5h4M9 12h6M9 15h5',folder:'M3 7V5h6l2 2h10v13H3z',shared:'M16 4a2 2 0 1 0 4 0 2 2 0 1 0-4 0M3 12a2 2 0 1 0 4 0 2 2 0 1 0-4 0M16 20a2 2 0 1 0 4 0 2 2 0 1 0-4 0M7 11l9-6M7 13l9 6',people:'M8 12a4 4 0 1 0 0-8 4 4 0 1 0 0 8M16 11a3 3 0 1 0 0-6M2 21v-3a5 5 0 0 1 10 0v3M15 15a5 5 0 0 1 6 4v2',link:'M10 14a4 4 0 0 0 6 0l4-4a4 4 0 0 0-6-6l-2 2M14 10a4 4 0 0 0-6 0l-4 4a4 4 0 0 0 6 6l2-2',trash:'M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7M14 10v7',clock:'M12 3a9 9 0 1 0 0 18 9 9 0 1 0 0-18M12 7v5l3 2',plus:'M12 5v14M5 12h14',down:'m6 9 6 6 6-6',right:'m9 5 7 7-7 7',left:'m15 5-7 7 7 7',up:'m6 15 6-6 6 6',search:'M10.5 3a7.5 7.5 0 1 0 0 15 7.5 7.5 0 1 0 0-15M16 16l5 5',upload:'M12 16V3m-5 5 5-5 5 5M4 15v6h16v-6',download:'M12 3v13m-5-5 5 5 5-5M4 16v5h16v-5',transfer:'M7 3v15m-4-3 4 4 4-4M17 21V6m-4 3 4-4 4 4',help:'M12 3a9 9 0 1 0 0 18 9 9 0 1 0 0-18M9.5 9a2.5 2.5 0 1 1 4 2c-1 .5-1.5 1-1.5 2M12 17h.01',more:'M4 12h.01M12 12h.01M20 12h.01',grid:'M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z',list:'M8 5h13M8 12h13M8 19h13M3 5h.01M3 12h.01M3 19h.01',sort:'M7 4v16m-3-3 3 3 3-3M13 5h8M13 10h6M13 15h4',check:'m5 12 4 4L19 6',close:'m6 6 12 12M6 18 18 6',lock:'M6 10h12v11H6zM8 10V6a4 4 0 0 1 8 0v4M12 14v3',globe:'M12 3a9 9 0 1 0 0 18 9 9 0 1 0 0-18M3 12h18M12 3c-5 5-5 13 0 18M12 3c5 5 5 13 0 18',info:'M12 3a9 9 0 1 0 0 18 9 9 0 1 0 0-18M12 11v6M12 7h.01',star:'m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L2 9.6l6.2-.9z',copy:'M9 9h12v12H9zM5 15H3V3h12v2',edit:'m15 4 5 5M4 16l-1 5 5-1L21 7l-5-5z',move:'M3 7V5h6l2 2h10v13H3zM8 14h8m-3-3 3 3-3 3',restore:'M4 4v6h6M4 10a8 8 0 1 1 0 6',settings:'M12 8a4 4 0 1 0 0 8 4 4 0 1 0 0-8M10 3h4l1 3 3 1 3 3v4l-3 3-3 1-1 3h-4l-1-3-3-1-3-3v-4l3-3 3-1z',building:'M5 21V3h14v18M3 21h18M9 7h1M14 7h1M9 11h1M14 11h1M10 21v-5h4v5',shield:'M12 3 3 6v6c0 5 9 9 9 9s9-4 9-9V6zM8 12l3 3 5-6',arrow:'M4 12h16m-5-5 5 5-5 5',menu:'M4 6h16M4 12h16M4 18h16',image:'M3 3h18v18H3zM3 17l6-6 4 4 3-3 5 5M15 7h.01',logout:'M9 4H4v16h5M10 12h11m-4-4 4 4-4 4',document:'M6 3h8l4 4v14H6zM9 11h6M9 15h6',code:'m8 6-6 6 6 6M16 6l6 6-6 6M14 3l-4 18',checkcircle:'M12 3a9 9 0 1 0 0 18 9 9 0 1 0 0-18m-4 9 3 3 5-6',external:'M14 3h7v7M21 3l-11 11M10 4H3v17h17v-7',refresh:'M20 5v5h-5M20 10a8 8 0 1 0 0 6',pin:'M9 3h6l-1 6 4 4v2h-5v7l-2-2v-5H6v-2l4-4z',sliders:'M4 5h16M4 12h16M4 19h16M8 3v4M16 10v4M10 17v4'};
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ic=(name,cls='')=>`<svg class="ic ${cls}" viewBox="0 0 24 24" aria-hidden="true"><path d="${PATHS[name]||PATHS.file}"/></svg>`;
+const btn=(label,action,icon='',cls='',extra='')=>`<button class="btn ${cls}" data-action="${action}" ${extra}>${icon?ic(icon):''}${label}</button>`;
+const ib=(label,action,icon,extra='')=>`<button class="icon-button" title="${label}" aria-label="${label}" data-action="${action}" ${extra}>${ic(icon)}</button>`;
+const uid=()=> 'x'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const nowStamp=()=>new Date().toLocaleString('zh-CN',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).replaceAll('/','-');
+const fileTypeName={word:'文档',sheet:'表格',pdf:'PDF',fig:'设计文件',image:'图片',md:'Markdown',zip:'压缩包',other:'文件',folder:'文件夹'};
+const typeColors={word:'#6488b8',sheet:'#619276',pdf:'#bf8173',fig:'#9783b4',image:'#b49b6b',md:'#799397',zip:'#8d96a3',other:'#88978c'};
+function fileIcon(f,size=''){
+ if(f.type==='folder')return folderIcon(f.color||'#a4b9ac',size==='large'?'big':'');
+ const c=typeColors[f.type]||typeColors.other;
+ const letter=({word:'W',sheet:'X',pdf:'P',fig:'F',md:'M',zip:'Z',image:'',other:'D'})[f.type]??'D';
+ const glyph=f.type==='image'?'<path d="M10 18h11v9H10zM10 25l3-3 3 3 2-2 3 3M18 20h.01" fill="none" stroke="white" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>':`<text x="15.5" y="25.5" text-anchor="middle" fill="white" font-family="Arial,sans-serif" font-size="10" font-weight="700">${letter}</text>`;
+ return `<span class="filetype ${size}" style="--file-color:${c}" aria-hidden="true"><svg viewBox="0 0 32 38"><path d="M7 2h13l7 7v26a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Z" fill="${c}" fill-opacity=".08" stroke="${c}" stroke-opacity=".38" stroke-width="1"/><path d="M20 2v7h7" fill="${c}" fill-opacity=".15" stroke="${c}" stroke-opacity=".38" stroke-width="1"/><path d="M11 12h9" stroke="${c}" stroke-opacity=".4" stroke-width="1"/><rect x="4" y="15" width="23" height="16" rx="3" fill="${c}"/>${glyph}</svg></span>`;
+}
+function nameHTML(f){
+ const name=String(f.name||''), dot=name.lastIndexOf('.');
+ const split=f.type!=='folder'&&dot>0&&name.length-dot<=9;
+ return (split?esc(name.slice(0,dot))+`<span class="file-ext">${esc(name.slice(dot))}</span>`:esc(name))+(f.star?`<span class="file-star" aria-label="已收藏" title="已收藏">${ic('star','small')}</span>`:'');
+}
+function folderIcon(c='#86a8dc',size=''){return `<svg class="folder-icon ${size}" viewBox="0 0 48 38" style="color:${c}" aria-hidden="true"><path d="M2 7a4 4 0 0 1 4-4h12l5 5h18a4 4 0 0 1 4 4v20a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4z" opacity=".48"/><path d="M2 14a4 4 0 0 1 4-4h35a4 4 0 0 1 4 4v18a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4z"/></svg>`}
+function avatar(name,idx=0){name=String(name||'用户');const palette={'林沐':0,'陈知':1,'周予':2,'宋宁':3,'许嘉':4};const n=palette[name]??[...name].reduce((a,c)=>a+c.codePointAt(0),0)%5;return `<span class="avatar ${['','blue','green','pink','grey'][n]}">${esc(name.slice(-1))}</span>`}
+function makeData(){
+ const folder=(id,name,color,desc)=>({id,name,type:'folder',color,desc,parent:'root',area:'mine',owner:'林沐',by:'林沐',date:'09-13 16:42',size:'—',star:true,shared:id==='d1'});
+ const doc=(id,name,type,size,date,opts={})=>({id,name,type,size,date,parent:'root',area:'mine',owner:'林沐',by:'林沐',shared:false,star:false,...opts});
+ return {version:4,files:[
+ folder('d1','品牌与设计','#e1b177','品牌规范 · 视觉资产'),folder('d2','产品规划','#8baddf','路线图 · 产品需求'),folder('d3','项目交付','#8cbda9','交付清单 · 项目文档'),folder('d4','团队资料','#a7abc9','流程规范 · 常用模板'),
+ doc('f1','产品体验优化方案.docx','word','2.8 MB','09-14 10:42',{shared:true,star:true,by:'陈知'}),doc('f2','Q3 产品路线图.xlsx','sheet','864 KB','09-14 09:16',{shared:true,by:'周予'}),doc('f3','品牌视觉指南.pdf','pdf','12.4 MB','09-13 17:30',{star:true}),doc('f4','首页交互设计.fig','fig','8.6 MB','09-13 16:08',{shared:true,by:'陈知'}),doc('f5','秋季发布会主视觉.svg','image','3.2 MB','09-13 11:25'),doc('f6','项目启动会议纪要.docx','word','142 KB','09-11 15:08'),doc('f7','研发交付清单.xlsx','sheet','328 KB','09-10 14:20',{shared:true,by:'许嘉'}),doc('f8','官网文案草稿.md','md','18 KB','09-09 09:40'),
+ doc('b1','叠云品牌基础规范.pdf','pdf','6.2 MB','09-13 14:32',{parent:'d1'}),doc('b2','秋日品牌海报.svg','image','1.7 MB','09-12 10:14',{parent:'d1'}),doc('b3','图标组件库.fig','fig','4.1 MB','09-11 17:22',{parent:'d1'}),
+ doc('p1','下一阶段产品需求.docx','word','1.2 MB','09-13 11:12',{parent:'d2'}),doc('p2','版本排期.xlsx','sheet','354 KB','09-12 14:41',{parent:'d2'}),doc('p3','用户访谈记录.md','md','24 KB','09-11 12:10',{parent:'d2'}),
+ doc('j1','验收标准.docx','word','825 KB','09-12 09:23',{parent:'d3'}),doc('j2','素材归档.zip','zip','24.8 MB','09-10 17:02',{parent:'d3'}),doc('t1','新成员协作指南.pdf','pdf','3.6 MB','09-12 10:23',{parent:'d4'}),doc('t2','工作交接模板.docx','word','416 KB','09-10 15:37',{parent:'d4'}),
+ doc('s1','2026 品牌资产规范.pdf','pdf','16.8 MB','09-14 09:28',{area:'shared',owner:'陈知',by:'陈知',shared:true,permission:'仅查看',source:'品牌内容组'}),doc('s2','需求评审记录.docx','word','892 KB','09-13 16:52',{area:'shared',owner:'周予',by:'周予',shared:true,permission:'可编辑',source:'产品与设计'}),doc('s3','运营内容排期.xlsx','sheet','684 KB','09-12 14:11',{area:'shared',owner:'宋宁',by:'宋宁',shared:true,permission:'仅查看',source:'品牌内容组'}),
+ doc('w1','产品协作说明.docx','word','428 KB','09-14 10:18',{area:'space',parent:'sp1',space:'sp1',shared:true,by:'陈知'}),doc('w2','组件使用规范.pdf','pdf','8.2 MB','09-13 16:48',{area:'space',parent:'sp1',space:'sp1',shared:true}),doc('w3','产品设计源文件.fig','fig','12.4 MB','09-12 11:20',{area:'space',parent:'sp1',space:'sp1',shared:true}),doc('w4','品牌传播提案.docx','word','2.4 MB','09-14 08:42',{area:'space',parent:'sp2',space:'sp2',shared:true,by:'宋宁'}),doc('w5','品牌活动主视觉.svg','image','3.8 MB','09-13 15:10',{area:'space',parent:'sp2',space:'sp2',shared:true}),doc('w6','接口交付清单.xlsx','sheet','462 KB','09-13 13:30',{area:'space',parent:'sp3',space:'sp3',shared:true,by:'许嘉'}),doc('w7','部署与交付文档.md','md','67 KB','09-12 12:11',{area:'space',parent:'sp3',space:'sp3',shared:true}),
+ doc('z1','首页方案_旧版.fig','fig','7.2 MB','09-02 10:08',{deleted:true,deletedAt:'09-13 18:22',origin:'我的文件',deleteBatch:'initial1'}),doc('z2','周会记录_临时.docx','word','128 KB','09-01 09:21',{deleted:true,deletedAt:'09-12 11:10',origin:'我的文件',deleteBatch:'initial2'}),doc('z3','过期素材包.zip','zip','18.4 MB','08-30 11:20',{deleted:true,deletedAt:'09-11 16:42',origin:'我的文件',deleteBatch:'initial3'})
+ ],spaces:[{id:'sp1',name:'产品与设计',desc:'一起把每个细节做得更好。',members:8,owner:'陈知',color:'',icon:'grid'},{id:'sp2',name:'品牌内容组',desc:'让每一份内容保持一致。',members:6,owner:'宋宁',color:'green',icon:'image'},{id:'sp3',name:'研发交付',desc:'从需求到上线，有序协作。',members:12,owner:'许嘉',color:'sand',icon:'code'}],links:[{id:'l1',file:'f3',date:'09-14 10:30',expiry:'2026-09-21',status:'active',code:'7K2M',scope:'凭提取码',allowDownload:true},{id:'l2',file:'f5',date:'09-12 15:21',expiry:'2026-10-12',status:'active',code:'A4P6',scope:'凭提取码',allowDownload:false},{id:'l3',file:'f6',date:'09-03 09:12',expiry:'2026-09-10',status:'expired',code:'8E3F',scope:'凭提取码',allowDownload:true}],recent:['f1','f4','f3'],members:{f1:[{name:'陈知',role:'可编辑'},{name:'周予',role:'可查看'}],f2:[{name:'周予',role:'可编辑'}],f4:[{name:'陈知',role:'可编辑'}],f7:[{name:'许嘉',role:'可编辑'}],d1:[{name:'宋宁',role:'可查看'}]},prefs:{density:CONFIG.theme==='utility'?'compact':'comfortable',layout:CONFIG.theme==='paper'?'grid':'list',motion:true,primaryColor:'green'},transfers:[]};
+}
+// V3.1 keeps the V3 storage key; the new optional primaryColor field is backward compatible.
+const STORE='dieyun-ui-visual-v3-'+CONFIG.theme;
+let model;try{const saved=JSON.parse(localStorage.getItem(STORE)||'null');model=saved?.version===4&&Array.isArray(saved.files)&&Array.isArray(saved.spaces)&&saved.prefs?saved:makeData()}catch{model=makeData()}
+model.prefs.primaryColor=['green','blue'].includes(model.prefs.primaryColor)?model.prefs.primaryColor:'green';
+let state={view:'files',folder:'root',space:null,query:'',filter:'all',shareTab:'received',linkTab:'all',selected:new Set(),detail:null,sort:'date',reverse:false,page:1,pageSize:[10,20,50,100].includes(Number(model.prefs.pageSize))?Number(model.prefs.pageSize):10,pageCount:1,pageFileIds:[],modal:null,popup:null,mobile:false};
+let saveWarned=false,toastTimer,lastModalFocus=null,uploadDestination=null,shareDraft=null,formMode=null;
+let prefsDraft=null;
+const PRIMARY_COLOR_NAMES={green:'浅绿',blue:'商务蓝'};
+function normalizePrimaryColor(value){return Object.hasOwn(PRIMARY_COLOR_NAMES,value)?value:'green'}
+function applyPrimaryColor(value){document.documentElement.dataset.primaryColor=normalizePrimaryColor(value)}
+function cancelPreferencesPreview(){
+ if(!prefsDraft)return;
+ prefsDraft=null;
+ applyPrimaryColor(model.prefs.primaryColor);
+}
+const localBlobs=new Map();
+const file=id=>model.files.find(f=>f.id===id);
+const visible=f=>!f.deleted;
+const canEdit=f=>f&&!f.deleted&&(f.area!=='shared'||f.permission==='可编辑');
+const canManage=f=>f&&!f.deleted&&f.area!=='shared';
+function persist(){try{localStorage.setItem(STORE,JSON.stringify(model));return true}catch{if(!saveWarned){saveWarned=true;toast('浏览器未允许本地保存；当前会话仍可继续体验。','info')}return false}}
+function toast(text,icon='checkcircle'){clearTimeout(toastTimer);$('#toast').innerHTML=ic(icon)+`<span>${esc(text)}</span>`;$('#toast').hidden=false;toastTimer=setTimeout(()=>$('#toast').hidden=true,3800)}
+function navItems(){return [['home','首页','home'],['files','我的文件','file'],['shared','共享文件','shared'],['spaces','协作空间','people'],['links','外链管理','globe'],['trash','回收站','trash']]}
+function renderSidebar(){
+ const active=state.view==='spaceFiles'?'spaces':state.view;
+ $('#nav').innerHTML=navItems().map(([id,label,icon])=>`<button class="nav-item ${active===id?'active':''}" data-action="nav" data-view="${id}" ${active===id?'aria-current="page"':''}>${ic(icon)}<span>${label}</span>${id==='trash'&&model.files.filter(f=>f.deleted).length?`<span class="nav-count">${model.files.filter(f=>f.deleted).length}</span>`:''}</button>`).join('');
+ const recent=model.recent.map(file).filter(f=>f&&!f.deleted).slice(0,3);
+ $('#recentItems').innerHTML=recent.length?recent.map(f=>`<button class="recent-item" data-action="open" data-id="${f.id}" title="${esc(f.name)}">${fileIcon(f,'mini')}<span class="recent-info"><span class="recent-name">${esc(f.name)}</span><span class="recent-time">${esc((f.openedAt||f.date).replace(/^\d{4}-/,''))}</span></span></button>`).join(''):'<p class="tiny-note" style="padding:9px">打开的文件会出现在这里</p>';
+ $('#recentAll').classList.toggle('active',state.view==='recent');
+}
+function titleFor(){return ({home:'首页',files:'我的文件',shared:'共享文件',spaces:'协作空间',links:'外链管理',trash:'回收站',recent:'最近打开',search:'搜索结果',spaceFiles:'协作空间'})[state.view]||'我的文件'}
+function setView(view,folder='root',space=null){
+ closePopup();closeDetails();
+ Object.assign(state,{view,folder,space,filter:'all',query:'',page:1,sort:view==='recent'?'opened':'date',reverse:false,mobile:false});
+ state.selected.clear();$('#search').value='';$('#clearSearch').hidden=true;
+ $('#sidebar').classList.remove('is-open');$('#sidebarScrim').classList.remove('is-open');render();
+}
+function render(){
+ applyPrimaryColor(prefsDraft?.primaryColor||model.prefs.primaryColor);
+ document.body.dataset.density=model.prefs.density;document.body.classList.toggle('body-no-motion',!model.prefs.motion);
+ renderSidebar();renderContent();renderDetails();document.title=`${titleFor()} · 叠云 — ${CONFIG.label}`;
+ $('#statusView').textContent=CONFIG.label+' / '+titleFor();
+}
+// Only preserve a scroll offset when the same page/data ordering is re-rendered.
+// Selection and star changes must not jump back to the first row.
+function renderContent(){
+ const content=$('#content'), oldScroll=content.querySelector('.table-scroll');
+ const offset={top:oldScroll?.scrollTop||0,left:oldScroll?.scrollLeft||0};
+ const active=document.activeElement;
+ let focusSelector='';
+ if(active&&content.contains(active)){
+   if(active.id)focusSelector='#'+CSS.escape(active.id);
+   else if(active.dataset.select)focusSelector='[data-select="'+CSS.escape(active.dataset.select)+'"]';
+   else if(active.dataset.rowId)focusSelector='[data-row-id="'+CSS.escape(active.dataset.rowId)+'"]';
+   else if(active.dataset.action){
+     focusSelector='[data-action="'+CSS.escape(active.dataset.action)+'"]';
+     for(const k of ['id','page','filter','layout'])if(active.dataset[k])focusSelector+='[data-'+k+'="'+CSS.escape(active.dataset[k])+'"]';
+   }
+ }
+ state.pageFileIds=[];
+ let html='';if(state.view==='home')html=renderHome();else if(state.view==='spaces')html=renderSpaces();else if(state.view==='links')html=renderLinks();else html=renderFiles();
+ const key=JSON.stringify([state.view,state.folder,state.space,state.query,state.filter,state.shareTab,state.linkTab,state.page,state.pageSize,model.prefs.layout,state.sort,state.reverse]);
+ const preserve=content.dataset.renderKey===key;
+ content.innerHTML=`<div class="page-screen" data-view="${esc(state.view)}">${html}</div>`;
+ content.dataset.renderKey=key;
+ const scroller=content.querySelector('.table-scroll');
+ if(preserve&&scroller){scroller.scrollTop=offset.top;scroller.scrollLeft=offset.left}
+ const all=$('#selectAll');
+ if(all){const rows=displayedFiles();all.disabled=!rows.length;all.checked=!!rows.length&&rows.every(f=>state.selected.has(f.id));all.indeterminate=rows.some(f=>state.selected.has(f.id))&&!all.checked}
+ if(focusSelector)content.querySelector(focusSelector)?.focus({preventScroll:true});
+ syncDetailState();
+}
+function allMineRoot(){return model.files.filter(f=>visible(f)&&f.area==='mine'&&f.parent==='root')}
+function folderPath(id){let arr=[],seen=new Set();while(id&&id!=='root'&&!seen.has(id)){seen.add(id);let f=file(id);if(!f)break;arr.unshift(f);id=f.parent}return arr}
+function locationName(f){if(f.parent!=='root'){const p=file(f.parent);if(p)return p.name;const s=model.spaces.find(s=>s.id===f.parent);if(s)return s.name}return f.area==='shared'?(f.source||'共享文件'):f.area==='space'?'协作空间':'我的文件'}
+function descCount(f){return model.files.filter(x=>visible(x)&&x.parent===f.id).length}
+function currentFiles(){
+ let list=[];
+ if(state.view==='files')list=model.files.filter(f=>visible(f)&&f.area==='mine'&&f.parent===state.folder);
+ if(state.view==='spaceFiles')list=model.files.filter(f=>visible(f)&&f.area==='space'&&f.parent===state.folder);
+ if(state.view==='shared')list=model.files.filter(f=>visible(f)&&(state.shareTab==='received'?f.area==='shared':f.area==='mine'&&f.shared));
+ if(state.view==='trash')list=model.files.filter(f=>f.deleted);
+ if(state.view==='recent')list=model.recent.map(file).filter(f=>f&&visible(f));
+ if(state.view==='search'){const q=state.query.trim().toLowerCase();list=model.files.filter(f=>visible(f)&&(f.name.toLowerCase().includes(q)||locationName(f).toLowerCase().includes(q)))}
+ if(state.filter!=='all'){list=list.filter(f=>state.filter==='doc'?['word','pdf','md'].includes(f.type):state.filter==='image'?['image','fig'].includes(f.type):state.filter==='other'?['zip','other'].includes(f.type):f.type===state.filter)}
+ if(!(state.view==='recent'&&state.sort==='opened'))list=sortFileList(list);
+ return list;
+}
+function head(title,sub,actions='',crumb=''){
+ const scopes={files:['lock','个人空间'],spaceFiles:['building','组织所有'],shared:['shared','团队协作']};
+ const scope=scopes[state.view];
+ return `${crumb}<header class="page-head"><div><div class="page-title-line"><h1 class="page-title">${esc(title)}</h1>${scope?`<span class="page-scope">${ic(scope[0])}${scope[1]}</span>`:''}</div>${sub?`<p class="page-subtitle">${sub}</p>`:''}</div><div class="head-actions">${actions}</div></header>`;
+}
+function breadcrumb(){if(state.view==='spaceFiles'){const s=model.spaces.find(s=>s.id===state.space);return `<div class="breadcrumb"><button data-action="nav" data-view="spaces">协作空间</button>${ic('right')}<span>${esc(s?.name||'团队空间')}</span>${folderPath(state.folder).map(f=>`${ic('right')}<button data-action="open" data-id="${f.id}">${esc(f.name)}</button>`).join('')}</div>`}if(state.folder!=='root'&&state.view==='files')return `<div class="breadcrumb"><button data-action="nav" data-view="files">我的文件</button>${folderPath(state.folder).map(f=>`${ic('right')}<button data-action="open" data-id="${f.id}">${esc(f.name)}</button>`).join('')}</div>`;return ''}
+function folderStrip(folders,label='常用文件夹'){
+ if(!folders.length)return '';
+ return `<section class="folder-section"><div class="section-heading"><h2>${label}</h2><span class="small-text muted">${folders.length} 个文件夹</span></div><div class="folder-strip">${folders.map(f=>`<button class="folder-card" data-action="open" data-id="${f.id}" title="打开 ${esc(f.name)}"><span class="folder-top">${folderIcon(f.color)}<span class="folder-people">${ic(f.shared?'people':'lock')}${f.shared?'共享':''}</span></span><span><span class="folder-title">${esc(f.name)}</span><span class="folder-meta" style="display:block">${descCount(f)} 个文件 · ${esc(f.desc||'工作资料')}</span></span><span class="folder-arrow">${ic('right')}</span></button>`).join('')}</div></section>`;
+}
+function filterBar(){
+ if(state.selected.size){
+  const selected=selectedFiles(),managed=selected.length>0&&selected.every(canManage),one=selected.length===1?selected[0]:null,trash=state.view==='trash';
+  const actions=trash?btn('恢复','restoreSelected','restore','ghost')+btn('永久删除','purgeSelected','trash','ghost selection-danger'):
+   (one&&managed?btn('分享','share','shared','ghost',`data-id="${one.id}"`):'')+
+   btn('下载样例','downloadSelected','download','ghost')+
+   (managed?btn('移动','moveSelected','move','ghost')+btn('删除','deleteSelected','trash','ghost selection-danger'):'')+
+   (one?btn('详情','detailSelected','info','ghost'):'');
+  return `<div class="selectionbar" role="toolbar" aria-label="已选文件操作"><span class="selection-count">已选择 <b>${state.selected.size}</b> 项</span>${actions}<button class="cancel-selection" data-action="clearSelection" title="取消选择（Esc）">${ic('close')}<span>取消选择</span></button></div>`;
+ }
+ const filtersets=state.view==='trash'?[['all','全部文件']]:[['all','全部'],['doc','文档'],['sheet','表格'],['image','图片与设计'],['other','其他']];
+ return `<div class="toolbar"><div class="filter-tabs" role="group" aria-label="文件类型筛选">${filtersets.map(([id,label])=>`<button class="filter-tab ${state.filter===id?'active':''}" data-action="filter" data-filter="${id}" aria-pressed="${state.filter===id}">${label}${id==='all'?`<span>${rawCount()}</span>`:''}</button>`).join('')}</div><div class="toolbar-right"><button class="icon-button view-pref" data-action="preferences" title="显示设置：密度与视图" aria-label="显示设置">${ic('sliders')}</button>${state.view!=='trash'?`<div class="view-switch" role="group" aria-label="显示方式"><button class="icon-button ${model.prefs.layout==='list'?'on':''}" data-action="layout" data-layout="list" aria-label="列表视图" title="列表视图" aria-pressed="${model.prefs.layout==='list'}">${ic('list')}</button><button class="icon-button ${model.prefs.layout==='grid'?'on':''}" data-action="layout" data-layout="grid" aria-label="网格视图" title="网格视图" aria-pressed="${model.prefs.layout==='grid'}">${ic('grid')}</button></div>`:''}</div></div>`;
+}
+function displayedFiles(){return state.pageFileIds.map(file).filter(Boolean)}
+function rawCount(){const filter=state.filter;state.filter='all';const n=currentFiles().length;state.filter=filter;return n}
+function selectedFiles(){return [...state.selected].map(file).filter(Boolean)}
+function sortDirection(key){
+ if(state.sort!==key)return 'none';
+ return (key==='name'?!state.reverse:state.reverse)?'ascending':'descending';
+}
+function sortIcon(key){
+ const dir=sortDirection(key);
+ return dir==='none'?`<svg class="ic small sort-neutral" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 8 4-4 4 4M8 16l4 4 4-4"/></svg>`:ic(dir==='ascending'?'up':'down','small');
+}
+function sortFileList(list){
+ return [...list].sort((a,b)=>{
+  if((a.type==='folder')!==(b.type==='folder'))return a.type==='folder'?-1:1;
+  const key=state.view==='trash'?'deletedAt':'date';
+  const n=state.sort==='name'?a.name.localeCompare(b.name,'zh-CN',{numeric:true}):String(b[key]||'').localeCompare(String(a[key]||''));
+  return (state.reverse?-n:n)||String(a.id).localeCompare(String(b.id));
+ });
+}
+function toggleSort(key){
+ if(state.sort===key)state.reverse=!state.reverse;else{state.sort=key;state.reverse=false}
+ state.page=1;state.selected.clear();renderContent();
+}
+function paginate(list){
+ const size=state.pageSize,total=Math.max(1,Math.ceil(list.length/size));
+ state.page=Math.min(total,Math.max(1,Number(state.page)||1));state.pageCount=total;
+ const start=(state.page-1)*size;
+ return {items:list.slice(start,start+size),total,totalItems:list.length,page:state.page,start:list.length?start+1:0,end:Math.min(start+size,list.length)};
+}
+function changePage(page){
+ const next=Math.max(1,Math.min(state.pageCount,Number(page)||1));
+ if(next===state.page)return;
+ state.page=next;state.selected.clear();closeDetails();renderContent();
+ $('#content .pager-btn.current')?.focus({preventScroll:true});
+}
+function renderPager(meta,label='项'){
+ const pages=[];
+ for(let i=1;i<=meta.total;i++)if(i===1||i===meta.total||Math.abs(i-meta.page)<=1)pages.push(i);
+ const compact=[];pages.forEach((p,i)=>{if(i&&p-pages[i-1]>1)compact.push('gap');compact.push(p)});
+ return `<footer class="table-pager" aria-label="分页栏"><div class="pager-meta" role="status">共 <strong>${meta.totalItems}</strong> ${label}<span> · 显示 ${meta.start}–${meta.end}</span></div><nav class="pager-controls" aria-label="分页导航"><label class="page-size-label" for="pageSize">每页<select id="pageSize" class="page-size-select" aria-label="每页显示条数">${[10,20,50,100].map(n=>`<option value="${n}" ${n===state.pageSize?'selected':''}>${n} 条</option>`).join('')}</select></label><div class="page-number-group"><button class="pager-btn" data-action="pagePrev" ${meta.page===1?'disabled':''} aria-label="上一页">${ic('left')}上一页</button>${compact.map(p=>p==='gap'?'<span class="pager-gap" aria-hidden="true">…</span>':`<button class="pager-btn ${p===meta.page?'current':''}" data-action="pageTo" data-page="${p}" aria-label="第 ${p} 页" ${p===meta.page?'aria-current="page"':''}>${p}</button>`).join('')}<button class="pager-btn" data-action="pageNext" ${meta.page===meta.total?'disabled':''} aria-label="下一页">下一页${ic('right')}</button></div></nav></footer>`;
+}
+function renderTableShell(inner,meta,label='项',scrollClass=''){
+ return `<section class="table-shell"><div class="table-scroll ${scrollClass}" tabindex="0" role="region" aria-label="${esc(titleFor())}内容滚动区域">${inner}</div>${renderPager(meta,label)}</section>`;
+}
+function renderFiles(){
+ const list=currentFiles();let title=titleFor(),sub='',actions='',info='';
+ if(state.view==='files'||state.view==='spaceFiles'){
+  const f=file(state.folder),s=model.spaces.find(s=>s.id===state.space);
+  title=f?f.name:state.view==='spaceFiles'?(s?.name||'团队空间'):'我的文件';
+  sub=state.view==='files'?`${rawCount()} 个项目 · 林沐的工作资料`:`组织所有 · 团队成员可编辑 · ${rawCount()} 个项目`;
+  actions=btn('新建文件夹','newFolder','plus')+btn('上传文件','upload','upload','primary');
+  if(state.view==='spaceFiles')info=`<div class="info-strip">${ic('people')}<span>${esc(s?.owner||'林沐')}负责维护 · ${s?.members||1} 位成员</span><span class="spacer"></span>${btn('查看成员','spaceMembers','people','small ghost')}</div>`;
+ }else if(state.view==='shared'){
+  sub='与同事共享文件，让协作顺畅发生。';
+  info=`<div class="segmented"><button class="${state.shareTab==='received'?'active':''}" data-action="sharedTab" data-tab="received">共享给我的</button><button class="${state.shareTab==='sent'?'active':''}" data-action="sharedTab" data-tab="sent">我共享的</button></div>`;
+ }else if(state.view==='trash'){
+  sub=`${rawCount()} 个已删除项目 · 仅影响本地演示数据`;
+  actions=btn('清空回收站','emptyTrash','trash','danger',rawCount()?'':'disabled');
+  info=`<div class="info-strip">${ic('info')}<span>可恢复到原位置。永久删除需要确认；不会删除电脑上的原文件。</span></div>`;
+ }else if(state.view==='recent')sub='继续处理最近使用的文件，原文件位置保持不变。';
+ else if(state.view==='search'){sub=`在可访问的示例文件中搜索“${esc(state.query)}”，找到 ${rawCount()} 个结果。`;actions=btn('清除搜索','clearSearch','close')}
+ const meta=paginate(list),grid=model.prefs.layout==='grid'&&state.view!=='trash';
+ const noFiles=emptyBlock(state.view==='trash'?'回收站很干净':state.view==='search'?'没有找到匹配的文件':'这里还没有文件',state.view==='search'?'试试更短的关键词，或清除当前筛选。':state.view==='trash'?'删除的文件会出现在这里，你可以选择恢复。':'新建文件夹，或添加一份本地文件开始体验。',state.view==='search'?btn('清除搜索','clearSearch','refresh'):state.view==='files'?btn('上传文件','upload','upload','primary'):'');
+ const table=grid?renderGrid(meta.items,meta,noFiles):renderTable(meta.items,false,meta,'项',noFiles);
+ return head(title,sub,actions,breadcrumb())+info+`<div class="table-page-body">${filterBar()}${table}</div>`;
+}
+function renderTable(list,home=false,meta=null,label='项',empty=''){
+ const trash=state.view==='trash',loc=home||['recent','search','shared'].includes(state.view);
+ state.pageFileIds=list.map(f=>f.id);
+ const sortable=(key,text,action)=>`<div class="header-cell" role="columnheader" aria-sort="${sortDirection(key)}"><button class="header-sort ${state.sort===key?'active':''}" data-action="${action}" title="点击按${text}排序，再次点击切换方向；文件夹优先">${text}${sortIcon(key)}</button></div>`;
+ const header=`<div class="list-header" role="row"><div role="columnheader"><input class="file-check" id="selectAll" type="checkbox" aria-label="选择本页所有文件" ${list.length?'':'disabled'}></div>${sortable('name','名称','sortName')}${sortable('date',trash?'删除时间':'修改时间','sortDate')}<span class="col-owner" role="columnheader">${trash?'原位置':'修改者'}</span><span class="col-size" role="columnheader">大小</span><span class="col-access" role="columnheader">${trash?'状态':'访问范围'}</span><span role="columnheader"><span class="sr-only">操作</span></span></div>`;
+ const rows=`<div class="table-rows" role="rowgroup">${list.map(f=>`<div class="file-row ${state.selected.has(f.id)?'selected':''}" role="row" data-row-id="${f.id}" tabindex="0" aria-selected="${state.selected.has(f.id)}" aria-label="${esc(f.name)}"><div role="cell"><input class="file-check" type="checkbox" data-select="${f.id}" aria-label="选择 ${esc(f.name)}" ${state.selected.has(f.id)?'checked':''}></div><div class="file-name-cell" role="cell">${fileIcon(f)}<button class="file-name-button truncate" data-action="${trash?'detail':'open'}" data-id="${f.id}" title="${esc(f.name)}"><span class="file-name">${nameHTML(f)}</span>${loc?`<span class="file-secondary">${esc(locationName(f))}${state.view==='shared'?' · '+esc(f.owner)+'共享':''}</span>`:''}</button></div><span class="cell-muted" role="cell">${esc(trash?f.deletedAt:f.date)}</span><span class="owner-cell col-owner" role="cell">${trash?esc(f.origin||'我的文件'):avatar(f.by||'林沐',(f.by||'').length%3)+esc(f.by||'林沐')}</span><span class="cell-muted col-size" role="cell">${f.type==='folder'?descCount(f)+' 项':esc(f.size)}</span><span class="col-access" role="cell">${trash?'<span class="access-label">可恢复</span>':accessBadge(f)}</span><span role="cell" class="row-action">${ib('更多操作：'+esc(f.name),'fileMenu','more',`data-id="${f.id}"`)}</span></div>`).join('')}</div>`;
+ const table=`<div class="file-table" role="table" aria-label="文件列表">${header}${rows}${!list.length?`<div class="empty-in-table">${empty||emptyBlock('这里还没有文件','可以上传文件或新建文件夹。')}</div>`:''}</div>`;
+ return meta?renderTableShell(table,meta,label):table;
+}
+function accessBadge(f){return `<span class="access-label ${f.shared?'shared':''}">${ic(f.shared?'people':'lock')}${f.permission?esc(f.permission):f.area==='space'?'团队可编辑':f.shared?'协作共享':'仅自己'}</span>`}
+function renderGrid(list,meta=null,empty=''){
+ state.pageFileIds=list.map(f=>f.id);
+ const grid=list.length?`<div class="file-grid">${list.map(f=>`<article class="grid-file ${state.selected.has(f.id)?'selected':''}" data-grid-id="${f.id}"><div class="grid-tools"><input type="checkbox" class="file-check" data-select="${f.id}" aria-label="选择 ${esc(f.name)}" ${state.selected.has(f.id)?'checked':''}>${ib('更多操作：'+esc(f.name),'fileMenu','more',`data-id="${f.id}"`)}</div><button class="grid-preview ${f.type==='folder'?'folder-preview':''}" data-action="open" data-id="${f.id}" aria-label="打开 ${esc(f.name)}">${thumb(f)}</button><div class="grid-caption">${fileIcon(f,'mini')}<button class="file-name-button truncate" data-action="open" data-id="${f.id}" title="${esc(f.name)}"><span class="file-name">${nameHTML(f)}</span><span class="file-secondary">${f.type==='folder'?descCount(f)+' 个文件':esc(f.size)} · ${esc(f.date.split(' ')[0])}</span></button></div></article>`).join('')}</div>`:empty;
+ return meta?renderTableShell(grid,meta,'项','grid-content'):grid;
+}
+function thumb(f){
+ if(f.type==='folder')return folderIcon(f.color,'big');
+ if(f.userAdded)return `<div class="preview-generic">${fileIcon(f,'large')}</div>`;
+ if(f.type==='image')return `<div class="poster-thumb"><div class="poster-head">MAKE<br>ROOM.</div><div class="poster-pill"></div><div class="poster-circle"></div><div class="poster-foot">为好想法，留一点空间。</div></div>`;
+ if(f.type==='fig')return `<div class="fig-thumb">${phone()}${phone()}</div>`;
+ if(f.type==='sheet')return `<div class="sheet-thumb"><h3>${esc(f.name.split('.')[0])}</h3><div class="sheet-mini-grid">${['项目','负责人','进度','日期','体验优化','陈知','已完成','09.14','视觉规范','林沐','进行中','09.18','组件更新','周予','待评审','09.22','内容校对','宋宁','进行中','09.24','开发交付','许嘉','待开始','09.30'].map(x=>`<span>${x}</span>`).join('')}</div></div>`;
+ if(['word','pdf','md'].includes(f.type))return `<div class="doc-thumb ${f.type==='pdf'?'pdf-thumb':''}"><div class="thumb-eyebrow">DIEYUN / WORKSPACE</div><h3>${esc(f.name.replace(/\.[^.]+$/,''))}</h3><div class="thumb-line"></div><div class="thumb-line short"></div><div class="thumb-band"></div><div class="thumb-line"></div><div class="thumb-line"></div><div class="thumb-line short"></div></div>`;
+ return `<div class="preview-generic">${fileIcon(f,'large')}</div>`;
+}
+function phone(){return '<div class="mini-phone"><div class="phone-hero"></div><div class="phone-line"></div><div class="phone-line"></div><div class="phone-line" style="width:70%"></div><div class="phone-button"></div></div>'}
+function emptyBlock(title,sub,action=''){return `<div class="empty"><div class="empty-symbol">${ic('folder')}</div><h3>${title}</h3><p>${sub}</p>${action}</div>`}
+function renderHome(){
+ const recent=model.recent.map(file).filter(f=>f&&visible(f)).slice(0,3);
+ const list=sortFileList(model.files.filter(f=>visible(f)&&f.type!=='folder')),meta=paginate(list);
+ const overview=`<div class="home-content"><div class="section-heading"><h2>继续上次的工作</h2><button class="text-button" data-action="nav" data-view="recent">查看全部${ic('right')}</button></div><section class="home-continue">${recent.map(f=>`<article class="continue-card"><button class="grid-preview" data-action="open" data-id="${f.id}" aria-label="预览 ${esc(f.name)}">${thumb(f)}</button><div class="grid-caption">${fileIcon(f)}<button class="file-name-button truncate" data-action="open" data-id="${f.id}"><span class="file-name">${nameHTML(f)}</span><span class="file-secondary">${esc(locationName(f))} · ${esc(f.by)}修改</span></button></div></article>`).join('')}</section>${folderStrip(allMineRoot().filter(f=>f.type==='folder'),'快速访问')}</div>`;
+ const toolbar=state.selected.size?filterBar():`<div class="toolbar"><h2 class="toolbar-heading">工作空间</h2><span class="toolbar-note">最近使用 · 快速访问 · 文件动态</span></div>`;
+ const table=`<section class="home-table-section"><div class="section-heading"><h2>最近更新</h2><span class="small-text muted">你可以访问的文件</span></div>${renderTable(meta.items,true)}</section>`;
+ return head('首页','林沐，欢迎回来。继续处理最近的工作文件。',btn('上传文件','upload','upload','primary'))+`<div class="table-page-body">${toolbar}${renderTableShell(overview+table,meta,'个文件')}</div>`;
+}
+function renderSpaces(){
+ const meta=paginate(model.spaces);
+ const content=`<div class="spaces-content"><section class="space-grid">${meta.items.map(s=>`<button class="space-card" data-action="space" data-id="${s.id}"><div class="space-cover ${s.color}">${ic(s.icon)}<span class="space-cover-label">组织空间</span></div><div class="space-body"><h2 class="space-title">${esc(s.name)}</h2><p class="space-desc">${esc(s.desc)}</p><div class="space-foot"><div class="avatar-stack">${avatar(s.owner)}${avatar('林沐',1)}${avatar('周予',2)}</div><span>${s.members} 位成员 · ${model.files.filter(f=>visible(f)&&f.space===s.id).length} 个文件</span>${ic('arrow','small')}</div></div></button>`).join('')}</section><div class="info-strip">${ic('building')}<span>空间内文件归组织所有。个人离开团队，不改变空间中的文件归属。（原型说明）</span></div><section class="spaces-bottom"><h3>空间动态 <span class="muted small-text" style="font-weight:400">/ 示例记录</span></h3><div class="activity-row">${avatar('陈知',1)}<span>陈知更新了 <strong>产品协作说明.docx</strong><p class="muted">产品与设计</p></span><span class="time">今天 10:18</span></div><div class="activity-row">${avatar('宋宁',3)}<span>宋宁添加了 <strong>品牌传播提案.docx</strong><p class="muted">品牌内容组</p></span><span class="time">今天 08:42</span></div></section></div>`;
+ return head('协作空间','集中维护团队资料，让每一份文件都有清晰的归属。',btn('创建空间','newSpace','plus','primary'))+`<div class="table-page-body"><div class="toolbar"><h2 class="toolbar-heading">全部空间 <span class="count">${meta.totalItems}</span></h2><span class="toolbar-note">组织所有 · 团队协作</span></div>${renderTableShell(content,meta,'个空间')}</div>`;
+}
+function renderLinks(){
+ const list=model.links.filter(l=>{const f=file(l.file);return f&&!f.deleted&&(state.linkTab==='all'||(state.linkTab==='active'?l.status==='active':l.status!=='active'))}).sort((a,b)=>{
+  const n=state.sort==='name'?file(a.file).name.localeCompare(file(b.file).name,'zh-CN',{numeric:true}):String(b.date).localeCompare(String(a.date));return state.reverse?-n:n;
+ });
+ const meta=paginate(list);
+ const content=`<table class="links-list" aria-label="演示外链列表"><thead><tr><th aria-sort="${sortDirection('name')}"><button class="link-sort" data-action="sortName">分享文件${sortIcon('name')}</button></th><th class="link-hide">访问方式</th><th class="link-expire">有效期至</th><th>状态</th><th>操作</th></tr></thead><tbody>${meta.items.map(l=>{const f=file(l.file);return `<tr><td><div class="file-name-cell">${fileIcon(f)}<button class="file-name-button truncate" data-action="open" data-id="${f.id}"><span class="file-name">${nameHTML(f)}</span><span class="file-secondary">创建于 ${esc(l.date)}</span></button></div></td><td class="link-hide">${esc(l.scope)}<p class="file-secondary">${l.allowDownload?'允许下载':'仅预览'}</p></td><td class="link-expire">${esc(l.expiry)}</td><td><span class="status ${l.status==='active'?'good':l.status==='expired'?'warn':'off'}">${({active:'有效',expired:'已过期',revoked:'已停用'})[l.status]}</span></td><td><div class="link-actions">${l.status==='active'?`<button data-action="copyLink" data-id="${l.id}">复制</button><button data-action="revokeLink" data-id="${l.id}">停用</button>`:`<button data-action="removeLink" data-id="${l.id}">移除记录</button>`}</div></td></tr>`}).join('')}</tbody></table>${!list.length?emptyBlock('还没有这类外链','选中一份你拥有的文件，即可体验创建演示外链。'):''}`;
+ const toolbar=`<div class="toolbar"><div class="filter-tabs">${[['all','全部外链'],['active','有效'],['inactive','已失效']].map(([id,label])=>`<button class="filter-tab ${state.linkTab===id?'active':''}" data-action="linkTab" data-tab="${id}">${label}</button>`).join('')}</div></div>`;
+ return head('外链管理','集中管理对外分享，确认访问方式与有效期。',btn('创建外链','chooseLinkFile','plus','primary'))+`<div class="info-strip">${ic('info')}<span>下列链接仅用于交互演示，不可对外访问，不会更改真实文件权限。</span></div><div class="table-page-body">${toolbar}${renderTableShell(content,meta,'条外链')}</div>`;
+}
+function syncDetailState(){
+ $$('#content [data-row-id]').forEach(el=>el.classList.toggle('is-inspected',el.dataset.rowId===state.detail));
+ $$('#content [data-grid-id]').forEach(el=>el.classList.toggle('is-inspected',el.dataset.gridId===state.detail));
+}
+function renderDetails(){
+ const f=file(state.detail),el=$('#details');
+ if(!f){el.hidden=true;syncDetailState();return}
+ el.hidden=false;syncDetailState();
+ const members=model.members[f.id]||[];
+ el.innerHTML=`<header class="detail-top"><span class="detail-title">${ic('info')}文件详情</span>${ib('关闭详情','closeDetails','close')}</header><div class="detail-scroll"><div class="detail-preview">${thumb(f)}</div><h2 class="detail-name">${esc(f.name)}</h2><p class="detail-submeta">${fileTypeName[f.type]||'文件'}<span> · </span>${f.type==='folder'?descCount(f)+' 个项目':esc(f.size)}</p>${f.deleted?'<span class="status warn">已在回收站</span>':accessBadge(f)}<section class="detail-section"><h3>基本信息</h3><dl><div class="detail-kv"><dt>所在位置</dt><dd>${esc(locationName(f))}</dd></div><div class="detail-kv"><dt>修改者</dt><dd>${esc(f.by)}</dd></div><div class="detail-kv"><dt>修改时间</dt><dd>2026-${esc(f.date)}</dd></div><div class="detail-kv"><dt>文件归属</dt><dd>${f.area==='space'?'团队组织':esc(f.owner)}</dd></div></dl></section>${!f.deleted?`<section class="detail-section"><h3>访问权限 <span class="muted">本地示例</span></h3><div class="detail-access">${ic(f.shared?'people':'lock')}<span>${f.area==='space'?'团队成员可编辑':members.length?members.length+' 位协作者':f.shared?'已开启协作':'尚未分享'}<small>${f.area==='space'?'文件保存在组织空间':members.length?'可在共享设置中查看成员':f.shared?'共享状态仅用于演示':'当前仅自己可访问'}</small></span></div></section><section class="detail-section"><h3>版本记录 <span class="muted">示例</span></h3><div class="version-row"><span class="version-dot"></span><div>当前版本 · v1.0<p>${esc(f.by)} · ${esc(f.date)}</p></div></div><p class="tiny-note" style="margin-top:15px">此处为版本记录示意，不包含真实历史文件。</p></section>`:''}</div><footer class="drawer-share">${f.deleted?btn('恢复文件','restoreOne','restore','primary',`data-id="${f.id}"`):btn(f.type==='folder'?'打开文件夹':'打开预览','open','file','primary',`data-id="${f.id}"`)+(canManage(f)?btn('共享与权限','share','shared','',`data-id="${f.id}"`):'')}</footer>`;
+}
+function closeDetails(){state.detail=null;$('#details').hidden=true;syncDetailState()}
+function openFile(id){const f=file(id);if(!f)return;if(f.deleted){state.detail=id;renderDetails();return}if(f.type==='folder'){if(f.area==='space')setView('spaceFiles',f.id,f.space);else setView('files',f.id);return}model.recent=[id,...model.recent.filter(i=>i!==id)].slice(0,30);f.openedAt=nowStamp();persist();renderSidebar();openPreview(f)}
+function modal(title,body,foot='',cls=''){
+ cancelPreferencesPreview();
+ if(!state.modal)lastModalFocus=document.activeElement;
+ state.modal=title;$('#modalHost').hidden=false;$('#modalHost').innerHTML=`<section class="modal ${cls}" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><header class="modal-top"><h2 id="modalTitle">${title}</h2>${ib('关闭对话框','closeModal','close')}</header><div class="modal-body">${body}</div>${foot?`<footer class="modal-foot">${foot}</footer>`:''}</section>`;
+ setTimeout(()=>{($('#modalHost [data-initial-focus]')||$('#modalHost input:not([type=checkbox]),#modalHost textarea,#modalHost select,#modalHost button'))?.focus({preventScroll:true})},30);
+}
+function closeModal(){cancelPreferencesPreview();state.modal=null;$('#modalHost').hidden=true;$('#modalHost').innerHTML='';formMode=null;shareDraft=null;if(lastModalFocus?.isConnected)lastModalFocus.focus({preventScroll:true});lastModalFocus=null}
+function formModal(title,fields,action,label='保存',note=''){
+ formMode=action;modal(title,`${note?`<p class="form-note">${note}</p>`:''}<form id="mainForm" data-form-action="${action}">${fields}<p class="error-text" id="formError" role="alert"></p></form>`,btn('取消','closeModal')+`<button class="btn primary" type="submit" form="mainForm">${label}</button>`);
+}
+function confirmModal(title,text,action,id='',label='确认',danger=true){modal(title,`<p style="font-size:13px;line-height:1.9">${text}</p>`,btn('取消','closeModal')+btn(label,action,'',danger?'danger':'primary',`data-id="${id}"`))}
+function openPreview(f){
+ let content='',sample=!f.userAdded;
+ if(f.userAdded){const b=localBlobs.get(f.id);if(f.body!==undefined){content=`<pre class="user-text">${esc(f.body)}</pre>`}else if(b?.type.startsWith('image/')){const url=URL.createObjectURL(b);content=`<img class="local-image" src="${url}" alt="${esc(f.name)}" onload="URL.revokeObjectURL(this.src)">`}else content=emptyBlock(b?'此格式暂不提供预览':'请重新选择本地原文件',b?'文件只存在于当前浏览器会话，可以下载原文件。':'为减少本地存储，刷新后仅保留名称等信息；原文件没有上传到任何服务器。',btn(b?'下载原文件':'重新选择文件',b?'downloadOne':'upload',b?'download':'upload','primary',`data-id="${f.id}"`))}
+ else if(f.type==='sheet')content=`<div class="sheet-preview"><span class="small-text muted">工作表 / 示例数据</span><h2>${esc(f.name.replace(/\.[^.]+$/,''))}</h2><table><thead><tr><th>工作事项</th><th>负责人</th><th>状态</th><th>交付日期</th></tr></thead><tbody>${[['体验流程梳理','陈知','已完成','09-14'],['视觉规范更新','林沐','进行中','09-18'],['组件库验收','周予','待评审','09-22'],['内容校对','宋宁','进行中','09-24'],['研发交付','许嘉','待开始','09-30']].map(row=>`<tr>${row.map(v=>`<td>${v}</td>`).join('')}</tr>`).join('')}</tbody></table><p>这是内置的表格预览样例，不是对 XLSX 文件的实际解析。</p></div>`;
+ else if(f.type==='image')content=`<div class="large-poster">${thumb(f)}<div class="poster-subtitle">秋日创意计划<br>留白，让想法发生。</div></div>`;
+ else if(f.type==='fig')content=`<div class="fig-large">${thumb(f)}</div>`;
+ else if(f.type==='zip'||f.type==='other')content=emptyBlock('该格式暂不支持预览','此文件为内置演示记录。可以下载一份纯文本样例说明。',btn('下载样例说明','downloadOne','download','primary',`data-id="${f.id}"`));
+ else content=`<article class="paper"><div class="paper-overline">DIEYUN / TEAM WORKSPACE</div><h1>${esc(f.name.replace(/\.[^.]+$/,''))}</h1><div class="paper-meta">产品与设计团队　/　2026 年 9 月　/　v1.0</div><h2>01　目标与范围</h2><p>让每一份资料都有清晰的位置，让每一次协作都有明确的边界。本阶段围绕文件查找、内容预览与共享操作，建立连贯的使用体验。</p><div class="callout">先让用户找到正确的内容，再帮助他们完成下一步。<br>清晰、可信、可追溯，是文件协作的基础。</div><h2>02　重点事项</h2><ol><li>统一项目目录与文件命名，减少重复归档。</li><li>明确共享范围，区分查看与编辑权限。</li><li>保留操作上下文，关闭预览后回到原位置。</li></ol><h2>03　协作约定</h2><p>所有交付资料归档到对应空间。对外发送前，确认文件版本与访问范围，避免将内部讨论内容包含在分享中。</p><div class="paper-footer"><span>演示内容 · 并非真实业务文档</span><span>01 / 01</span></div></article>`;
+ if(!state.modal)lastModalFocus=document.activeElement;
+ state.modal='preview';$('#modalHost').hidden=false;$('#modalHost').innerHTML=`<section class="modal preview-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><header class="modal-top">${fileIcon(f,'mini')}<h2 class="truncate" id="modalTitle">${esc(f.name)}</h2><span class="sample-pill">${sample?'内置示例':'本地文件'}</span>${canManage(f)?btn('分享','share','shared','small',`data-id="${f.id}"`):''}${btn(sample?'下载样例':'下载原文件','downloadOne','download','small',`data-id="${f.id}"`)}${ib('关闭预览','closeModal','close')}</header><div class="preview-body">${content}</div><footer class="preview-bottom"><span>${sample?'预览为本地示例；下载将生成 TXT 说明文件。':'未上传至服务器；文件内容仅在本地处理。'}</span><span>Esc 关闭预览</span></footer></section>`;setTimeout(()=>$('#modalHost [data-action=closeModal]')?.focus({preventScroll:true}),20);
+}
+function openShare(id,tab='internal'){
+ const f=file(id);if(!canManage(f)){toast('当前文件不允许由你修改共享设置。','info');return}
+ shareDraft={file:id,tab,members:JSON.parse(JSON.stringify(model.members[id]||[])),expiry:'7',scope:'code',code:'7K2M',download:true};renderShare();
+}
+function shareTabBody(){const d=shareDraft;
+ if(d.tab==='internal')return `<div class="field"><span>添加协作者</span><div class="invite-row"><select class="input" id="invitePerson" aria-label="选择协作者"><option value="陈知">陈知 · 产品设计</option><option value="周予">周予 · 产品规划</option><option value="宋宁">宋宁 · 品牌内容</option><option value="许嘉">许嘉 · 研发</option></select><select class="input role-select" id="inviteRole" aria-label="协作者权限"><option>可查看</option><option>可编辑</option></select>${btn('添加','addMember','plus','small')}</div></div><div class="member-list"><div class="member">${avatar('林沐')}<div class="member-info"><div class="member-name">林沐（你）</div><div class="member-sub">文件所有者</div></div><span class="member-role">所有者</span></div>${d.members.map((m,i)=>`<div class="member">${avatar(m.name,i+1)}<div class="member-info"><div class="member-name">${esc(m.name)}</div><div class="member-sub">单独授权 · 本地演示</div></div><span class="member-role">${esc(m.role)}</span>${ib('移除 '+m.name,'removeDraftMember','close',`data-index="${i}"`)}</div>`).join('')}</div><div class="share-summary">${ic('shield')}<span>${d.members.length?`仅指定的 ${d.members.length} 位同事获得上述权限。`:'暂未添加协作者。'}不会发送真实邀请，权限只保存在本地原型。</span></div>`;
+ return `<label class="field"><span>谁可以通过外链访问</span><select class="input" id="linkScope"><option value="code" ${d.scope==='code'?'selected':''}>持有链接和提取码的人</option><option value="anyone" ${d.scope==='anyone'?'selected':''}>任何持有链接的人</option></select></label><div class="flex" style="align-items:flex-start"><label class="field" style="flex:1"><span>有效期</span><select class="input" id="linkExpiry"><option value="7" ${d.expiry==='7'?'selected':''}>7 天</option><option value="30" ${d.expiry==='30'?'selected':''}>30 天</option><option value="forever" ${d.expiry==='forever'?'selected':''}>永久</option></select></label><label class="field" style="width:140px"><span>提取码</span><input class="input mono" id="linkCode" value="${esc(d.code)}" maxlength="4" pattern="[a-zA-Z0-9]{4}" aria-label="四位字母数字提取码" ${d.scope==='anyone'?'disabled':''}></label></div><label class="toggle-line"><span><strong>允许下载</strong><p>关闭后以仅预览状态展示</p></span><input class="switch" id="linkDownload" type="checkbox" role="switch" ${d.download?'checked':''}></label><div class="share-summary">${ic('globe')}<span>这是对外分享设置的演示。生成的链接使用 example.invalid，不具备访问能力，提取码也不构成真实安全控制。</span></div><p class="error-text" id="linkError"></p>`;
+}
+function renderShare(){const f=file(shareDraft.file);modal('共享与权限',`<div class="share-file">${fileIcon(f,'large')}<div class="truncate"><strong>${esc(f.name)}</strong><p>${esc(locationName(f))} · ${f.type==='folder'?'文件夹':esc(f.size)}</p></div></div><div class="segmented"><button class="${shareDraft.tab==='internal'?'active':''}" data-action="shareTab" data-tab="internal">协作分享</button><button class="${shareDraft.tab==='external'?'active':''}" data-action="shareTab" data-tab="external">创建外链</button></div>${shareTabBody()}`,btn('取消','closeModal')+btn(shareDraft.tab==='internal'?'保存协作设置':'生成演示外链',shareDraft.tab==='internal'?'saveShare':'generateLink',shareDraft.tab==='internal'?'check':'link','primary'))}
+function readShareFields(){if(shareDraft?.tab==='external'){shareDraft.scope=$('#linkScope')?.value||'code';shareDraft.expiry=$('#linkExpiry')?.value||'7';shareDraft.code=$('#linkCode')?.value||'';shareDraft.download=$('#linkDownload')?.checked}}
+function demoUrl(l){return 'https://example.invalid/demo/share/'+l.id.toUpperCase()}
+async function copyText(text){try{if(navigator.clipboard&&window.isSecureContext){await navigator.clipboard.writeText(text);return true}}catch{}const t=document.createElement('textarea');t.value=text;t.style.cssText='position:fixed;left:-9999px;top:0';document.body.appendChild(t);t.select();let success=false;try{success=document.execCommand('copy')}catch{}t.remove();return success}
+async function copyLink(id){const l=model.links.find(l=>l.id===id);if(!l||l.status!=='active'){toast('这条演示链接已失效。','info');return}const ok=await copyText(`【演示链接，不可对外访问】\n${demoUrl(l)}${l.scope==='凭提取码'?'\n提取码：'+l.code:''}`);toast(ok?'已复制演示链接（不可对外访问）。':'浏览器未允许复制，请手动选择并复制链接。',ok?'checkcircle':'info')}
+function popup(items,anchor){closePopup();const rect=anchor.getBoundingClientRect();$('#popup').innerHTML=items;$('#popup').hidden=false;const w=210;$('#popup').style.width=w+'px';$('#popup').style.left=Math.max(8,Math.min(rect.left,window.innerWidth-w-10))+'px';$('#popup').style.top=Math.max(8,Math.min(rect.bottom+7,window.innerHeight-$('#popup').offsetHeight-10))+'px';state.popup=true;$('#popup button')?.focus({preventScroll:true})}
+function closePopup(){state.popup=null;$('#popup').hidden=true;$('#popup').innerHTML=''}
+function menuItem(text,action,icon,id='',cls=''){return `<button data-action="${action}" data-id="${id}" class="${cls}" role="menuitem">${ic(icon)}${text}</button>`}
+function fileMenu(id,anchor){const f=file(id);if(!f)return;let menu='';if(f.deleted)menu=menuItem('恢复文件','restoreOne','restore',id)+menuItem('永久删除','purgeOne','trash',id,'danger');else {menu=menuItem(f.type==='folder'?'打开文件夹':'打开预览','open','file',id)+menuItem('查看详情','detail','info',id)+menuItem(f.star?'取消收藏':'收藏文件','toggleStar','star',id);if(canManage(f))menu+='<div class="menu-sep"></div>'+menuItem('共享与权限','share','shared',id)+menuItem('重命名','rename','edit',id)+menuItem('移动到…','moveOne','move',id);if(f.type!=='folder')menu+=menuItem(f.userAdded?'下载原文件':'下载样例说明','downloadOne','download',id);if(canManage(f))menu+='<div class="menu-sep"></div>'+menuItem('移入回收站','deleteOne','trash',id,'danger')}popup(menu,anchor)}
+function duplicateName(name,parent,exclude=''){return model.files.some(f=>!f.deleted&&f.parent===parent&&f.name.toLowerCase()===name.toLowerCase()&&f.id!==exclude)}
+function validateName(name){return name.length<1?'请输入名称。':name.length>100?'名称请控制在 100 个字符以内。':/[\\/:*?"<>|]/.test(name)?'名称不能包含 \\ / : * ? " < > |。':null}
+function targetParent(){return ['files','spaceFiles'].includes(state.view)?state.folder:'root'}
+function newItem(type){formMode=type;
+ const fields=`<label class="field"><span>${type==='newFolder'?'文件夹名称':'文档名称'}</span><input class="input" name="name" maxlength="100" value="${type==='newFolder'?'':'未命名文档.md'}" placeholder="${type==='newFolder'?'例如：九月项目资料':'文档名称.md'}" required></label>${type==='newDoc'?'<label class="field"><span>文档内容</span><textarea class="input input-area" name="body" maxlength="20000" placeholder="写下你的第一段内容…"></textarea></label>':''}`;
+ formModal(type==='newFolder'?'新建文件夹':'新建本地文档',fields,type,'创建','创建于 '+esc(targetParent()==='root'?'我的文件':file(targetParent())?.name||model.spaces.find(s=>s.id===targetParent())?.name||'当前空间')+'。更改仅保存在当前浏览器。');
+}
+function descendants(ids){const found=new Set(ids);let changed=true;while(changed){changed=false;model.files.forEach(f=>{if(found.has(f.parent)&&!found.has(f.id)){found.add(f.id);changed=true}})}return found}
+let operationIds=[];
+function askDelete(ids,permanent=false){operationIds=ids;const many=descendants(ids);confirmModal(permanent?'永久删除这些文件？':'移入回收站？',permanent?`将从本地原型永久删除 <strong>${many.size}</strong> 个项目，此操作无法撤销。不会删除电脑上的原文件。`:`将 <strong>${many.size}</strong> 个项目移入回收站。你之后可以恢复它们。`,permanent?'confirmPurge':'confirmDelete','',permanent?'永久删除':'移入回收站')}
+function doDelete(permanent=false){const ids=descendants(operationIds);if(permanent){model.files=model.files.filter(f=>!ids.has(f.id));model.recent=model.recent.filter(id=>!ids.has(id));ids.forEach(id=>{model.members[id]&&delete model.members[id];localBlobs.delete(id)});model.links=model.links.filter(l=>!ids.has(l.file))}else {const batch=uid();model.files.forEach(f=>{if(ids.has(f.id)&&canManage(f)){f.deleted=true;f.deletedAt=nowStamp();f.origin=locationName(f);f.deleteBatch=batch}})}state.selected.clear();closeDetails();persist();closeModal();render();toast(permanent?'已永久删除选中的本地演示数据。':'已移入回收站，可以随时恢复。')}
+function restoreFiles(ids){let idset=new Set(ids);ids.map(file).filter(Boolean).forEach(f=>{if(f.type==='folder'){const batch=f.deleteBatch;descendants([f.id]).forEach(id=>{if(file(id)?.deleteBatch===batch)idset.add(id)})}});idset.forEach(id=>{const f=file(id);if(!f)return;f.deleted=false;if(file(f.parent)?.deleted)f.parent=f.area==='space'?f.space:'root';let name=f.name,n=1;while(duplicateName(name,f.parent,f.id)){const dot=f.type==='folder'?-1:f.name.lastIndexOf('.');const base=dot>0?f.name.slice(0,dot):f.name,ext=dot>0?f.name.slice(dot):'';name=base+`（恢复 ${n++}）`+ext}f.name=name});state.selected.clear();closeDetails();persist();closeModal();render();toast(`已恢复 ${idset.size} 个项目；重名时自动保留副本。`)}
+function moveFiles(ids){operationIds=ids;const exclude=descendants(ids);const first=file(ids[0]);if(!ids.every(id=>canManage(file(id)))){toast('选择中包含不可移动的文件。','info');return}const roots=first.area==='space'?model.spaces.filter(s=>s.id===first.space).map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join(''):'<option value="root">我的文件 / 根目录</option>';const dirs=model.files.filter(f=>visible(f)&&f.type==='folder'&&!exclude.has(f.id)&&f.area===first.area&&(first.area!=='space'||f.space===first.space));formModal('移动文件',`<label class="field"><span>目标文件夹</span><select class="input" name="parent">${roots}${dirs.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('')}</select></label>`,'confirmMove','移动',`已选择 ${ids.length} 个项目。只允许在所属工作空间内移动。`)}
+function downloadFile(f){
+ if(f.type==='folder'){toast('文件夹打包下载不在本原型范围内。','info');return}
+ let blob,name;
+ if(f.userAdded){if(localBlobs.has(f.id)){blob=localBlobs.get(f.id);name=f.name}else if(f.body!==undefined){blob=new Blob([f.body],{type:'text/plain;charset=utf-8'});name=f.name}else{toast('原文件未保留，请重新选择本地文件。','info');return}}
+ else{blob=new Blob([`叠云企业网盘 · UI 演示样例\n\n文件名：${f.name}\n显示大小：${f.size}\n类型：${fileTypeName[f.type]}\n位置：${locationName(f)}\n\n这是一份纯文本说明，不是原始 ${f.name.split('.').pop().toUpperCase()} 文件。\n界面中的所有业务内容均为虚构示例，仅用于体验 UI 与交互。\n没有服务器上传、真实分享或实际权限控制。\n`],{type:'text/plain;charset=utf-8'});name=f.name+'_演示说明.txt'}
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),3000);toast(f.userAdded?'已生成本地文件下载。':'已生成 TXT 样例说明，不是原始业务文件。');
+}
+function openUpload(){uploadDestination={parent:targetParent(),area:state.view==='spaceFiles'?'space':'mine',space:state.space};modal('添加本地文件',`<div class="upload-zone" data-action="chooseUpload" id="uploadZone" tabindex="0" role="button">${ic('upload')}<strong>点击选择，或拖放文件到这里</strong><p>支持一次选择多个文件</p>${btn('选择本地文件','chooseUpload','','primary small')}</div><p class="tiny-note" style="margin-top:17px">这是离线 UI 原型，不会向任何服务器上传文件。刷新后保留文件名等信息，原文件内容需重新选择。纯文本可本地预览，其他格式按支持情况显示。</p>`,btn('关闭','closeModal'));const zone=$('#uploadZone');zone.addEventListener('dragover',e=>{e.preventDefault();zone.classList.add('over')});zone.addEventListener('dragleave',()=>zone.classList.remove('over'));zone.addEventListener('drop',e=>{e.preventDefault();zone.classList.remove('over');handleUpload([...e.dataTransfer.files])})}
+async function handleUpload(inputFiles){if(!inputFiles.length)return;const dest=uploadDestination||{parent:'root',area:'mine',space:null};let added=[];for(const b of inputFiles.slice(0,100)){let name=b.name,n=1;while(duplicateName(name,dest.parent)){const dot=b.name.lastIndexOf('.'),base=dot>0?b.name.slice(0,dot):b.name,ext=dot>0?b.name.slice(dot):'';name=base+`（副本${n++}）`+ext}const ext=name.split('.').pop().toLowerCase();const type=({docx:'word',doc:'word',xlsx:'sheet',xls:'sheet',csv:'sheet',pdf:'pdf',fig:'fig',png:'image',jpg:'image',jpeg:'image',webp:'image',svg:'image',md:'md',txt:'md',zip:'zip'})[ext]||'other';const id=uid();const f={id,name,type,size:b.size>=1024*1024?(b.size/1024/1024).toFixed(1)+' MB':Math.max(1,Math.round(b.size/1024))+' KB',date:nowStamp(),by:'林沐',owner:'林沐',parent:dest.parent,area:dest.area,space:dest.space,userAdded:true,shared:dest.area==='space'};localBlobs.set(id,b);if(['txt','md','csv','json'].includes(ext)&&b.size<500000){try{f.body=await b.text()}catch{}}model.files.push(f);model.transfers.unshift({id,name,size:f.size,time:nowStamp()});added.push(f)}model.transfers=model.transfers.slice(0,50);persist();closeModal();setView(dest.area==='space'?'spaceFiles':'files',dest.parent,dest.space);toast(`已添加 ${added.length} 个本地文件，未上传到服务器。`);$('#uploadInput').value=''}
+function preferences(){
+ const p={...model.prefs,primaryColor:normalizePrimaryColor(model.prefs.primaryColor)};
+ const themes=[['green','浅绿','原有配色'],['blue','商务蓝','清爽明晰']];
+ modal('界面偏好',`
+ <fieldset class="primary-colors" aria-describedby="primaryColorHint">
+   <legend>主色调</legend>
+   <div class="primary-options">${themes.map(([value,label,description])=>`
+     <label class="theme-option" data-color="${value}">
+       <input class="theme-radio" type="radio" name="prefPrimaryColor" value="${value}" aria-label="${label}" ${p.primaryColor===value?'checked data-initial-focus':''}>
+       <span class="theme-card"><span class="theme-swatch" aria-hidden="true"></span><span class="theme-name"><strong>${label}</strong><small>${description}</small></span><span class="theme-check" aria-hidden="true">${ic('check')}</span></span>
+     </label>`).join('')}</div>
+   <p class="theme-preview-note" id="primaryColorHint" role="status" aria-live="polite">当前为${PRIMARY_COLOR_NAMES[p.primaryColor]}。点击预览，保存后记住选择。</p>
+ </fieldset>
+ <label class="field"><span>列表密度</span><select class="input" id="prefDensity"><option value="comfortable" ${p.density==='comfortable'?'selected':''}>舒适 · 更多阅读空间</option><option value="compact" ${p.density==='compact'?'selected':''}>紧凑 · 同屏显示更多文件</option></select></label>
+ <label class="field"><span>文件显示方式</span><select class="input" id="prefLayout"><option value="list" ${p.layout==='list'?'selected':''}>列表</option><option value="grid" ${p.layout==='grid'?'selected':''}>网格</option></select></label>
+ <label class="toggle-line"><span><strong>界面过渡动效</strong><p>关闭后使用即时切换</p></span><input type="checkbox" role="switch" class="switch" id="prefMotion" ${p.motion?'checked':''}></label>
+ <p class="prefs-bottom-note">偏好保存在当前浏览器。取消或关闭窗口，不保存本次修改。</p>
+ <button class="text-button prefs-reset" data-action="resetAsk" style="color:var(--red)">恢复初始演示数据</button>
+ `,btn('取消','closeModal')+btn('保存偏好','savePrefs','check','primary'),'prefs-modal');
+ prefsDraft=p;
+}
+function savePreferences(){
+ if(!prefsDraft||!$('#prefDensity'))return;
+ const layout=$('#prefLayout').value;
+ const layoutChanged=model.prefs.layout!==layout;
+ const next={...model.prefs,density:$('#prefDensity').value,layout,motion:$('#prefMotion').checked,
+   primaryColor:normalizePrimaryColor($('#modalHost input[name="prefPrimaryColor"]:checked')?.value)};
+ model.prefs=next;
+ // Clear the draft before closing: a successful save must not roll back.
+ prefsDraft=null;
+ applyPrimaryColor(next.primaryColor);
+ const stored=persist();
+ if(layoutChanged){state.page=1;state.selected.clear()}
+ closeModal();render();
+ toast(stored?`界面偏好已保存 · ${PRIMARY_COLOR_NAMES[next.primaryColor]}`:'偏好已应用；浏览器未允许本地保存，仅当前会话有效。',stored?'checkcircle':'info');
+}
+function showHelp(){modal('使用说明',`<div class="help-block"><h3>这是一份可交互的离线原型</h3><p>左侧所有入口均可切换。“最近打开”展示你预览过的文件。文件名可点击打开；行内复选框用于批量操作；更多菜单提供详情、重命名、移动与分享。</p></div><div class="help-block"><h3>主色调与界面偏好</h3><p>通过头像菜单或工具栏的偏好图标打开“界面偏好”，在浅绿与商务蓝之间切换。点击配色即时预览，保存后记住选择；取消、关闭或按 Esc 会恢复原配色。文件类型与警告状态的颜色保持不变。</p></div><div class="help-block"><h3>本地文件与示例内容</h3><p>选择本地文件不会上传。内置文档、表格、图片预览均为示意，下载内置文件会生成 TXT 说明，不会伪装成真实 DOCX 或 XLSX 文件。</p></div><div class="help-block"><h3>共享只作用于原型</h3><p>协作者、外链、提取码和访问设置只用于演示。演示链接不可外部访问，不会发送邀请，也不代表服务端权限控制。</p></div><div class="keyboard-row"><span>搜索文件</span><kbd class="keycap">Ctrl / ⌘ K</kbd></div><div class="keyboard-row"><span>关闭面板、取消选择</span><kbd class="keycap">Esc</kbd></div><div class="keyboard-row"><span>文件行聚焦时打开</span><kbd class="keycap">Enter</kbd></div><p class="tiny-note" style="margin-top:17px">数据仅保存在当前浏览器，浏览器禁止本地存储时仅保留在当前会话。支持通过“界面偏好”恢复初始数据。</p>`,btn('开始体验','closeModal','','primary'))}
+// All interactions are delegated; text from local files is escaped before rendering.
+document.addEventListener('click',async e=>{
+ const target=e.target.closest('[data-action]');
+ if(!target){if(state.popup&&!e.target.closest('#popup'))closePopup();const row=e.target.closest('[data-row-id]');if(row&&!e.target.closest('input,button,a')){toggleSelect(row.dataset.rowId)}return}
+ const a=target.dataset.action,id=target.dataset.id;const popupActions=['newMenu','fileMenu','userMenu'];if(state.popup&&!popupActions.includes(a))closePopup();
+ switch(a){
+ case 'nav':setView(target.dataset.view);break;
+ case 'open':openFile(id);break;
+ case 'newMenu':popup(menuItem('新建文件夹','newFolder','folder')+menuItem('新建文档','newDoc','document')+'<div class="menu-sep"></div>'+menuItem('上传本地文件','upload','upload'),target);break;
+ case 'newFolder':newItem('newFolder');break;case 'newDoc':newItem('newDoc');break;
+ case 'upload':openUpload();break;case 'chooseUpload':$('#uploadInput').click();break;
+ case 'fileMenu':fileMenu(id,target);break;
+ case 'detail':state.detail=id;renderDetails();break;
+ case 'detailSelected':state.detail=[...state.selected][0];renderDetails();break;
+ case 'closeDetails':closeDetails();break;
+ case 'filter':state.filter=target.dataset.filter;state.selected.clear();state.page=1;renderContent();break;
+ case 'layout':model.prefs.layout=target.dataset.layout;state.page=1;persist();renderContent();break;
+ case 'sortDate':toggleSort('date');break;case 'sortName':toggleSort('name');break;case 'sortReverse':state.reverse=!state.reverse;renderContent();break;case 'pagePrev':changePage(state.page-1);break;case 'pageNext':changePage(state.page+1);break;case 'pageTo':changePage(target.dataset.page);break;
+ case 'sharedTab':state.shareTab=target.dataset.tab;state.selected.clear();state.page=1;renderContent();break;
+ case 'linkTab':state.linkTab=target.dataset.tab;state.page=1;renderContent();break;
+ case 'clearSelection':state.selected.clear();renderContent();break;
+ case 'clearSearch':setView('files');break;
+ case 'toggleStar':file(id).star=!file(id).star;persist();renderContent();toast(file(id).star?'已收藏这份文件。':'已取消收藏。');break;
+ case 'rename':{const f=file(id);if(!canEdit(f))break;formModal('重命名',`<input type="hidden" name="id" value="${id}"><label class="field"><span>名称</span><input class="input" name="name" value="${esc(f.name)}" maxlength="100" required></label>`,'renameSubmit');break}
+ case 'share':openShare(id);break;
+ case 'shareTab':readShareFields();shareDraft.tab=target.dataset.tab;renderShare();break;
+ case 'addMember':{const name=$('#invitePerson').value,role=$('#inviteRole').value;const old=shareDraft.members.find(m=>m.name===name);if(old)old.role=role;else shareDraft.members.push({name,role});renderShare();break}
+ case 'removeDraftMember':shareDraft.members.splice(Number(target.dataset.index),1);renderShare();break;
+ case 'saveShare':{const d=shareDraft;model.members[d.file]=d.members;file(d.file).shared=d.members.length>0;persist();closeModal();render();toast('协作设置已在本地保存，未发送邀请。');break}
+ case 'generateLink':{readShareFields();const d=shareDraft;if(d.scope==='code'&&!/^[a-zA-Z0-9]{4}$/.test(d.code)){$('#linkError').textContent='提取码请填写 4 位英文字母或数字。';break}let exp='永久';if(d.expiry!=='forever'){const date=new Date();date.setDate(date.getDate()+Number(d.expiry));exp=date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0')}const l={id:uid(),file:d.file,date:nowStamp(),expiry:exp,status:'active',scope:d.scope==='code'?'凭提取码':'持有链接',code:d.code,allowDownload:d.download};model.links.unshift(l);persist();modal('演示外链已生成',`<div class="link-result"><strong>${esc(file(l.file).name)}</strong><code>${demoUrl(l)}</code>${l.scope==='凭提取码'?'提取码：'+esc(l.code)+'<br>':''}有效期至：${l.expiry}</div><p class="form-note" style="margin-top:17px;margin-bottom:0">这是不可对外访问的演示链接。你可以在“外链管理”中查看、复制与停用它。</p>`,btn('完成','closeModal')+btn('复制演示链接','copyLink','copy','primary',`data-id="${l.id}"`));renderContent();break}
+ case 'copyLink':await copyLink(id);break;
+ case 'revokeLink':confirmModal('停用这条演示链接？','停用后，这条链接将在外链管理中标记为“已停用”。其他协作者的授权不受影响。','confirmRevoke',id,'停用链接');break;
+ case 'confirmRevoke':{const l=model.links.find(l=>l.id===id);if(l)l.status='revoked';persist();closeModal();renderContent();toast('演示链接已停用。');break}
+ case 'removeLink':confirmModal('移除外链记录？','只移除这条已失效的本地记录，不删除对应文件。','confirmRemoveLink',id,'移除');break;
+ case 'confirmRemoveLink':model.links=model.links.filter(l=>l.id!==id);persist();closeModal();renderContent();break;
+ case 'chooseLinkFile':{const list=model.files.filter(f=>canManage(f)&&f.type!=='folder');formModal('选择要分享的文件',`<label class="field"><span>文件</span><select class="input" name="file">${list.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('')}</select></label>`,'linkFileSelected','下一步','生成的链接仅作交互演示，不可对外访问。');break}
+ case 'downloadOne':if(file(id))downloadFile(file(id));break;
+ case 'downloadSelected':{const list=selectedFiles().filter(f=>f.type!=='folder');if(!list.length){toast('文件夹打包下载不在本原型范围内。','info');break}if(list.length===1)downloadFile(list[0]);else {const text='叠云 UI 原型 · 选中文件清单\n\n'+list.map(f=>f.name+'  |  '+f.size+'  |  '+locationName(f)).join('\n')+'\n\n此 TXT 是选中文件清单，不是这些文件的压缩包或原始内容。';downloadText(text,'选中文件清单_演示.txt');toast('已下载选中文件清单（TXT），不是批量原文件。')}break}
+ case 'deleteOne':if(canManage(file(id)))askDelete([id]);break;case 'deleteSelected':if(selectedFiles().every(canManage))askDelete([...state.selected]);break;
+ case 'confirmDelete':doDelete(false);break;
+ case 'purgeOne':askDelete([id],true);break;case 'purgeSelected':askDelete([...state.selected],true);break;
+ case 'confirmPurge':doDelete(true);break;
+ case 'restoreOne':restoreFiles([id]);break;case 'restoreSelected':restoreFiles([...state.selected]);break;
+ case 'emptyTrash':askDelete(model.files.filter(f=>f.deleted).map(f=>f.id),true);break;
+ case 'moveOne':moveFiles([id]);break;case 'moveSelected':moveFiles([...state.selected]);break;
+ case 'space':setView('spaceFiles',id,id);break;
+ case 'newSpace':formModal('创建协作空间',`<label class="field"><span>空间名称</span><input class="input" name="name" placeholder="例如：秋季项目组" maxlength="30" required></label><label class="field"><span>一句话描述</span><input class="input" name="desc" placeholder="说明团队在这里共同维护什么" maxlength="60"></label>`,'newSpaceSubmit','创建空间','空间与成员信息仅在本地保存，不创建真实组织资源。');break;
+ case 'spaceMembers':{const s=model.spaces.find(s=>s.id===state.space);modal('空间成员',`<p class="form-note">${esc(s?.name)} · 展示部分示例成员。成员管理与邀请未连接服务端。</p><div class="member">${avatar(s?.owner||'林沐',1)}<div class="member-info"><span class="member-name">${esc(s?.owner||'林沐')}</span></div><span class="member-role">空间管理员</span></div><div class="member">${avatar('林沐')}<div class="member-info"><span class="member-name">林沐（你）</span></div><span class="member-role">可编辑</span></div><div class="member">${avatar('周予',2)}<div class="member-info"><span class="member-name">周予</span></div><span class="member-role">可编辑</span></div>`,btn('关闭','closeModal'));break}
+ case 'closeModal':closeModal();break;
+ case 'help':showHelp();break;
+ case 'transfers':modal('本地文件记录',model.transfers.length?`<p class="form-note">以下是实际选择过的本地文件，未向任何服务器上传。</p>${model.transfers.map(t=>`<div class="transfer-item">${fileIcon({type:'file'},'mini')}<div class="truncate"><strong>${esc(t.name)}</strong><p>${esc(t.size)} · ${esc(t.time)} · 本地已添加</p></div>${ic('checkcircle')}</div>`).join('')}`:`${emptyBlock('暂无本地文件记录','选择上传文件后，这里会显示本地添加记录。')}`,btn('关闭','closeModal'));break;
+ case 'userMenu':popup(menuItem('界面偏好','preferences','sliders')+menuItem('使用说明','help','help')+'<div class="menu-sep"></div>'+`<div class="tiny-note" style="padding:8px 10px">林沐 · 产品设计部<br>当前为离线演示身份</div>`,target);break;
+ case 'preferences':preferences();break;
+ case 'savePrefs':savePreferences();break;
+ case 'resetAsk':confirmModal('恢复初始演示数据？','将清除本原型中创建的文件记录、协作设置与外链，并恢复默认视图。不会删除电脑上的任何原文件。','resetConfirm','','恢复初始数据');break;
+ case 'resetConfirm':model=makeData();localBlobs.clear();persist();closeModal();setView('files');toast('已恢复初始演示数据。');break;
+ case 'mobileMenu':state.mobile=!state.mobile;$('#sidebar').classList.toggle('is-open',state.mobile);$('#sidebarScrim').classList.toggle('is-open',state.mobile);break;
+ }
+});
+document.addEventListener('contextmenu',e=>{const target=e.target.closest('[data-id]');if(!target||!file(target.dataset.id)||state.modal)return;e.preventDefault();fileMenu(target.dataset.id,target)});
+function downloadText(text,name){const u=URL.createObjectURL(new Blob([text],{type:'text/plain;charset=utf-8'}));const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2500)}
+function toggleSelect(id){if(state.selected.has(id))state.selected.delete(id);else state.selected.add(id);renderContent()}
+document.addEventListener('change',e=>{
+ if(e.target.name==='prefPrimaryColor'&&prefsDraft){
+   const color=normalizePrimaryColor(e.target.value);
+   prefsDraft.primaryColor=color;
+   applyPrimaryColor(color);
+   const changed=color!==model.prefs.primaryColor;
+   $('#primaryColorHint').textContent=changed?`正在预览${PRIMARY_COLOR_NAMES[color]}，尚未保存；取消将恢复原配色。`:`当前为${PRIMARY_COLOR_NAMES[color]}。点击预览，保存后记住选择。`;
+   return;
+ }
+
+ if(e.target.id==='pageSize'){
+  const size=Number(e.target.value);if(![10,20,50,100].includes(size))return;
+  state.pageSize=size;state.page=1;state.selected.clear();model.prefs.pageSize=size;persist();renderContent();return;
+ }
+
+ if(e.target.dataset.select){toggleSelect(e.target.dataset.select);return}
+ if(e.target.id==='selectAll'){const list=displayedFiles();if(e.target.checked)list.forEach(f=>state.selected.add(f.id));else list.forEach(f=>state.selected.delete(f.id));renderContent()}
+ if(e.target.id==='linkScope'){readShareFields();renderShare()}
+ if(e.target.id==='uploadInput')handleUpload([...e.target.files]);
+});
+document.addEventListener('submit',e=>{
+ if(e.target.getAttribute('id')!=='mainForm')return;e.preventDefault();const fd=new FormData(e.target),a=e.target.dataset.formAction,err=$('#formError');let name=String(fd.get('name')||'').trim();if(['newFolder','newDoc','renameSubmit','newSpaceSubmit'].includes(a)){const error=validateName(name);if(error){err.textContent=error;return}}
+ if(a==='newFolder'||a==='newDoc'){
+ const parent=targetParent();if(a==='newDoc'&&!/\.(md|txt)$/i.test(name))name+='.md';if(duplicateName(name,parent)){err.textContent='当前文件夹已存在同名项目，请使用其他名称。';return}const f={id:uid(),name,type:a==='newFolder'?'folder':'md',size:a==='newFolder'?'—':'1 KB',parent,area:state.view==='spaceFiles'?'space':'mine',space:state.space,owner:'林沐',by:'林沐',date:nowStamp(),shared:state.view==='spaceFiles',userAdded:true};if(a==='newDoc'){f.body=String(fd.get('body')||'');f.size=Math.max(1,Math.ceil(new Blob([f.body]).size/1024))+' KB'}else f.color='#90adc9';model.files.unshift(f);persist();closeModal();if(!['files','spaceFiles'].includes(state.view))setView('files');else render();toast(a==='newFolder'?'文件夹已在本地创建。':'本地文档已创建。');
+ }else if(a==='renameSubmit'){const f=file(fd.get('id'));if(duplicateName(name,f.parent,f.id)){err.textContent='已存在同名文件，请使用其他名称。';return}f.name=name;f.date=nowStamp();persist();closeModal();render();toast('名称已更新。')}
+ else if(a==='confirmMove'){const parent=String(fd.get('parent'));const selected=operationIds.map(file);if(selected.some(f=>duplicateName(f.name,parent,f.id))){err.textContent='目标文件夹存在同名项目，请先重命名后再移动。';return}selected.forEach(f=>f.parent=parent);persist();closeModal();state.selected.clear();render();toast(`已移动 ${selected.length} 个项目。`)}
+ else if(a==='newSpaceSubmit'){if(model.spaces.some(s=>s.name===name)){err.textContent='已存在同名空间。';return}const s={id:uid(),name,desc:String(fd.get('desc')||'共同维护团队文件。'),members:1,owner:'林沐',color:'green',icon:'people'};model.spaces.push(s);persist();closeModal();setView('spaces');toast('本地协作空间已创建。')}
+ else if(a==='linkFileSelected'){const id=String(fd.get('file'));closeModal();openShare(id,'external')}
+});
+let searchTimer;
+$('#search').addEventListener('input',e=>{clearTimeout(searchTimer);const value=e.target.value;$('#clearSearch').hidden=!value;searchTimer=setTimeout(()=>{if(!value.trim()){setView('files');$('#search').focus();return}state.query=value;state.view='search';state.filter='all';state.selected.clear();state.page=1;state.sort='date';state.reverse=false;closeDetails();renderSidebar();renderContent();document.title='搜索结果 · 叠云'},120)});
+document.addEventListener('keydown',e=>{
+ const editable=e.target.matches('input,textarea,select,[contenteditable=true]');
+ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();if(state.modal)closeModal();$('#search').focus();$('#search').select();return}
+ if(e.key==='Escape'){e.preventDefault();if(state.popup)closePopup();else if(state.modal)closeModal();else if(state.detail)closeDetails();else if(state.selected.size){state.selected.clear();renderContent()}else if(state.mobile){state.mobile=false;$('#sidebar').classList.remove('is-open');$('#sidebarScrim').classList.remove('is-open')}else if(state.view==='search')setView('files');return}
+ if(e.key==='Tab'&&state.modal){const focusables=$$('#modalHost button:not(:disabled),#modalHost input:not(:disabled),#modalHost select:not(:disabled),#modalHost textarea:not(:disabled),#modalHost [tabindex="0"]').filter(el=>el.offsetParent!==null);const first=focusables[0],last=focusables.at(-1);if(e.shiftKey&&document.activeElement===first){e.preventDefault();last?.focus()}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first?.focus()}}
+ if(e.key==='Tab'&&state.popup){/* Normal focus order is retained for compact command menus. */}
+ if(!editable&&!state.modal&&e.target.matches('[data-row-id]')){if(e.key==='Enter'){e.preventDefault();openFile(e.target.dataset.rowId)}if(e.key===' '){e.preventDefault();const id=e.target.dataset.rowId;toggleSelect(id);$(`[data-row-id="${id}"]`)?.focus()}}
+ if(e.target.id==='uploadZone'&&(e.key==='Enter'||e.key===' ')){e.preventDefault();$('#uploadInput').click()}
+});
+$('#modalHost').addEventListener('click',e=>{if(e.target===$('#modalHost'))closeModal()});
+$('#sidebarScrim').addEventListener('click',()=>{state.mobile=false;$('#sidebar').classList.remove('is-open');$('#sidebarScrim').classList.remove('is-open')});
+window.addEventListener('resize',()=>{if(state.popup)closePopup()});
+window.addEventListener('dragover',e=>{if(e.dataTransfer?.types.includes('Files'))e.preventDefault()});
+window.addEventListener('drop',e=>{if(e.dataTransfer?.files.length&&!e.target.closest('#uploadZone')){e.preventDefault();uploadDestination={parent:targetParent(),area:state.view==='spaceFiles'?'space':'mine',space:state.space};handleUpload([...e.dataTransfer.files])}});
+render();
+
+$$('[data-ic]').forEach(el=>el.innerHTML=ic(el.dataset.ic));
+
+</script></body></html>
