@@ -18,6 +18,10 @@ class MysqlMigrationFormatTest {
         assertTrue(audit.columns.stream().anyMatch(c -> c.name.equals("payload") && c.type.equals("LONGTEXT")));
         assertTrue(audit.columns.stream().anyMatch(c -> c.name.equals("created_at") && c.type.equals("DATETIME(6)")));
         assertEquals("id", audit.columns.get(audit.primaryIndex).name);
+        MysqlMigration.Table versions = tables.stream().filter(t -> t.name.equals("cloudnext_drive_item_version")).findFirst().orElseThrow();
+        assertTrue(versions.columns.stream().anyMatch(c -> c.name.equals("sha256")));
+        assertEquals(11, versions.columns.size());
+        assertThrows(IllegalStateException.class, () -> MysqlMigration.parseSchema(sql.replace("`sha256` VARCHAR(64)", "`sha256` UNKNOWN")));
     }
 
     @Test void canonicalDigestDistinguishesNullEmptyUnicodeAndBoundaries() throws Exception {

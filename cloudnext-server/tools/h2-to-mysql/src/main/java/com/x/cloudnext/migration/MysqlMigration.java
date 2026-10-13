@@ -572,13 +572,17 @@ public final class MysqlMigration {
         List<Table> result = new ArrayList<>();
         for (String ddl : sql.split(";")) {
             if (ddl.trim().isEmpty()) continue;
-            Matcher name = Pattern.compile("^\\s*CREATE TABLE `([a-z_]+)` \\(").matcher(ddl);
+            Matcher name = Pattern.compile("^\\s*CREATE TABLE `([a-z_][a-z0-9_]*)` \\(").matcher(ddl);
             if (!name.find() || !ddl.contains("ENGINE=InnoDB") || !ddl.contains("COLLATE utf8mb4_0900_bin"))
                 throw new IllegalStateException("Unsupported baseline statement");
             List<Column> columns = new ArrayList<>();
-            Matcher fields = Pattern.compile("(?m)^\\s*`([a-z_]+)` (VARCHAR\\(\\d+\\)|LONGTEXT|BIT\\(1\\)|BIGINT|INT|DATETIME\\(6\\))").matcher(ddl);
+            Matcher fields = Pattern.compile("(?m)^\\s*`([a-z_][a-z0-9_]*)` (VARCHAR\\(\\d+\\)|LONGTEXT|BIT\\(1\\)|BIGINT|INT|DATETIME\\(6\\))").matcher(ddl);
             while (fields.find()) columns.add(new Column(fields.group(1), fields.group(2)));
-            Matcher key = Pattern.compile("PRIMARY KEY \\(`([a-z_]+)`\\)").matcher(ddl);
+            Matcher declared = Pattern.compile("(?m)^\\s*`[^`]+` ").matcher(ddl);
+            int declaredCount = 0;
+            while (declared.find()) declaredCount++;
+            if (columns.size() != declaredCount) throw new IllegalStateException("Unsupported baseline column definition");
+            Matcher key = Pattern.compile("PRIMARY KEY \\(`([a-z_][a-z0-9_]*)`\\)").matcher(ddl);
             if (!key.find()) throw new IllegalStateException("Missing primary key");
             String primary = key.group(1); int index = -1;
             for (int i = 0; i < columns.size(); i++) if (columns.get(i).name.equals(primary)) index = i;
