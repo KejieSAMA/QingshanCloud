@@ -103,7 +103,7 @@ import { computed, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import DriveCopyDialog from '../../components/drive/DriveCopyDialog.vue';
-import { downloadDriveItem, editDriveItem, getIncomingDriveSharePath, getIncomingDriveShares, getOutgoingDriveShares, getDriveSortPreference, previewDriveItem, revokeDriveShare, updateDriveShare, updateDriveSortPreference } from "../../api/cloudnext";
+import { downloadDriveItem, getIncomingDriveSharePath, getIncomingDriveShares, getOutgoingDriveShares, getDriveSortPreference, previewDriveItem, revokeDriveShare, updateDriveShare, updateDriveSortPreference } from "../../api/cloudnext";
 import { emitDriveRefreshSignal } from '../../session';
 import { formatFileSize, formatTime } from '../../utils/formatters';
 import MobileFilterChips from '../../components/mobile/MobileFilterChips.vue';
@@ -347,12 +347,7 @@ const onPreviewIncoming = async (item) => {
   }
 };
 
-const onEditIncoming = async (item) => {
-  try {
-    await editDriveItem(item);
-  } catch (e) {
-  }
-};
+
 
 const onDownloadIncoming = async (item) => {
   try {
@@ -535,9 +530,6 @@ const mobileSheetActions = computed(() => {
     ];
   }
   const actions = [{ key: 'preview', label: '预览' }];
-  if (item.allowEdit) {
-    actions.push({ key: 'edit', label: '在线编辑' });
-  }
   if (item.allowDownload) {
     actions.push({ key: 'download', label: '下载' });
     actions.push({ key: 'copy', label: '复制到' });
@@ -603,9 +595,7 @@ const onMobileSheetSelect = (key) => {
     case 'preview':
       void onPreviewIncoming(item);
       break;
-    case 'edit':
-      void onEditIncoming(item);
-      break;
+
     case 'download':
       void onDownloadIncoming(item);
       break;

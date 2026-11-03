@@ -3,6 +3,11 @@ package com.x.cloudnext.server.auth;
 import javax.validation.constraints.NotBlank;
 
 public class AuthLoginRequest {
+    @javax.validation.constraints.Pattern(regexp = "[a-zA-Z0-9_-]{1,80}")
+    private String entryId;
+    public String getEntryId() { return entryId; }
+    public void setEntryId(String value) { entryId = value; }
+
 
     @NotBlank
     private String credential;

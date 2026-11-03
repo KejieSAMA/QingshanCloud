@@ -4,6 +4,11 @@ jspm_packages/
 **/target/
 **/dist/
 **/build/
+# Vite integration source lives under build; keep generated outputs ignored.
+!/cloudnext-web/build/
+/cloudnext-web/build/*
+!/cloudnext-web/build/pdfjs-webview83.ts
+!/cloudnext-web/build/pdfjs-wasm-assets.ts
 **/out/
 coverage/
 .nyc_output/

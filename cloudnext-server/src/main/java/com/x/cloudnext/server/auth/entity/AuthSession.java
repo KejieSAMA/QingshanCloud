@@ -12,6 +12,11 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "cloudnext_auth_session")
 public class AuthSession {
+    @Column(name = "drive_id", nullable = false, length = 64)
+    private String driveId;
+    public String getDriveId() { return driveId; }
+    public void setDriveId(String value) { driveId = value; }
+
 
     @Id
     @Column(name = "id", nullable = false, length = 64)

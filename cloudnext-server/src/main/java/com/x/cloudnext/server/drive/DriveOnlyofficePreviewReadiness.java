@@ -41,10 +41,5 @@ public class DriveOnlyofficePreviewReadiness {
         return "OnlyOffice preview is not configured. Missing config: " + String.join(", ", missingConfigKeys);
     }
 
-    public List<String> getWarnings() {
-        if (configured) {
-            return Collections.emptyList();
-        }
-        return Collections.singletonList(getUnavailableMessage());
-    }
+    public List<String> getWarnings() { return Collections.emptyList(); }
 }

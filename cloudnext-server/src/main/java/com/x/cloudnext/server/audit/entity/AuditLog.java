@@ -26,12 +26,13 @@ import com.x.cloudnext.server.audit.AuditAction;
 @Entity
 @Table(
         name = "cloudnext_audit_log",
-        indexes = {
+        indexes = { @javax.persistence.Index(name = "idx_namespace_audit_log", columnList = "drive_id"),
                 @Index(name = "idx_audit_person_created", columnList = "person_oa_id, created_at"),
                 @Index(name = "idx_audit_action_created", columnList = "action, created_at"),
                 @Index(name = "idx_audit_target", columnList = "target_type, target_id")
         })
-public class AuditLog {
+@org.hibernate.annotations.Filter(name = "driveNamespace", condition = "drive_id = :driveId")
+public class AuditLog extends com.x.cloudnext.server.namespace.DriveScopedEntity {
 
     @Id
     @Column(name = "id", nullable = false, length = 64)

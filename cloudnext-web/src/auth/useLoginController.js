@@ -3,7 +3,8 @@ import { navigateAfterLogin } from '../authNavigation';
 import { computed, inject, onMounted, onUnmounted, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { buildSsoStartUrl, completeSsoLogin, getAuthStatus, login, logout } from '../api/cloudnext';
-import { clearStoredSession, getStoredToken, setStoredSession } from '../session';
+import { clearStoredSession, getStoredSession, getStoredToken, setStoredSession } from '../session';
+import { getActiveEntryId } from '../driveContext';
 import { sanitizeReturnPath } from '../authNavigation';
 import { oaReturnUrl, ssoRecoveryMessage } from '../ssoRecovery';
 import {
@@ -45,6 +46,7 @@ const message = ref('');
 const submitting = ref(false);
 const recoveryCode = ref(route.query.sso === 'error' ? (route.query.code || 'SSO_UNAVAILABLE') : '');
 const oaUrl = computed(() => oaReturnUrl(status.value.formSsoStartUrl));
+const driveName = computed(() => getStoredSession()?.drive?.name || (getActiveEntryId() === 'default' ? '青山云盘' : '专属云盘'));
 
 const loadStatus = async () => {
   try {
@@ -124,7 +126,7 @@ const tryCompleteSso = async () => {
       clearStoredSession();
     }
     const expectedToken = getStoredToken();
-    const session = await completeSsoLogin();
+    const session = await completeSsoLogin(route.query.state);
     if (disposed || getStoredToken() !== expectedToken) return;
     setStoredSession(session);
     await navigateAfterLogin(router, route.query.returnPath);
@@ -151,5 +153,5 @@ onMounted(async () => {
   await tryCompleteSso();
 });
 
-return { status, form, showPassword, error, message, submitting, recoveryCode, oaUrl, onSubmit, onSsoLogin, ssoRecoveryMessage };
+return { status, form, showPassword, error, message, submitting, recoveryCode, oaUrl, driveName, onSubmit, onSsoLogin, ssoRecoveryMessage };
 }

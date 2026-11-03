@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AuthLoginResponse {
+    private com.x.cloudnext.server.namespace.DriveDescriptor drive;
+    public com.x.cloudnext.server.namespace.DriveDescriptor getDrive() { return drive; }
+    public void setDrive(com.x.cloudnext.server.namespace.DriveDescriptor value) { drive = value; }
+
 
     private boolean authenticated;
     private String token;

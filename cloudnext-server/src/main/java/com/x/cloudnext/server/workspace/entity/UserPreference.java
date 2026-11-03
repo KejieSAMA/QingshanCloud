@@ -16,11 +16,12 @@ import javax.persistence.UniqueConstraint;
         name = "cloudnext_user_preference",
         uniqueConstraints = @UniqueConstraint(
                 name = "uk_cloudnext_user_preference",
-                columnNames = { "person_oa_id", "preference_key" }),
-        indexes = {
+                columnNames = { "drive_id", "person_oa_id", "preference_key" }),
+        indexes = { @javax.persistence.Index(name = "idx_namespace_user_preference", columnList = "drive_id"),
                 @Index(name = "idx_cloudnext_user_preference_person", columnList = "person_oa_id")
         })
-public class UserPreference {
+@org.hibernate.annotations.Filter(name = "driveNamespace", condition = "drive_id = :driveId")
+public class UserPreference extends com.x.cloudnext.server.namespace.DriveScopedEntity {
 
     @Id
     @Column(name = "id", nullable = false, length = 64)

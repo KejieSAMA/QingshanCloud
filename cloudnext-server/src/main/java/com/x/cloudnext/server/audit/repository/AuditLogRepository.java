@@ -12,6 +12,7 @@ import org.springframework.data.repository.query.Param;
 import com.x.cloudnext.server.audit.AuditAction;
 import com.x.cloudnext.server.audit.entity.AuditLog;
 
+@org.springframework.transaction.annotation.Transactional(readOnly = true)
 public interface AuditLogRepository extends JpaRepository<AuditLog, String> {
     List<AuditLog> findByTargetTypeAndTargetIdInOrderByCreatedAtDesc(String targetType, java.util.Collection<String> targetIds);
 

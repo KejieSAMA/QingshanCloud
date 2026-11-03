@@ -16,10 +16,14 @@ import com.x.cloudnext.server.drive.DriveItemType;
 import com.x.cloudnext.server.drive.DriveScopeType;
 
 @Entity
+@org.hibernate.annotations.FilterDef(name = "driveNamespace", parameters = @org.hibernate.annotations.ParamDef(name = "driveId", type = "string"))
 @org.hibernate.annotations.DynamicUpdate
 @Table(
         name = "cloudnext_drive_item",
-        indexes = {
+        indexes = { @javax.persistence.Index(name = "idx_namespace_drive_item", columnList = "drive_id"),
+                @Index(name = "idx_drive_namespace_scope", columnList = "drive_id, scope_type, scope_id, deleted, parent_id, updated_at"),
+                @Index(name = "idx_drive_namespace_trash", columnList = "drive_id, owner_person_oa_id, deleted, deleted_at"),
+                @Index(name = "idx_drive_namespace_recent", columnList = "drive_id, owner_person_oa_id, deleted, last_accessed_at"),
                 @Index(
                         name = "idx_drive_item_owner_deleted_parent_type_updated",
                         columnList = "owner_person_oa_id, deleted, parent_id, item_type, updated_at"),
@@ -36,7 +40,8 @@ import com.x.cloudnext.server.drive.DriveScopeType;
                         name = "idx_drive_item_scope_deleted_parent_updated",
                         columnList = "scope_type, scope_id, deleted, parent_id, updated_at")
         })
-public class DriveItem {
+@org.hibernate.annotations.Filter(name = "driveNamespace", condition = "drive_id = :driveId")
+public class DriveItem extends com.x.cloudnext.server.namespace.DriveScopedEntity {
 
     @Id
     @Column(name = "id", nullable = false, length = 64)

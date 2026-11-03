@@ -1,6 +1,6 @@
 # 青山云盘 / CloudNext
 
-独立云盘项目，包含 Java API、Vue PC/手机 Web 和原生 Android 客户端。账号认证、目录同步和 SSO 由外部 Form 服务提供；Office 预览/编辑连接独立 OnlyOffice 服务。
+独立云盘项目，包含 Java API、Vue PC/手机 Web 和原生 Android 客户端。账号认证、目录同步和 SSO 由外部 Form 服务提供；Office 文件由云盘独立使用 LibreOffice 转为 PDF，手机和电脑共用只读阅读器，不再依赖 OnlyOffice。
 
 ## 目录
 
@@ -23,7 +23,7 @@
 
 远程文件内容继续保存在 `D:\QingshanCloud\data\drive-storage`。本机历史 `cloudnext-server/cloudnext-server/.data/` 和另一个可能存在的 `.data/` 均保留；H2 文件仅用于旧库迁移或离线备份，不能直接启动新版应用。数据库迁移不改写文件 ID、Form canonical key 或 storage key。
 
-所有 Form、OnlyOffice、回调和公网入口地址通过配置提供。Form 和 OnlyOffice 是独立外部服务，本项目不需要本地 O2 源码或运行目录。历史 OA canonical ID、归档快照及迁移说明保留用于数据连续性。
+Form、公网入口、LibreOffice 程序和预览缓存路径通过配置提供。本项目不需要本地 O2 源码或运行目录。历史 OA canonical ID、归档快照及迁移说明保留用于数据连续性。
 
 ## 本地运行
 
@@ -65,3 +65,5 @@ node --test cloudnext-server/tools/mysql-contract.test.mjs
 Java 测试需要显式授权，在隔离副本中通过 SSH 隧道使用 `qingshancloud_test` 及专用账号。缺少测试配置、连接正式库或账号有跨库权限时拒绝执行，不再使用 H2 内存库。不要在实际运行目录执行 `clean`。
 
 Android 环境说明见 [SETUP](cloudnext-android/docs/SETUP.md)，Form 迁移记录见 [运行手册](cloudnext-server/FORM_MIGRATION_RUNBOOK.md)。
+
+文件预览的配置、接口、隔离验证、旧编辑会话收尾与人工清单见 [FILE_PREVIEW_RUNBOOK.md](FILE_PREVIEW_RUNBOOK.md)。

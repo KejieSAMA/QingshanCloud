@@ -93,10 +93,10 @@ class CloudNextExperienceFlowTest extends AbstractDriveIntegrationTest {
   assertEquals(3,versions.findByItemIdOrderByVersionNumberDesc(file.getId()).size());
  }
  private void commitCallback(String id,String bytes,String key) {
-  new TransactionTemplate(transactions).execute(status -> {
+  com.x.cloudnext.server.testing.NamespaceTestSupport.inDefaultDrive(() -> new TransactionTemplate(transactions).execute(status -> {
    DriveItem item=driveItemRepository.findById(id).orElseThrow();
    DriveStoredFile saved=versionService.store(item,bytes.getBytes(StandardCharsets.UTF_8),DEFAULT_OWNER_ID,DEFAULT_OWNER_NAME,key);
    item.setStorageKey(saved.getStorageKey());item.setSizeBytes(saved.getSizeBytes());driveItemRepository.save(item);return null;
-  });
+  }));
  }
 }

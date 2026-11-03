@@ -3,12 +3,12 @@
 
     <div class="auth-card">
       <div  class="m-auth-brand">
-        <span class="auth-badge">青山云盘</span>
+        <span class="auth-badge">{{driveName}}</span>
         <span class="m-auth-brand-sub">企业文件协作平台</span>
       </div>
       <div class="auth-head">
         <h1>{{ recoveryCode ? '云盘免登未完成' : '登录' }}</h1>
-        <p v-if="!recoveryCode">使用 Form 工号或手机号进入青山云盘工作台。</p>
+        <p v-if="!recoveryCode">使用 Form 工号或手机号进入{{driveName}}工作台。</p>
       </div>
 
       <section v-if="recoveryCode" class="auth-sso-recovery" aria-label="免登帮助">
@@ -104,7 +104,7 @@
 </template>
 <script setup>
 import { useLoginForm } from '../../auth/useLoginController';
-const { status, form, showPassword, error, message, submitting, recoveryCode, oaUrl, onSubmit, onSsoLogin, ssoRecoveryMessage } = useLoginForm();
+const { status, form, showPassword, error, message, submitting, recoveryCode, oaUrl, driveName, onSubmit, onSsoLogin, ssoRecoveryMessage } = useLoginForm();
 </script>
 <style scoped>
 

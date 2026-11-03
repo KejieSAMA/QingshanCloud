@@ -1,3 +1,5 @@
+import { driveRouteQuery, withDriveContext } from './driveContext.js';
+import { embedded } from './embedded/context.js';
 // All login returns use the same application, never another document.
 export function sanitizeReturnPath(value, fallback = '/') {
   if (typeof value !== 'string') return fallback;
@@ -20,9 +22,10 @@ export function normalizeEntryLocation(location, history) {
   history.replaceState(history.state, '', sanitizeReturnPath('/next.html' + location.search + location.hash));
 }
 export function loginRouteFor(returnPath) {
+  if (embedded) return { name: 'oa-embed', query: driveRouteQuery() };
   const path = sanitizeReturnPath(returnPath);
-  return { name: 'login', query: path === '/' ? {} : { returnPath: path } };
+  return { name: 'login', query: { ...driveRouteQuery(), ...(path === '/' ? {} : { returnPath: path }) } };
 }
 export function navigateAfterLogin(router, value) {
-  return router.replace(sanitizeReturnPath(value));
+  return router.replace(withDriveContext(sanitizeReturnPath(value)));
 }

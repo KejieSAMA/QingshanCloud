@@ -37,7 +37,6 @@ import com.x.cloudnext.server.drive.DriveCopyService;
 import com.x.cloudnext.server.drive.DriveCreateFolderRequest;
 import com.x.cloudnext.server.drive.DriveItemResponse;
 import com.x.cloudnext.server.drive.DriveMoveItemsRequest;
-import com.x.cloudnext.server.drive.DriveOnlyofficeEditTicketResponse;
 import com.x.cloudnext.server.drive.DrivePageResponse;
 import com.x.cloudnext.server.drive.DrivePathNodeResponse;
 import com.x.cloudnext.server.drive.DrivePreviewResponse;
@@ -147,10 +146,10 @@ public class CloudNextDriveController {
     }
 
     @GetMapping("/items/{id}/edit")
-    public DriveOnlyofficeEditTicketResponse edit(
+    public void edit(
             @RequestHeader(name = "X-CloudNext-Token", required = false) String token,
             @PathVariable("id") String id) {
-        return driveService.getOnlyofficeEditTicket(token, id);
+        throw new org.springframework.web.server.ResponseStatusException(HttpStatus.GONE, "在线编辑已停用，请使用文件预览。");
     }
 
     @GetMapping("/items/{id}/download")

@@ -30,6 +30,9 @@ package com.x.cloudnext.server.link;
  * path the caller already holds, so it is also not echoed in the body.
  */
 public class DrivePublicLinkMetaResponse {
+    private String driveName;
+    public String getDriveName() { return driveName; }
+    public void setDriveName(String value) { driveName = value; }
 
     private String fileName;
     private String fileType;

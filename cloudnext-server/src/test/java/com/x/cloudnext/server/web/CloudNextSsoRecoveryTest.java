@@ -10,6 +10,27 @@ import com.x.cloudnext.server.config.CloudNextProperties;
 import com.x.cloudnext.server.form.FormSsoException;
 
 class CloudNextSsoRecoveryTest {
+    @Test void embeddedOriginsAreCanonicalAndNeverExposeCredentialOrNonWebUrls() {
+        var props=new CloudNextProperties();props.getAuth().setFormSsoStartUrl("https://oa.test:443/start?state=ignored");
+        props.getAuth().setEmbeddedOrigins(java.util.Arrays.asList("https://user:private@bad.test", "file:///private", "https://oa.test", "http://localhost"));
+        assertEquals(java.util.Arrays.asList("https://oa.test", "http://localhost"),props.getAuth().getEmbeddedOrigins());
+    }
+    @Test void embeddedExchangeNeverSetsCookieOrReturnsBootstrapState() {
+        var pending=new SsoBootstrapService.BootstrapResult("private-bootstrap","/");
+        var session=new AuthLoginResponse();
+        when(bootstrap.begin("ticket","/")).thenReturn(pending);
+        when(bootstrap.complete("private-bootstrap")).thenReturn(session);
+        var request=new SsoCallbackRequest();request.setTicket("ticket");request.setReturnPath("/");
+        var result=controller().ssoEmbedded(request);
+        assertSame(session,result.getBody());assertNull(result.getHeaders().getFirst("Set-Cookie"));
+        assertEquals("no-store",result.getHeaders().getCacheControl());
+        verify(bootstrap,times(1)).begin("ticket","/");verify(bootstrap,times(1)).complete("private-bootstrap");
+    }
+    @Test void wrappedNamespaceDenialKeepsItsResourceStatus() {
+        var denial = new ResponseStatusException(HttpStatus.NOT_FOUND, "item not found in current drive");
+        var failure = new org.springframework.orm.jpa.JpaSystemException(new RuntimeException(denial));
+        assertEquals(HttpStatus.NOT_FOUND, new CloudNextExceptionHandler("100MB").handleNamespacePersistence(failure).getStatusCode());
+    }
     private final SsoBootstrapService bootstrap=mock(SsoBootstrapService.class);
     private CloudNextAuthController controller() {
         CloudNextProperties props=new CloudNextProperties();props.getAuth().setProvider("FORM");

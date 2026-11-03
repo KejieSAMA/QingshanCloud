@@ -3,8 +3,9 @@ import javax.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 @Entity
 @Table(name="cloudnext_drive_item_version",uniqueConstraints=@UniqueConstraint(columnNames={"item_id","version_number"}),
- indexes=@Index(name="idx_version_item",columnList="item_id"))
-public class DriveItemVersion {
+ indexes = { @Index(name="idx_version_item",columnList="item_id"), @javax.persistence.Index(name = "idx_namespace_drive_item_version", columnList = "drive_id") })
+@org.hibernate.annotations.Filter(name = "driveNamespace", condition = "drive_id = :driveId")
+public class DriveItemVersion extends com.x.cloudnext.server.namespace.DriveScopedEntity {
  @Id @Column(length=64) public String id;
  @Column(name="item_id",length=64,nullable=false) public String itemId;
  @Column(name="version_number",nullable=false) public long versionNumber;

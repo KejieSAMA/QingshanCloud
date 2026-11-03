@@ -26,12 +26,13 @@ import com.x.cloudnext.server.link.PublicLinkAccessFailReason;
 @Entity
 @Table(
         name = "cloudnext_drive_public_link_access_log",
-        indexes = {
+        indexes = { @javax.persistence.Index(name = "idx_namespace_drive_public_link_access_log", columnList = "drive_id"),
                 @Index(name = "idx_link_access_token_attempted", columnList = "token, attempted_at"),
                 @Index(name = "idx_link_access_attempted", columnList = "attempted_at"),
                 @Index(name = "idx_link_access_token_success", columnList = "token, success")
         })
-public class DrivePublicLinkAccessLog {
+@org.hibernate.annotations.Filter(name = "driveNamespace", condition = "drive_id = :driveId")
+public class DrivePublicLinkAccessLog extends com.x.cloudnext.server.namespace.DriveScopedEntity {
 
     @Id
     @Column(name = "id", nullable = false, length = 64)

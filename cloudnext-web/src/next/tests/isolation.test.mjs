@@ -39,8 +39,8 @@ test('desktop imports no mobile view or old UI; all app relative imports resolve
   const source=read(file);
   for(const m of source.matchAll(/(?:from\s*|import\s*\(\s*|import\s*)['"]([^'"]+)['"]/g)){
    if(!m[1].startsWith('.'))continue;
-   const p=path.resolve(path.dirname(file),m[1]);
-   const target=[p,p+'.js',p+'.vue',p+'.css',path.join(p,'index.js')].find(f=>fs.existsSync(f)&&fs.statSync(f).isFile());
+   const p=path.resolve(path.dirname(file),m[1].split('?')[0]);
+   const target=[p,p+'.js',p+'.ts',p+'.vue',p+'.css',path.join(p,'index.js')].find(f=>fs.existsSync(f)&&fs.statSync(f).isFile());
    assert.ok(target,'missing import '+m[1]+' from '+file);imports(target,desktop);
   }
  }

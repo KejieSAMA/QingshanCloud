@@ -1,3 +1,11 @@
+import { acceptSessionDrive, getActiveDriveId, getActiveEntryId, getDriveStorageScope } from './driveContext.js';
+import { embedded } from './embedded/context.js';
+const memory = new Map();
+const storage = () => embedded ? {
+  getItem: key => memory.get(key) || null,
+  setItem: (key, value) => memory.set(key, value),
+  removeItem: key => memory.delete(key)
+} : window.localStorage;
 export const CLOUDNEXT_TOKEN_KEY = 'cloudnext.token';
 export const CLOUDNEXT_SESSION_KEY = 'cloudnext.session';
 export const CLOUDNEXT_DRIVE_REFRESH_KEY = 'cloudnext.drive.refresh';
@@ -49,8 +57,18 @@ export function getSessionEmployeeNo(session = getStoredSession()) {
 }
 
 export function getStoredToken() {
-  return window.localStorage.getItem(CLOUDNEXT_TOKEN_KEY) || '';
+  return storage().getItem(sessionStorageKey(CLOUDNEXT_TOKEN_KEY))
+    || (isDefaultScope() ? storage().getItem(CLOUDNEXT_TOKEN_KEY) : '') || '';
 }
+
+export function sessionStorageKey(key) { return `${key}.${getDriveStorageScope()}`; }
+function isDefaultScope() { return getDriveStorageScope() === 'default' || getActiveDriveId() === storage().getItem('cloudnext.default-drive-id'); }
+export function isCurrentSessionStorageEvent(event) {
+  if (embedded) return false;
+  return event.key === null || event.key === sessionStorageKey(CLOUDNEXT_TOKEN_KEY)
+    || (isDefaultScope() && event.key === CLOUDNEXT_TOKEN_KEY);
+}
+export function sessionContextKey() { return `${getDriveStorageScope()}:${getStoredToken()}`; }
 
 export function setStoredSession(session) {
   const normalized = normalizeSession(session);
@@ -58,18 +76,29 @@ export function setStoredSession(session) {
     clearStoredSession();
     return;
   }
-  window.localStorage.setItem(CLOUDNEXT_SESSION_KEY, JSON.stringify(normalized));
-  window.localStorage.setItem(CLOUDNEXT_TOKEN_KEY, normalized.token);
+  acceptSessionDrive(normalized.drive);
+  storage().setItem(sessionStorageKey(CLOUDNEXT_SESSION_KEY), JSON.stringify(normalized));
+  storage().setItem(sessionStorageKey(CLOUDNEXT_TOKEN_KEY), normalized.token);
+  if (normalized.drive?.entryId === 'default') {
+    storage().setItem('cloudnext.default-drive-id', normalized.drive.id);
+    // Legacy keys are a default-drive compatibility alias only.
+    storage().setItem(CLOUDNEXT_SESSION_KEY, JSON.stringify(normalized));
+    storage().setItem(CLOUDNEXT_TOKEN_KEY, normalized.token);
+  }
   window.dispatchEvent(new CustomEvent(CLOUDNEXT_SESSION_CHANGED_EVENT));
 }
 
 export function getStoredSession() {
-  const raw = window.localStorage.getItem(CLOUDNEXT_SESSION_KEY);
+  const raw = storage().getItem(sessionStorageKey(CLOUDNEXT_SESSION_KEY))
+    || (isDefaultScope() ? storage().getItem(CLOUDNEXT_SESSION_KEY) : null);
   if (!raw) {
     return null;
   }
   try {
-    return normalizeSession(JSON.parse(raw));
+    const session = normalizeSession(JSON.parse(raw));
+    if (getDriveStorageScope() !== 'default' && (!session?.drive || (getActiveDriveId() && session.drive.id !== getActiveDriveId()))) return null;
+    if (session?.drive && session.drive.entryId !== getActiveEntryId()) return null;
+    return session;
   } catch (error) {
     clearStoredSession();
     return null;
@@ -77,8 +106,12 @@ export function getStoredSession() {
 }
 
 export function clearStoredSession() {
-  window.localStorage.removeItem(CLOUDNEXT_SESSION_KEY);
-  window.localStorage.removeItem(CLOUDNEXT_TOKEN_KEY);
+  storage().removeItem(sessionStorageKey(CLOUDNEXT_SESSION_KEY));
+  storage().removeItem(sessionStorageKey(CLOUDNEXT_TOKEN_KEY));
+  if (isDefaultScope()) {
+    storage().removeItem(CLOUDNEXT_SESSION_KEY);
+    storage().removeItem(CLOUDNEXT_TOKEN_KEY);
+  }
   window.dispatchEvent(new CustomEvent(CLOUDNEXT_SESSION_CHANGED_EVENT));
 }
 
@@ -88,8 +121,8 @@ export function emitUnauthorizedSignal() {
 
 export function emitDriveRefreshSignal() {
   const value = String(Date.now());
-  window.localStorage.setItem(CLOUDNEXT_DRIVE_REFRESH_KEY, value);
-  window.dispatchEvent(new CustomEvent(CLOUDNEXT_DRIVE_REFRESH_EVENT, { detail: value }));
+  storage().setItem(sessionStorageKey(CLOUDNEXT_DRIVE_REFRESH_KEY), value);
+  window.dispatchEvent(new CustomEvent(CLOUDNEXT_DRIVE_REFRESH_EVENT, { detail: { value, driveId: getActiveDriveId() } }));
   return value;
 }
 

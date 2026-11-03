@@ -39,4 +39,16 @@ public class CloudNextExceptionHandler {
             body.put("code",((com.x.cloudnext.server.form.FormSsoException)exception).getCode());
         return ResponseEntity.status(exception.getStatus()).body(body);
     }
+
+    @ExceptionHandler({javax.persistence.PersistenceException.class, org.springframework.orm.jpa.JpaSystemException.class})
+    public ResponseEntity<Map<String, String>> handleNamespacePersistence(RuntimeException exception) {
+        // Entity lifecycle callbacks can be wrapped by Hibernate/Spring; keep namespace denials as 404/403.
+        Throwable cause = exception;
+        while (cause != null) {
+            if (cause instanceof ResponseStatusException) return handleResponseStatus((ResponseStatusException) cause);
+            if (cause.getCause() == cause) break;
+            cause = cause.getCause();
+        }
+        throw exception;
+    }
 }

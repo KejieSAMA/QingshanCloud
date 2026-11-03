@@ -1,5 +1,5 @@
 <template>
-  <RouterView v-if="route.meta.public" />
+  <RouterView v-if="route.meta.public" :key="route.fullPath" />
   <MobileShell v-else-if="isMobile" :key="'mobile-' + ui.accountRevision"><RouterView /></MobileShell>
   <DesktopShell v-else :key="'desktop-' + ui.accountRevision" />
   <div v-if="!route.meta.public" class="desktop-overlays" :data-primary-color="ui.effectivePrimaryColor"><DialogHost /><PreviewHost /></div>
@@ -9,6 +9,7 @@ import { defineAsyncComponent, watch } from 'vue';
 import { RouterView, useRoute } from 'vue-router';
 import { useBreakpoint } from './composables/useBreakpoint';
 import { ui, applyPrefs } from './next/state';
+watch(() => ui.session?.drive?.name, name => { document.title = name || '云盘'; }, { immediate: true });
 const DesktopShell = defineAsyncComponent(() => import('./next/App.vue'));
 const MobileShell = defineAsyncComponent(() => import('./components/mobile/MobileShell.vue'));
 const DialogHost = defineAsyncComponent(() => import('./next/components/DialogHost.vue'));

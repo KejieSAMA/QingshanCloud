@@ -34,6 +34,20 @@ public class AuditAsyncConfig {
         executor.setMaxPoolSize(4);
         executor.setQueueCapacity(200);
         executor.setThreadNamePrefix("cloudnext-audit-");
+        executor.setTaskDecorator(task -> {
+            var captured = com.x.cloudnext.server.namespace.DriveContext.current();
+            return () -> {
+                var previous = com.x.cloudnext.server.namespace.DriveContext.current();
+                com.x.cloudnext.server.namespace.DriveContext.clear();
+                try {
+                    if (captured != null) com.x.cloudnext.server.namespace.DriveContext.bind(captured);
+                    task.run();
+                } finally {
+                    com.x.cloudnext.server.namespace.DriveContext.clear();
+                    if (previous != null) com.x.cloudnext.server.namespace.DriveContext.bind(previous);
+                }
+            };
+        });
         executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
         executor.setWaitForTasksToCompleteOnShutdown(true);
         executor.setAwaitTerminationSeconds(5);

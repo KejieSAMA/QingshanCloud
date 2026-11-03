@@ -34,7 +34,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/api/auth/status",
                         "/api/auth/login",
                         "/api/auth/sso/**",
+                        "/api/drive/native-files/metadata",
+                        "/api/drive/native-files/content",
                         "/api/onlyoffice/**",
+                        "/api/previews", "/api/previews/**",
                         "/public/links/**");
     }
 }

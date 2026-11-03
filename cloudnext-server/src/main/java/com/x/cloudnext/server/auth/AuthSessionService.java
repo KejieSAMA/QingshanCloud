@@ -20,6 +20,8 @@ import com.x.cloudnext.server.form.CanonicalBindingService;
 
 @Service
 public class AuthSessionService {
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.x.cloudnext.server.namespace.DriveNamespaceService namespaces;
 
     private final CloudNextProperties properties;
     private final AuthSessionRepository authSessionRepository;
@@ -49,7 +51,9 @@ public class AuthSessionService {
 
     @Transactional
     public AuthLoginResponse createSession(AuthenticationResult result, boolean rememberMe) {
+        com.x.cloudnext.server.namespace.DriveDescriptor drive = namespaces.forLogin(result);
         AuthSession session = new AuthSession();
+        session.setDriveId(drive.getId());
         session.setId(UUID.randomUUID().toString());
         session.setToken(UUID.randomUUID().toString().replace("-", "") + UUID.randomUUID().toString().replace("-", ""));
         session.setPersonOaId(result.getPersonKey());
@@ -83,7 +87,11 @@ public class AuthSessionService {
         return authSessionRepository.findByToken(token)
                 .filter(this::isActive)
                 .filter(this::isSubjectStillAuthorized)
-                .map(session -> toResponse(session, false))
+                .map(session -> {
+                    AuthLoginResponse response = toResponse(session, false);
+                    namespaces.bind(response.getDrive(), session.getTenantId(), session.getFormEmployeeId(), session.getAuthVersion() == null ? 0L : session.getAuthVersion());
+                    return response;
+                })
                 .orElse(null);
     }
 
@@ -117,6 +125,8 @@ public class AuthSessionService {
 
     private AuthLoginResponse toResponse(AuthSession session, boolean passwordExpired) {
         AuthLoginResponse response = new AuthLoginResponse();
+        com.x.cloudnext.server.namespace.DriveDescriptor drive = namespaces.describe(session);
+        response.setDrive(drive);
         response.setAuthenticated(true);
         response.setToken(session.getToken());
         response.setTokenType(session.getTokenType());

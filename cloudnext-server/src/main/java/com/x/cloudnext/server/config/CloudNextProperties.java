@@ -168,6 +168,21 @@ public class CloudNextProperties {
     }
 
     public static class Auth {
+        private java.util.List<String> embeddedOrigins = new java.util.ArrayList<>(java.util.Arrays.asList("http://localhost", "https://localhost", "capacitor://localhost"));
+        public java.util.List<String> getEmbeddedOrigins() {
+            java.util.Set<String> result = new java.util.LinkedHashSet<>();
+            java.util.List<String> configured = new java.util.ArrayList<>(embeddedOrigins);
+            configured.add(getFormSsoStartUrl());
+            for (String origin : configured) try {
+                java.net.URI uri = java.net.URI.create(origin);
+                if (uri.getHost() == null || uri.getUserInfo() != null || !java.util.Arrays.asList("http", "https", "capacitor").contains(uri.getScheme())) continue;
+                int port = uri.getPort();
+                boolean standard = port < 0 || (port == 80 && "http".equals(uri.getScheme())) || (port == 443 && "https".equals(uri.getScheme()));
+                result.add(uri.getScheme() + "://" + uri.getHost().toLowerCase(java.util.Locale.ROOT) + (standard ? "" : ":" + port));
+            } catch (IllegalArgumentException ignored) { }
+            return new java.util.ArrayList<>(result);
+        }
+        public void setEmbeddedOrigins(java.util.List<String> value) { embeddedOrigins = value == null ? new java.util.ArrayList<>() : value; }
         private String mode = "form";
         private String provider = "FORM";
         private String o2BaseUrl = "";
@@ -181,6 +196,12 @@ public class CloudNextProperties {
         private String formVerifyPasswordPath = "/internal/v1/cloudnext/auth/verify-password";
         private String formExchangeTicketPath = "/internal/v1/cloudnext/auth/exchange-ticket";
         private String formDirectorySnapshotPath = "/internal/v1/cloudnext/directory/snapshot";
+        private String formDriveAccessPath = "/internal/v1/cloudnext/drive-access/resolve";
+        private String formDriveStatusPath = "/internal/v1/cloudnext/drive-status/resolve";
+        public String getFormDriveStatusPath() { return formDriveStatusPath; }
+        public void setFormDriveStatusPath(String value) { formDriveStatusPath = value; }
+        public String getFormDriveAccessPath() { return formDriveAccessPath; }
+        public void setFormDriveAccessPath(String value) { formDriveAccessPath = value; }
         private String formServiceToken = "";
         private String formSsoStartUrl = "";
         private String formSsoAudience = "cloudnext";

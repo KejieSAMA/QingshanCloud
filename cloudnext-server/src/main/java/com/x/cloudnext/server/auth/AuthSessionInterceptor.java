@@ -22,8 +22,16 @@ public class AuthSessionInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String token = request.getHeader(TOKEN_HEADER);
-        if (authSessionService.currentSession(token) == null) {
+        com.x.cloudnext.server.auth.AuthLoginResponse session = authSessionService.currentSession(token);
+        if (session == null) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "cloudnext session not found");
+        }
+        String requestedDrive = request.getHeader("X-CloudNext-Drive");
+        if (session.getDrive() != null && !session.getDrive().isDefault() && requestedDrive == null) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "DRIVE_CONTEXT_REQUIRED");
+        }
+        if (requestedDrive != null && (session.getDrive() == null || !requestedDrive.equals(session.getDrive().getId()))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "drive session does not match current page");
         }
         return true;
     }

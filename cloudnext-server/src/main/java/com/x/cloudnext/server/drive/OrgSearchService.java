@@ -25,6 +25,7 @@ import com.x.cloudnext.server.form.CanonicalBindingService;
 
 @Service
 public class OrgSearchService {
+    @org.springframework.beans.factory.annotation.Autowired private com.x.cloudnext.server.namespace.DriveNamespaceService namespaces;
 
     private static final int RESULT_LIMIT = 20;
 
@@ -61,6 +62,7 @@ public class OrgSearchService {
                 if (unitBindingRepository.count() > 0) {
                     return unitBindingRepository.findAll().stream().filter(item -> "ACTIVE".equals(item.getStatus()) && CanonicalBindingService.isLoginAllowed(item.getMigrationDecision()))
                             .filter(item -> matches(normalizedKeyword,item.getUnitName(),item.getDisplayPath()))
+                            .filter(item -> namespaces.eligibleUnit(item.getCanonicalUnitId()))
                             .limit(RESULT_LIMIT).map(this::toUnitResult).collect(Collectors.toList());
                 }
                 return orgUnitMirrorRepository.findAll().stream()
@@ -72,6 +74,7 @@ public class OrgSearchService {
                 if (identityBindingRepository.count() > 0) {
                     return identityBindingRepository.findAll().stream().filter(item -> "ACTIVE".equals(item.getStatus()) && CanonicalBindingService.isLoginAllowed(item.getMigrationDecision()))
                             .filter(item -> matches(normalizedKeyword,item.getIdentityName(),item.getDisplayPath()))
+                            .filter(item -> namespaces.eligiblePerson(item.getCanonicalPersonId()))
                             .limit(RESULT_LIMIT).map(this::toIdentityResult).collect(Collectors.toList());
                 }
                 return orgIdentityMirrorRepository.findAll().stream()
@@ -84,6 +87,7 @@ public class OrgSearchService {
                 if (principalBindingRepository.count() > 0) {
                     return principalBindingRepository.findAll().stream().filter(item -> item.isAccountEnabled() && "ACTIVE".equals(item.getStatus()) && CanonicalBindingService.isLoginAllowed(item.getMigrationDecision()))
                             .filter(item -> matches(normalizedKeyword,item.getDisplayName(),item.getEmployeeNoSnapshot(),item.getDisplayPath()))
+                            .filter(item -> namespaces.eligiblePerson(item.getCanonicalPersonId()))
                             .limit(RESULT_LIMIT).map(this::toPersonResult).collect(Collectors.toList());
                 }
                 return orgPersonMirrorRepository.findAll().stream()

@@ -131,6 +131,24 @@ public class DriveZipPackagingService {
         }
     }
 
+    /** Read-only preflight, also used to bind an expiring native handoff to exact file contents. */
+    public String fingerprint(String token, DriveBatchDownloadRequest request) {
+        AuthLoginResponse session = driveAccessService.requireSession(token);
+        List<DriveItem> files = new ArrayList<>();
+        Map<String, String> paths = new LinkedHashMap<>();
+        for (String id : request.getItemIds()) {
+            DriveItem root = driveAccessService.requireOwnedItem(session.getPersonOaId(), id);
+            if (root.isDeleted()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "item not found");
+            collect(root, root.getName(), files, paths);
+            if (files.size() > MAX_FILES_PER_ZIP) throw new ResponseStatusException(HttpStatus.PAYLOAD_TOO_LARGE, "too many files");
+        }
+        if (files.isEmpty()) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "没有可打包的文件");
+        StringBuilder result = new StringBuilder();
+        for (DriveItem file : files) result.append(file.getId()).append('\0').append(file.getStorageKey())
+            .append('\0').append(paths.get(file.getId())).append('\0').append(file.getSizeBytes()).append('\n');
+        return result.toString();
+    }
+
     /** 递归收集 file items 并维护其在 zip 中的相对路径 */
     private void collect(DriveItem item, String relPath, List<DriveItem> files, Map<String, String> paths) {
         if (item.isDeleted()) {

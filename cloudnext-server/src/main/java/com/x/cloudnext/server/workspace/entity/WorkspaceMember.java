@@ -33,11 +33,12 @@ import com.x.cloudnext.server.drive.WorkspaceRole;
         uniqueConstraints = @UniqueConstraint(
                 name = "uk_ws_member",
                 columnNames = { "workspace_id", "person_oa_id" }),
-        indexes = {
+        indexes = { @javax.persistence.Index(name = "idx_namespace_workspace_member", columnList = "drive_id"),
                 @Index(name = "idx_ws_member_person", columnList = "person_oa_id, workspace_id"),
                 @Index(name = "idx_ws_member_workspace_role", columnList = "workspace_id, role")
         })
-public class WorkspaceMember {
+@org.hibernate.annotations.Filter(name = "driveNamespace", condition = "drive_id = :driveId")
+public class WorkspaceMember extends com.x.cloudnext.server.namespace.DriveScopedEntity {
 
     @Id
     @Column(name = "id", nullable = false, length = 64)

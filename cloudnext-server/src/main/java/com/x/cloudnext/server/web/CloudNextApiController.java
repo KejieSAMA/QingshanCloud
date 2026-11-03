@@ -88,14 +88,8 @@ public class CloudNextApiController {
         if (!iteration.getSearch().isEnabled()) {
             pending.add("search");
         }
-        if (!iteration.getOnlyofficeEdit().isEnabled()) {
-            pending.add("onlyoffice-edit");
-        }
         if (!iteration.getGovernance().isEnabled()) {
             pending.add("governance");
-        }
-        if (!iteration.getPreviewHealth().isEnabled()) {
-            pending.add("preview-health");
         }
         if (!iteration.getStorageGateway().isObjectStorageEnabled()) {
             pending.add("storage-gateway-object-storage");

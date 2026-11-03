@@ -213,6 +213,20 @@ public class CloudNextPublicLinkController {
                 .body(payload.getResource());
     }
 
+    @GetMapping("/{token}/content")
+    public ResponseEntity<Resource> content(@PathVariable String token,
+            @RequestParam(required=false) String accessTicket,
+            @RequestHeader(name=ACCESS_TICKET_HEADER,required=false) String headerTicket) {
+        DriveService.DriveDownloadPayload payload = drivePublicLinkService.previewContent(token, firstNonBlank(accessTicket, headerTicket));
+        MediaType type = MediaType.APPLICATION_OCTET_STREAM;
+        try { type = MediaType.parseMediaType(payload.getContentType()); } catch (Exception ignored) {}
+        return ResponseEntity.ok().contentType(type)
+            .header("X-Content-Type-Options", "nosniff")
+            .header("Content-Security-Policy", "sandbox; default-src 'none'")
+            .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename*=UTF-8''" + UriUtils.encode(payload.getFileName(), StandardCharsets.UTF_8))
+            .body(payload.getResource());
+    }
+
     /**
      * Resolve the client IP for rate-limiting purposes. Honors a single
      * {@code X-Forwarded-For} header by taking the leftmost, comma-separated

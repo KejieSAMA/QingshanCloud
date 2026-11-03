@@ -23,13 +23,13 @@ CloudNext 不再需要从本地 O2 目录生成配置。原 `scripts/sync-onlyof
 | `CLOUDNEXT_ONLYOFFICE_EDIT_ENABLED` | Office 在线编辑开关 |
 | `CLOUDNEXT_ADMIN_PERSON_KEYS` | canonical 管理员名单 |
 
-Form 集成使用 HTTPS；本地 HTTP 联调需显式配置 `CLOUDNEXT_FORM_ALLOW_INSECURE_HTTP=true`。服务密钥不得复用 Form JWT 密钥，也不得放入前端 `VITE_*` 变量。OnlyOffice JWT 必须与文档服务的配置一致。
+Form 集成使用 HTTPS；本地 HTTP 联调需显式配置 `CLOUDNEXT_FORM_ALLOW_INSECURE_HTTP=true`。服务密钥不得复用 Form JWT 密钥，也不得放入前端 `VITE_*` 变量。预览采用独立的 `CLOUDNEXT_PREVIEW_SIGNING_SECRET`，详见 [文件预览运行说明](../FILE_PREVIEW_RUNBOOK.md)。旧 OnlyOffice 签名密钥仅作为历史短期票据兼容回退，不需要文档服务配置。
 
 ## 启动路径
 
 必须先核对实际 MySQL 库与文件存储目录。初次建表显式执行版本化 SQL；正式启动固定 `ddl-auto=validate`，不执行 Hibernate `update/create-drop`。连接池最多 5 个连接，驱动固定为 `com.mysql.cj.jdbc.Driver`，JDBC/Hibernate 时区为 UTC。MySQL 连接失败时启动失败，不创建本地 H2。
 
-新变量优先于旧变量及外部配置中的数据源值。已有 H2 的 `config/application.yml` 仍作为旧部署配置保留，不能原样用于新版；切库时更新数据库项与驱动，其他 Form、OnlyOffice 配置保持不变。JDBC URL 必须明确库名，不允许把用户名或密码嵌入 URL。
+新变量优先于旧变量及外部配置中的数据源值。已有 H2 的 `config/application.yml` 仍作为旧部署配置保留，不能原样用于新版；切库时更新数据库项与驱动，其他 Form 配置保持不变；预览服务配置按文件预览运行说明单独核对。JDBC URL 必须明确库名，不允许把用户名或密码嵌入 URL。
 
 PowerShell 从后端目录启动现有 JAR：
 
@@ -40,5 +40,7 @@ java -jar target/cloudnext-server-0.1.0-SNAPSHOT.jar --server.port=8088
 Spring Boot 不自动加载 `.env`。使用操作系统环境变量或外部启动环境注入，不把真实凭据写进启动脚本。健康检查使用 `GET /actuator/health`，认证配置状态使用 `GET /api/auth/status`；状态接口不能代替真实账号登录验收。
 
 ## 存储与备份
+
+旧 Windows 已验证的演示文稿兼容模式可设置 `CLOUDNEXT_PREVIEW_ISOLATE_PRESENTATIONS=true`；仍使用同一串行队列，Word、Excel 保留常驻转换，PPT/PPTX 使用独立进程导出。详见文件预览运行说明。
 
 MySQL 备份、历史 H2、当前上传内容、历史版本和真实配置均不入库。远程元数据目标为独立 `qingshancloud` 库，存储保持 `D:\QingshanCloud\data\drive-storage`；不能只克隆源码后启动空库。MySQL 切换步骤、测试隔离和恢复边界见 [迁移手册](MYSQL_MIGRATION_RUNBOOK.md)。

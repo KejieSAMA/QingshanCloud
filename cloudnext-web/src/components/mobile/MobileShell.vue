@@ -10,7 +10,7 @@
       <slot />
     </main>
     <MobileFAB v-if="showFab" />
-    <MobileBottomTabs />
+    <MobileBottomTabs v-if="!embedded" />
     <MobileDrawer :open="drawerOpen" @close="drawerOpen = false" />
   </div>
 </template>
@@ -22,10 +22,14 @@ import MobileTopbar from './MobileTopbar.vue';
 import MobileBottomTabs from './MobileBottomTabs.vue';
 import MobileDrawer from './MobileDrawer.vue';
 import MobileFAB from './MobileFAB.vue';
+import { ui } from '../../next/state';
+import { embedded } from '../../embedded/context.js';
+import { useEmbeddedBack } from '../../embedded/useEmbeddedBack.js';
 
 const route = useRoute();
 const router = useRouter();
 const drawerOpen = ref(false);
+useEmbeddedBack(() => drawerOpen.value, () => { drawerOpen.value = false; });
 
 const titleMap = {
   search: '搜索',
@@ -41,7 +45,7 @@ const titleMap = {
   admin: '系统管理'
 };
 
-const routeTitle = computed(() => titleMap[route.name] || '云盘');
+const routeTitle = computed(() => route.name === 'home' ? (ui.session?.drive?.name || '青山云盘') : (titleMap[route.name] || ui.session?.drive?.name || '云盘'));
 const showFab = computed(() =>
   ['home', 'my-files', 'shared', 'workspaces', 'workspace-detail', 'links'].includes(route.name)
 );
@@ -53,8 +57,11 @@ const showSearch = computed(() =>
 <style scoped>
 .m-shell {
   position: relative;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background: var(--bg-page);
   padding-top: calc(var(--m-topbar-h) + var(--m-safe-top));
   padding-bottom: calc(var(--m-tabbar-h) + var(--m-safe-bottom));
@@ -62,6 +69,11 @@ const showSearch = computed(() =>
 
 .m-shell-main {
   position: relative;
-  min-height: calc(100dvh - var(--m-topbar-h) - var(--m-tabbar-h) - var(--m-safe-top) - var(--m-safe-bottom));
+  flex: 1 1 0%;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: auto;
+  padding-bottom: 88px;
 }
 </style>

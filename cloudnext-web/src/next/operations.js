@@ -1,4 +1,6 @@
 import * as api from './api';
+import { embedded } from '../embedded/context.js';
+import { postHost } from '../embedded/runtime.js';
 import { ui, dialog, confirm, notify, changed, batchResult, run, applyPrefs, busyUploads } from './state';
 import { itemLocation } from './navigation';
 import { clearStoredSession, getSessionPersonKey, getStoredToken } from '../session';
@@ -26,6 +28,7 @@ export async function preferences(router) {
 }
 
 export async function logout(router) {
+ if(embedded){postHost('return-oa');return;}
  if(busyUploads()&&!await confirm('退出登录？','退出将中断当前上传任务。'))return;
  const token=getStoredToken();
  try { await api.logout(); }
@@ -40,9 +43,9 @@ export function help() {
   {id:'search',name:'搜索',description:'Ctrl / ⌘ K 聚焦搜索。按名称搜索所有有权限的文件、文件夹与协作空间。'},
   {id:'files',name:'文件操作',description:'文件名打开内容；复选框选择；右键或更多菜单操作。表头切换排序，偏好中切换密度、主题及网格。'},
   {id:'share',name:'共享与复制',description:'共享权限由服务端核对。仅预览内容无法复制或下载，移动限原范围，复制可跨个人盘和可写空间。'},
-  {id:'version',name:'历史版本',description:'内容覆盖及在线编辑会保留历史。文件拥有者及可写空间成员可以查看、下载，历史版本不提供恢复。'},
+  {id:'version',name:'历史版本',description:'覆盖上传会保留历史。文件拥有者及可写空间成员可以查看、下载，历史版本不提供恢复。'},
   {id:'capacity',name:'存储空间',description:'100GB 为参考容量，不限制上传；用量包括个人盘、回收站及历史版本。'},
-  {id:'new',name:'新建文档',description:'暂不支持该功能。可以先在本地创建文档，再上传在线编辑。'}
+  {id:'new',name:'新建文档',description:'暂不支持该功能。可以先在本地创建文档，再上传云盘。'}
  ]});
 }
 export async function createFolder(target=ui.context) {
@@ -76,12 +79,13 @@ export async function clearTrash() {if(await confirm('清空个人回收站？',
 export async function favorite(item){await api.send('/api/drive/me/favorites/'+api.encode(item.id),undefined,item.favorite?'DELETE':'PUT');changed();}
 export async function download(items) {
  if(items.length===1&&items[0].itemType==='file')await api.downloadDriveItem(items[0]);
- else await api.batchDownloadDriveItems(items.map(i=>i.id),'青山云盘文件.zip');
+ else await api.batchDownloadDriveItems(items.map(i=>i.id),(ui.session?.drive?.name||'云盘')+'文件.zip');
 }
 export async function openItem(item,router,edit=false,version=null) {
  if(item.deleted){await details(item);return;}
  if(item.itemType==='folder'||item.resultType==='workspace'){await router.push(itemLocation(item,true));return;}
- ui.preview={item,edit,version,id:Date.now()};
+ if(edit)throw new Error("在线编辑已停用，请使用文件预览。");
+ ui.preview={item,version,id:Date.now()};
 }
 export async function details(item){
  ui.detail={...item,loading:true,error:'',versions:[]};
@@ -157,7 +161,6 @@ export function fileActions(item,router) {
  if(item.resultType==='workspace')return [{label:'打开空间',icon:'people',run:()=>router.push('/workspaces/'+item.workspaceId)}];
  if(item.deleted)return [{label:'查看详情',icon:'info',run:()=>details(item)},{label:'恢复',icon:'restore',run:()=>restore([item])},{label:'永久删除',icon:'trash',danger:true,run:()=>purge([item])}];
  const actions=[{label:item.itemType==='folder'?'打开文件夹':'打开预览',icon:'file',run:()=>openItem(item,router)},{label:'查看详情',icon:'info',run:()=>details(item)},{label:item.favorite?'取消收藏':'收藏文件',icon:'star',run:()=>favorite(item)},{label:'打开所在位置',icon:'folder',run:()=>router.push(itemLocation(item))}];
- if(item.allowEdit&&/\.(doc|docx|xls|xlsx|ppt|pptx)$/i.test(item.name))actions.push({label:'在线编辑',icon:'edit',run:()=>openItem(item,router,true)});
  if(item.allowCopy)actions.push({label:'复制到…',icon:'copy',run:()=>copyOrMove([item])});
  if(item.allowDownload||item.itemType==='folder'&&item.allowCopy)actions.push({label:'下载',icon:'download',run:()=>download([item])});
  if(item.allowManage){actions.push({label:'共享与权限',icon:'shared',run:()=>share([item])});

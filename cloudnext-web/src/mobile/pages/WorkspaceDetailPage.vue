@@ -87,6 +87,7 @@
   </section>
 </template>
 <script setup>
+import { useEmbeddedBack } from '../../embedded/useEmbeddedBack.js';
 import { enqueue, ui } from '../../next/state';
 
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
@@ -96,7 +97,6 @@ import {
   deleteWorkspace,
   deleteDriveItem,
   downloadDriveItem,
-  editDriveItem,
   getCurrentSession,
   getWorkspace,
   previewDriveItem,
@@ -279,17 +279,7 @@ const onPreview = async (item) => {
   }
 };
 
-const onEdit = async (item) => {
-  if (!canWrite.value) {
-    errorText.value = '当前角色无编辑权限';
-    return;
-  }
-  try {
-    await editDriveItem(item);
-  } catch (error) {
-    errorText.value = error?.message || '编辑失败';
-  }
-};
+
 
 const onDownload = async (item) => {
   if (!canWrite.value) {
@@ -410,7 +400,7 @@ const mobileSheetActions = computed(() => {
   }
   const list = [{ key: 'preview', label: '预览' }];
   if (canWrite.value) {
-    list.push({ key: 'edit', label: '在线编辑' });
+
     list.push({ key: 'download', label: '下载' });
     list.push({ key: 'copy', label: '复制到' });
     list.push({ key: 'delete', label: '删除', danger: true });
@@ -528,9 +518,7 @@ const onMobileSheetSelect = (key) => {
     case 'preview':
       void onPreview(item);
       break;
-    case 'edit':
-      void onEdit(item);
-      break;
+
     case 'download':
       void onDownload(item);
       break;
@@ -605,6 +593,12 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('cloudnext:mobile-fab-action', onMobileFabAction);
+});
+
+useEmbeddedBack(() => Boolean(currentParentId.value), () => {
+  const crumbs = breadcrumbs.value || [];
+  const parent = crumbs.length > 1 ? crumbs[crumbs.length - 2] : null;
+  return router.replace({ path: route.path, query: { ...route.query, parentId: parent?.id || '', page: 1 } }).then(() => ({ directory: true }));
 });
 </script>
 <style scoped>

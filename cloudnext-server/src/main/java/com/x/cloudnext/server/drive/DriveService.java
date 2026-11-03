@@ -19,31 +19,19 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.x.cloudnext.server.audit.AuditAction;
 import com.x.cloudnext.server.audit.AuditLogService;
 import com.x.cloudnext.server.auth.AuthLoginResponse;
@@ -54,18 +42,13 @@ import com.x.cloudnext.server.drive.repository.DriveItemRepository;
 
 @Service
 public class DriveService {
+    @org.springframework.beans.factory.annotation.Autowired private com.x.cloudnext.server.namespace.DriveNamespaceService namespaces;
     @org.springframework.beans.factory.annotation.Autowired
     private com.x.cloudnext.server.drive.next.DriveVersionService versionService;
     @org.springframework.beans.factory.annotation.Autowired
     private com.x.cloudnext.server.drive.next.DriveExperienceService experienceService;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DriveService.class);
-
-    /**
-     * N+2.7 F5: OnlyOffice forcesave 第一次失败后的退避时间。给 docserver 写盘
-     * 一个 800ms 喘息窗口，比立刻重试更友好且实测能消除大部分 -3/-4 误报。
-     */
-    private static final long ONLYOFFICE_FORCESAVE_RETRY_BACKOFF_MS = 800L;
 
     private final DriveItemRepository driveItemRepository;
     private final DriveStorageService driveStorageService;
@@ -75,13 +58,9 @@ public class DriveService {
     private final DriveReadService driveReadService;
     private final DriveShareService driveShareService;
     private final CloudNextProperties properties;
-    private final DriveOnlyofficePreviewStatusService onlyofficePreviewStatusService;
-    private final DrivePreviewTicketService drivePreviewTicketService;
-    private final ObjectMapper objectMapper;
+    @org.springframework.beans.factory.annotation.Autowired @org.springframework.context.annotation.Lazy
+    private com.x.cloudnext.server.preview.DriveFilePreviewService previews;
     private final AuditLogService auditLogService;
-    private RestTemplate restTemplate;
-    private final Set<String> appliedOnlyofficeCallbackKeys = ConcurrentHashMap.newKeySet();
-    private final ConcurrentMap<String, DriveOnlyofficeSaveSessionState> onlyofficeSaveStates = new ConcurrentHashMap<>();
 
     public DriveService(
             DriveItemRepository driveItemRepository,
@@ -92,11 +71,7 @@ public class DriveService {
             DriveReadService driveReadService,
             DriveShareService driveShareService,
             CloudNextProperties properties,
-            DriveOnlyofficePreviewStatusService onlyofficePreviewStatusService,
-            DrivePreviewTicketService drivePreviewTicketService,
-            ObjectMapper objectMapper,
-            AuditLogService auditLogService,
-            RestTemplateBuilder restTemplateBuilder) {
+            AuditLogService auditLogService) {
         this.driveItemRepository = driveItemRepository;
         this.driveStorageService = driveStorageService;
         this.driveAccessService = driveAccessService;
@@ -105,11 +80,8 @@ public class DriveService {
         this.driveReadService = driveReadService;
         this.driveShareService = driveShareService;
         this.properties = properties;
-        this.onlyofficePreviewStatusService = onlyofficePreviewStatusService;
-        this.drivePreviewTicketService = drivePreviewTicketService;
-        this.objectMapper = objectMapper;
+
         this.auditLogService = auditLogService;
-        this.restTemplate = restTemplateBuilder.build();
     }
 
     @Transactional(readOnly = true)
@@ -319,93 +291,25 @@ public class DriveService {
         return response;
     }
 
-    /**
-     * Build the per-item {@link DrivePreviewResponse} payload for an already
-     * authorized {@link DriveItem}. Phase A of {@link #getPreview} (session +
-     * share / scope authorization) lives upstream of this method; phase B —
-     * picking the preview {@code kind}, populating the OnlyOffice ticket, and
-     * touching the last-accessed timestamp — is what this method owns.
-     *
-     * <p>This method intentionally does <b>not</b> re-run any authorization. It
-     * trusts that the caller has already proven {@code context} is allowed to
-     * preview {@code item}. Callers today:
-     * <ul>
-     *   <li>{@link #getPreview(String, String)} — passes
-     *       {@link AccessContext#user(AuthLoginResponse, DriveResolvedShareAccess)},
-     *       so the share-derived {@code allowDownload} and
-     *       {@code effectivePermission} stay byte-for-byte identical to the
-     *       legacy single-method implementation.</li>
-     *   <li>{@code DrivePublicLinkService} (task 2.5, separate
-     *       {@code com.x.cloudnext.server.link} package) — will pass
-     *       {@link AccessContext#publicLink(String, boolean, boolean)} after
-     *       running the {@code revoked → expired → permission/limit} gate. The
-     *       method is therefore {@code public} so the link package can reach
-     *       it.</li>
-     * </ul>
-     *
-     * <p>OnlyOffice configuration loading is unchanged. The ticket payload
-     * still goes through {@link DrivePreviewTicketService#create} with the
-     * same TTL and the same {@code viewerPersonOaId} / {@code viewerName}
-     * semantics; for PUBLIC_LINK callers, {@code viewerPersonOaId} carries the
-     * link token (so OnlyOffice gets a non-empty identifier and the audit
-     * layer can trace the request back to the token) while {@code viewerName}
-     * is empty, which makes the existing OnlyOffice editor config fall back to
-     * {@code item.ownerName}.
-     */
+    /** Ordinary item/share authorization stays in getPreview; derivatives use the same subject. */
     public DrivePreviewResponse buildPreviewForItem(DriveItem item, AccessContext context) {
-        if (item.isDeleted() || item.getItemType() != DriveItemType.FILE) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "file not found");
-        }
-
-        DrivePreviewResponse response = new DrivePreviewResponse();
-        response.setItemId(item.getId());
-        response.setMode("view");
-        response.setFileName(item.getName());
-        response.setContentType(item.getContentType());
-        response.setPreviewUrl("/api/drive/items/" + item.getId() + "/content");
-        response.setAllowDownload(context.isDownloadAllowed());
-
-        String kind = resolvePreviewKind(item);
-        response.setKind(kind);
-        response.setSupported(!"unsupported".equals(kind));
-
-        if (!Boolean.TRUE.equals(response.getSupported())) {
-            return response;
-        }
-        if ("office".equals(kind)) {
-            DriveOnlyofficePreviewReadiness readiness = onlyofficePreviewStatusService.getReadiness();
-            if (!readiness.isConfigured()) {
-                response.setSupported(false);
-                response.setUnavailableCode(readiness.getUnavailableCode());
-                response.setUnavailableMessage(readiness.getUnavailableMessage());
-                return response;
-            }
-            DrivePreviewTicketPayload payload = new DrivePreviewTicketPayload();
-            payload.setItemId(item.getId());
-            payload.setOwnerPersonOaId(item.getOwnerPersonOaId());
-            payload.setViewerPersonOaId(resolveViewerId(context));
-            payload.setViewerName(resolveViewerName(context));
-            payload.setViewerPersonOaIdRaw(resolveViewerRawPersonOaId(context));
-            payload.setEffectivePermission(context.getEffectivePermission());
-            payload.setAllowDownload(context.isDownloadAllowed());
-            payload.setAllowEdit(false);
-            payload.setScopeType(item.getScopeType().name());
-            payload.setScopeId(item.getScopeId());
-            payload.setExpiresAt(Instant.now()
-                    .plus(properties.getDrive().getPreviewTicketTtlSeconds().longValue(), ChronoUnit.SECONDS)
-                    .toEpochMilli());
-            String ticket = drivePreviewTicketService.create(payload);
-            response.setPreviewTicket(ticket);
-            response.setPreviewPageUrl(buildPreviewPageUrl(ticket));
-            return response;
-        }
-        touchLastAccessed(item);
-        return response;
+        return previews.describe(item, context, null, null);
     }
 
     @Transactional
     public DriveDownloadPayload downloadItem(String token, String itemId) {
         long t0 = System.nanoTime();
+        AuthLoginResponse session = requireSession(token);
+        DriveItem item = requireDownloadItem(token, itemId);
+        auditLogService.record(session.getPersonOaId(), AuditAction.DOWNLOAD, "DRIVE_ITEM", item.getId(),
+                "name", item.getName(), "sizeBytes", item.getSizeBytes(), "contentType", item.getContentType());
+        DriveDownloadPayload payload = loadFilePayload(item, true);
+        logTiming("download", item.getId(), t0, item.getSizeBytes());
+        return payload;
+    }
+
+    @Transactional(readOnly = true)
+    public DriveItem requireDownloadItem(String token, String itemId) {
         AuthLoginResponse session = requireSession(token);
         // Scope-aware：先 READ 通过 scope 鉴权拿 item，再按 scope 分支判定下载资格
         // （workspace VIEWER 不允许下载；personal 走 share DOWNLOAD 权限）。
@@ -418,17 +322,7 @@ public class DriveService {
             // PERSONAL：复用既有 share DOWNLOAD 检查（read-only 共享被拒等语义保留不变）
             driveShareService.requireAccess(session, itemId, DriveSharePermission.DOWNLOAD);
         }
-        auditLogService.record(
-                session.getPersonOaId(),
-                AuditAction.DOWNLOAD,
-                "DRIVE_ITEM",
-                item.getId(),
-                "name", item.getName(),
-                "sizeBytes", item.getSizeBytes(),
-                "contentType", item.getContentType());
-        DriveDownloadPayload payload = loadFilePayload(item, true);
-        logTiming("download", item.getId(), t0, item.getSizeBytes());
-        return payload;
+        return item;
     }
 
     @Transactional
@@ -438,6 +332,7 @@ public class DriveService {
         // Scope-aware：preview/inline content 走 READ 矩阵 — workspace 任何成员都允许；
         // personal owner / active share 都允许。修复协作空间成员预览别人文件被 403。
         DriveItem item = driveScopeAccessService.requireItem(session, itemId, DriveScopeAction.READ);
+        if ("office".equals(com.x.cloudnext.server.preview.PreviewSource.kind(item.getName(), item.getContentType()))) throw new ResponseStatusException(HttpStatus.FORBIDDEN, "请通过文件预览查看。");
         DriveDownloadPayload payload = loadFilePayload(item, true);
         // N+2.7 F1: preview 高频路径，audit 改异步避免阻塞业务线程
         auditLogService.recordAsync(
@@ -711,359 +606,6 @@ public class DriveService {
         return response;
     }
 
-    @Transactional(readOnly = true)
-    public DriveOnlyofficeViewConfigResponse getOnlyofficeViewConfig(String previewTicket, String requestBaseUrl) {
-        requireOnlyofficeDocumentServer();
-        DrivePreviewTicketPayload payload = drivePreviewTicketService.parse(previewTicket);
-        DriveItem item = requireOwnedItem(payload.getOwnerPersonOaId(), payload.getItemId());
-        if (item.isDeleted() || item.getItemType() != DriveItemType.FILE) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "preview file not found");
-        }
-        if (!"office".equals(resolvePreviewKind(item))) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "current file does not support onlyoffice preview");
-        }
-
-        DriveOnlyofficeViewConfigResponse response = new DriveOnlyofficeViewConfigResponse();
-        response.setFileName(item.getName());
-        response.setMode("view");
-        response.setDocserviceApi(properties.getDrive().getOnlyoffice().getDocserviceApi());
-        response.setDocumentServerUrl(properties.getDrive().getOnlyoffice().getDocumentServerUrl());
-        response.setDocEditorConfig(buildOnlyofficeDocEditorConfig(item, payload, requestBaseUrl, previewTicket, false));
-        return response;
-    }
-
-    @Transactional(readOnly = true)
-    public DriveOnlyofficeViewConfigResponse getOnlyofficeEditConfig(String editTicket, String requestBaseUrl) {
-        requireOnlyofficeEditEnabled();
-        onlyofficePreviewStatusService.requireEditConfigured();
-        DrivePreviewTicketPayload payload = drivePreviewTicketService.parse(editTicket);
-        if (!payload.isAllowEdit()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "edit ticket does not allow editing");
-        }
-        DriveItem item = requireCurrentEditableItem(payload);
-        String currentKey = buildOnlyofficeDocumentKey(item);
-        if (!StringUtils.pathEquals(currentKey, payload.getDocumentKey())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "edit ticket is stale");
-        }
-
-        DriveOnlyofficeViewConfigResponse response = new DriveOnlyofficeViewConfigResponse();
-        response.setFileName(item.getName());
-        response.setMode("edit");
-        response.setDocserviceApi(properties.getDrive().getOnlyoffice().getDocserviceApi());
-        response.setDocumentServerUrl(properties.getDrive().getOnlyoffice().getDocumentServerUrl());
-        response.setDocEditorConfig(buildOnlyofficeDocEditorConfig(item, payload, requestBaseUrl, editTicket, true));
-        return response;
-    }
-
-    @Transactional(readOnly = true)
-    public DriveOnlyofficeEditTicketResponse getOnlyofficeEditTicket(String token, String itemId) {
-        requireOnlyofficeEditEnabled();
-        onlyofficePreviewStatusService.requireEditConfigured();
-        AuthLoginResponse session = requireSession(token);
-        DriveItem item = driveScopeAccessService.requireItem(session, itemId, DriveScopeAction.READ);
-        if (item.isDeleted() || item.getItemType() != DriveItemType.FILE) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "edit file not found");
-        }
-        if (!"office".equals(resolvePreviewKind(item))) {
-            return buildUnsupportedEditTicket(item, "onlyoffice_edit_unsupported", "current file does not support onlyoffice editing");
-        }
-        requireOnlyofficeEditable(session, item);
-        DrivePreviewTicketPayload payload = buildEditTicketPayload(session, item);
-        String editTicket = drivePreviewTicketService.create(payload);
-        DriveOnlyofficeSaveSessionState state = onlyofficeSaveStates.computeIfAbsent(editTicket, DriveOnlyofficeSaveSessionState::new);
-        state.setState("idle");
-        state.setMessage("");
-        state.setUpdatedAt(null);
-        state.setSizeBytes(null);
-        DriveOnlyofficeEditTicketResponse response = new DriveOnlyofficeEditTicketResponse();
-        response.setItemId(item.getId());
-        response.setKind(resolvePreviewKind(item));
-        response.setSupported(true);
-        response.setMode("edit");
-        response.setFileName(item.getName());
-        response.setEditTicket(editTicket);
-        response.setEditPageUrl("/edit/office?ticket=" + URLEncoder.encode(editTicket, StandardCharsets.UTF_8));
-        experienceService.mark(session, item.getId(), false, true);
-        auditLogService.record(
-                session.getPersonOaId(),
-                AuditAction.EDIT_OPEN,
-                "DRIVE_ITEM",
-                item.getId(),
-                "name", item.getName(),
-                "kind", response.getKind(),
-                "scope", item.getScopeType() == null ? "" : item.getScopeType().name());
-        return response;
-    }
-
-    @Transactional(readOnly = true)
-    public DriveOnlyofficeSaveStatusResponse getOnlyofficeSaveStatus(String editTicket) {
-        requireOnlyofficeEditEnabled();
-        onlyofficePreviewStatusService.requireEditConfigured();
-        DriveOnlyofficeSaveSessionState state = onlyofficeSaveStates.get(editTicket);
-        if (state == null) {
-            DriveOnlyofficeSaveStatusResponse response = new DriveOnlyofficeSaveStatusResponse();
-            response.setEditTicket(editTicket);
-            response.setState("idle");
-            response.setPending(false);
-            response.setSaved(false);
-            response.setFailed(false);
-            return response;
-        }
-        DriveOnlyofficeSaveStatusResponse response = new DriveOnlyofficeSaveStatusResponse();
-        response.setEditTicket(editTicket);
-        response.setState(state.getState());
-        response.setPending(state.isPending());
-        response.setSaved(state.isSaved());
-        response.setFailed(state.isFailed());
-        response.setMessage(state.getMessage());
-        response.setUpdatedAt(state.getUpdatedAt());
-        response.setSizeBytes(state.getSizeBytes());
-        return response;
-    }
-
-    @Transactional
-    public DriveOnlyofficeForceSaveResponse forceOnlyofficeSave(String editTicket, String authorizationHeader) {
-        requireOnlyofficeEditEnabled();
-        onlyofficePreviewStatusService.requireEditConfigured();
-        DrivePreviewTicketPayload payload = drivePreviewTicketService.parse(editTicket);
-        if (!payload.isAllowEdit()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "edit ticket does not allow editing");
-        }
-        DriveItem item = requireCurrentEditableItem(payload);
-        DriveOnlyofficeSaveSessionState state = onlyofficeSaveStates.computeIfAbsent(editTicket, DriveOnlyofficeSaveSessionState::new);
-        state.setState("pending");
-        state.setMessage("saving");
-        state.setUpdatedAt(null);
-        state.setSizeBytes(null);
-
-        Map<String, Object> payloadBody = new LinkedHashMap<>();
-        payloadBody.put("c", "forcesave");
-        payloadBody.put("key", payload.getDocumentKey());
-        payloadBody.put("shardkey", payload.getDocumentKey());
-        if (Boolean.TRUE.equals(properties.getDrive().getOnlyoffice().getJwtEnabled())) {
-            payloadBody.put("token", signOnlyofficeJwtPayload(payloadBody));
-        }
-
-        String commandUrl = normalizeConfiguredBaseUrl(properties.getDrive().getOnlyoffice().getDocumentServerUrl());
-        if (!StringUtils.hasText(commandUrl)) {
-            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "cloudnext onlyoffice document server is not configured");
-        }
-        commandUrl = commandUrl + "/command";
-        try {
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(payloadBody);
-            ResponseEntity<Map> response;
-            boolean retried = false;
-            try {
-                response = restTemplate.exchange(commandUrl, HttpMethod.POST, request, Map.class);
-            } catch (RestClientException firstError) {
-                // 网络瞬时抖动 — 退避 800ms 重试一次再决定是否报错
-                LOGGER.warn("cloudnext forcesave first attempt failed, retrying once: {}", firstError.getMessage());
-                try {
-                    Thread.sleep(ONLYOFFICE_FORCESAVE_RETRY_BACKOFF_MS);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    throw firstError;
-                }
-                retried = true;
-                HttpEntity<Map<String, Object>> retryRequest = new HttpEntity<>(payloadBody);
-                response = restTemplate.exchange(commandUrl, HttpMethod.POST, retryRequest, Map.class);
-            }
-            Object errorRaw = response.getBody() == null ? null : response.getBody().get("error");
-            Integer errorCode = coerceInteger(errorRaw);
-            boolean http2xx = response.getStatusCode().is2xxSuccessful();
-            DriveOnlyofficeForceSaveResponse result = new DriveOnlyofficeForceSaveResponse();
-            if (http2xx && Integer.valueOf(0).equals(errorCode)) {
-                result.setAccepted(true);
-                result.setState("pending");
-                result.setMessage("forcesave accepted");
-            } else if (http2xx && Integer.valueOf(4).equals(errorCode)) {
-                // OnlyOffice error=4: 自上次保存以来文档无修改，视为已是最新版本
-                result.setAccepted(true);
-                result.setState("saved");
-                result.setMessage("已是最新版本");
-                if (!"saved".equals(state.getState())) {
-                    state.setState("saved");
-                    state.setMessage("已是最新版本");
-                    if (state.getUpdatedAt() == null) {
-                        state.setUpdatedAt(System.currentTimeMillis());
-                    }
-                } else {
-                    state.setMessage("已是最新版本");
-                }
-            } else {
-                String reason = "forcesave rejected (error=" + errorCode + ")";
-                result.setAccepted(false);
-                result.setState("failed");
-                result.setMessage(reason);
-                state.setState("failed");
-                state.setMessage(reason);
-                auditLogService.record(
-                        auditActor(payload),
-                        AuditAction.EDIT_FAILED,
-                        "ONLYOFFICE_FORCESAVE",
-                        payload.getItemId(),
-                        "reason", reason,
-                        "errorCode", errorCode,
-                        "retried", retried);
-            }
-            return result;
-        } catch (RestClientException e) {
-            state.setState("failed");
-            state.setMessage("forcesave request failed");
-            auditLogService.record(
-                    auditActor(payload),
-                    AuditAction.EDIT_FAILED,
-                    "ONLYOFFICE_FORCESAVE",
-                    payload.getItemId(),
-                    "reason", e.getMessage() == null ? "rest client exception" : e.getMessage(),
-                    "exception", e.getClass().getSimpleName(),
-                    "retried", true);
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "cloudnext could not request onlyoffice forcesave", e);
-        }
-    }
-
-    @Transactional
-    public DriveDownloadPayload loadOnlyofficeContent(String previewTicket) {
-        requireOnlyofficeDocumentServer();
-        DrivePreviewTicketPayload payload = drivePreviewTicketService.parse(previewTicket);
-        if (StringUtils.hasText(payload.getVersionId())) {
-            AuthLoginResponse viewer = new AuthLoginResponse();
-            viewer.setPersonOaId(payload.getViewerPersonOaId());
-            com.x.cloudnext.server.drive.next.DriveItemVersion version = versionService.requireVersion(viewer, payload.getItemId(), payload.getVersionId());
-            return new DriveDownloadPayload(version.fileName, version.contentType, versionService.content(version));
-        }
-        DriveItem item = requireOwnedItem(payload.getOwnerPersonOaId(), payload.getItemId());
-        if (!"office".equals(resolvePreviewKind(item))) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "current file does not support onlyoffice preview");
-        }
-        return loadFilePayload(item, true);
-    }
-
-    @Transactional
-    public DriveOnlyofficeCallbackResponse handleOnlyofficeCallback(
-            String editTicket,
-            DriveOnlyofficeCallbackRequest request,
-            String authorizationHeader) {
-        long t0 = System.nanoTime();
-        requireOnlyofficeEditEnabled();
-        onlyofficePreviewStatusService.requireEditConfigured();
-        if (request == null || request.getStatus() == null) {
-            return DriveOnlyofficeCallbackResponse.failed();
-        }
-        if (!isFinalOnlyofficeSaveStatus(request.getStatus())) {
-            return DriveOnlyofficeCallbackResponse.ok();
-        }
-        try {
-            DriveOnlyofficeCallbackRequest verifiedRequest = verifyOnlyofficeCallback(request, authorizationHeader);
-            if (!StringUtils.hasText(verifiedRequest.getKey()) || !StringUtils.hasText(verifiedRequest.getUrl())) {
-                return DriveOnlyofficeCallbackResponse.failed();
-            }
-            DrivePreviewTicketPayload payload = drivePreviewTicketService.parse(editTicket);
-            if (!payload.isAllowEdit() || !StringUtils.pathEquals(payload.getDocumentKey(), verifiedRequest.getKey())) {
-                return DriveOnlyofficeCallbackResponse.failed();
-            }
-            String callbackKey = buildOnlyofficeCallbackId(editTicket, verifiedRequest);
-            if (appliedOnlyofficeCallbackKeys.contains(callbackKey)) {
-                return DriveOnlyofficeCallbackResponse.ok();
-            }
-            DriveItem item = requireCurrentEditableItem(payload);
-            byte[] content = downloadOnlyofficeSavedContent(verifiedRequest.getUrl());
-            DriveStoredFile stored = versionService.store(item, content, auditActor(payload), payload.getViewerName(), callbackKey);
-            item.setStorageKey(stored.getStorageKey());
-            item.setSizeBytes(stored.getSizeBytes());
-            item.setContentType(stored.getContentType());
-            item.setFileType(resolveFileType(item.getName(), stored.getContentType()));
-            driveItemRepository.save(item);
-            DriveOnlyofficeSaveSessionState state = onlyofficeSaveStates.computeIfAbsent(editTicket, DriveOnlyofficeSaveSessionState::new);
-            state.setState("saving");
-            state.setMessage("committing");
-            state.setUpdatedAt(System.currentTimeMillis());
-            state.setSizeBytes(stored.getSizeBytes());
-            org.springframework.transaction.support.TransactionSynchronizationManager.registerSynchronization(
-                    new org.springframework.transaction.support.TransactionSynchronization() {
-                        @Override public void afterCommit() {
-                            appliedOnlyofficeCallbackKeys.add(callbackKey);
-                            state.setState("saved"); state.setMessage("saved");
-                        }
-                        @Override public void afterCompletion(int status) {
-                            if (status != STATUS_COMMITTED) { state.setState("failed"); state.setMessage("save transaction rolled back"); }
-                        }
-                    });
-            auditLogService.record(
-                    auditActor(payload),
-                    AuditAction.EDIT_COMPLETED,
-                    "DRIVE_ITEM",
-                    item.getId(),
-                    "name", item.getName(),
-                    "sizeBytes", stored.getSizeBytes(),
-                    "contentType", stored.getContentType(),
-                    "status", request.getStatus());
-            logTiming("onlyoffice-callback", item.getId(), t0, "ok");
-            return DriveOnlyofficeCallbackResponse.ok();
-        } catch (ResponseStatusException e) {
-            DriveOnlyofficeSaveSessionState state = onlyofficeSaveStates.computeIfAbsent(editTicket, DriveOnlyofficeSaveSessionState::new);
-            state.setState("failed");
-            state.setMessage(e.getReason());
-            LOGGER.warn("cloudnext onlyoffice callback rejected: {}", e.getReason());
-            auditLogService.record(
-                    auditActorFromTicket(editTicket),
-                    AuditAction.EDIT_FAILED,
-                    "ONLYOFFICE_CALLBACK",
-                    auditCallbackTargetId(editTicket),
-                    "reason", e.getReason(),
-                    "httpStatus", e.getRawStatusCode(),
-                    "status", request.getStatus());
-            logTiming("onlyoffice-callback", auditCallbackTargetId(editTicket), t0, "failed");
-            return DriveOnlyofficeCallbackResponse.failed();
-        } catch (RuntimeException e) {
-            DriveOnlyofficeSaveSessionState state = onlyofficeSaveStates.computeIfAbsent(editTicket, DriveOnlyofficeSaveSessionState::new);
-            state.setState("failed");
-            state.setMessage("callback failed");
-            LOGGER.warn("cloudnext onlyoffice callback failed", e);
-            auditLogService.record(
-                    auditActorFromTicket(editTicket),
-                    AuditAction.EDIT_FAILED,
-                    "ONLYOFFICE_CALLBACK",
-                    auditCallbackTargetId(editTicket),
-                    "reason", e.getMessage() == null ? "callback failed" : e.getMessage(),
-                    "exception", e.getClass().getSimpleName(),
-                    "status", request.getStatus());
-            logTiming("onlyoffice-callback", auditCallbackTargetId(editTicket), t0, "failed");
-            return DriveOnlyofficeCallbackResponse.failed();
-        }
-    }
-
-    private String auditCallbackTargetId(String editTicket) {
-        try {
-            String itemId = drivePreviewTicketService.parse(editTicket).getItemId();
-            return StringUtils.hasText(itemId) ? itemId : "unknown";
-        } catch (RuntimeException ignore) {
-            return "unknown";
-        }
-    }
-
-    private String auditActor(DrivePreviewTicketPayload payload) {
-        if (payload == null) {
-            return "system";
-        }
-        if (StringUtils.hasText(payload.getViewerPersonOaId())) {
-            return payload.getViewerPersonOaId();
-        }
-        if (StringUtils.hasText(payload.getOwnerPersonOaId())) {
-            return payload.getOwnerPersonOaId();
-        }
-        return "system";
-    }
-
-    private String auditActorFromTicket(String editTicket) {
-        try {
-            return auditActor(drivePreviewTicketService.parse(editTicket));
-        } catch (RuntimeException ignore) {
-            return "system";
-        }
-    }
-
-    @Transactional
     public void cleanupExpiredTrash() {
         int retentionDays = properties.getDrive().getTrashRetentionDays() == null
                 ? 30
@@ -1075,6 +617,7 @@ public class DriveService {
                 .collect(Collectors.toList());
         List<DriveItem> roots = filterDeletedRoots(deletedItems);
         for (DriveItem item : roots) {
+            if (!namespaces.maintenanceAllowed()) break;
             try {
                 permanentDeleteRecursively(item.getOwnerPersonOaId(), item);
             } catch (Exception e) {
@@ -1425,464 +968,8 @@ public class DriveService {
         return fileName.substring(index + 1).toLowerCase(Locale.ROOT);
     }
 
-    private String resolvePreviewKind(DriveItem item) {
-        String fileType = normalizeSortString(item.getFileType());
-        String contentType = normalizeSortString(item.getContentType());
-        String extension = resolveExtension(item.getName());
-        if (contentType.startsWith("image/") || isImageExtension(extension)) {
-            return "image";
-        }
-        if ("pdf".equals(fileType) || "pdf".equals(extension) || contentType.contains("pdf")) {
-            return "pdf";
-        }
-        if ("word".equals(fileType) || "excel".equals(fileType) || "ppt".equals(fileType) || isOfficeExtension(extension)) {
-            return "office";
-        }
-        return "unsupported";
-    }
-
-    private boolean isImageExtension(String extension) {
-        return "png".equals(extension) || "jpg".equals(extension) || "jpeg".equals(extension)
-                || "gif".equals(extension) || "bmp".equals(extension) || "webp".equals(extension);
-    }
-
-    private boolean isOfficeExtension(String extension) {
-        return "doc".equals(extension) || "docx".equals(extension) || "xls".equals(extension)
-                || "xlsx".equals(extension) || "ppt".equals(extension) || "pptx".equals(extension);
-    }
-
-    private String buildPreviewPageUrl(String previewTicket) {
-        String encodedTicket = URLEncoder.encode(previewTicket, StandardCharsets.UTF_8);
-        String configuredWebBaseUrl = normalizeConfiguredBaseUrl(properties.getEndpoints().getWebBaseUrl());
-        if (StringUtils.hasText(configuredWebBaseUrl)) {
-            return configuredWebBaseUrl + "/preview/office?ticket=" + encodedTicket;
-        }
-        return "/preview/office?ticket=" + encodedTicket;
-    }
-
-    private String buildEditPageUrl(String editTicket) {
-        String encodedTicket = URLEncoder.encode(editTicket, StandardCharsets.UTF_8);
-        String configuredWebBaseUrl = normalizeConfiguredBaseUrl(properties.getEndpoints().getWebBaseUrl());
-        if (StringUtils.hasText(configuredWebBaseUrl)) {
-            return configuredWebBaseUrl + "/edit/office?ticket=" + encodedTicket;
-        }
-        return "/edit/office?ticket=" + encodedTicket;
-    }
-
-    private Map<String, Object> buildOnlyofficeDocEditorConfig(
-            DriveItem item,
-            DrivePreviewTicketPayload payload,
-            String requestBaseUrl,
-            String ticket,
-            boolean editMode) {
-        String extension = resolveExtension(item.getName());
-
-        Map<String, Object> permissions = new LinkedHashMap<>();
-        permissions.put("edit", editMode);
-        permissions.put("download", payload.isAllowDownload());
-        permissions.put("print", payload.isAllowDownload());
-
-        Map<String, Object> document = new LinkedHashMap<>();
-        document.put("fileType", extension);
-        document.put("key", StringUtils.hasText(payload.getVersionId()) ? "version-" + payload.getVersionId() : buildOnlyofficeDocumentKey(item));
-        document.put("title", item.getName());
-        document.put("url", buildOnlyofficeContentUrl(requestBaseUrl, ticket));
-        document.put("permissions", permissions);
-
-        Map<String, Object> user = new LinkedHashMap<>();
-        user.put("id", StringUtils.hasText(payload.getViewerPersonOaId()) ? payload.getViewerPersonOaId() : item.getOwnerPersonOaId());
-        user.put("name", StringUtils.hasText(payload.getViewerName()) ? payload.getViewerName() : item.getOwnerName());
-
-        Map<String, Object> customization = new LinkedHashMap<>();
-        customization.put("compactHeader", true);
-        customization.put("help", false);
-        customization.put("feedback", false);
-        customization.put("forcesave", editMode);
-
-        Map<String, Object> editor = new LinkedHashMap<>();
-        editor.put("mode", editMode ? "edit" : "view");
-        editor.put("lang", "zh");
-        editor.put("location", "zh-CN");
-        editor.put("region", "zh-CN");
-        editor.put("user", user);
-        editor.put("customization", customization);
-        if (editMode) {
-            editor.put("callbackUrl", buildOnlyofficeCallbackUrl(ticket));
-        }
-
-        Map<String, Object> docEditorConfig = new LinkedHashMap<>();
-        docEditorConfig.put("documentType", resolveOnlyofficeDocumentType(extension));
-        docEditorConfig.put("document", document);
-        docEditorConfig.put("editorConfig", editor);
-        if (Boolean.TRUE.equals(properties.getDrive().getOnlyoffice().getJwtEnabled())) {
-            docEditorConfig.put("token", signOnlyofficeDocEditorConfig(docEditorConfig));
-        }
-        return docEditorConfig;
-    }
-
-    private String buildOnlyofficeContentUrl(String requestBaseUrl, String previewTicket) {
-        String baseUrl = normalizeConfiguredBaseUrl(properties.getEndpoints().getCallbackBaseUrl());
-        if (!StringUtils.hasText(baseUrl)) {
-            baseUrl = normalizeConfiguredBaseUrl(requestBaseUrl);
-        }
-        if (!StringUtils.hasText(baseUrl)) {
-            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "cloudnext callback base url is not configured");
-        }
-        return baseUrl + "/api/onlyoffice/content?previewTicket="
-                + URLEncoder.encode(previewTicket, StandardCharsets.UTF_8);
-    }
-
-    private String buildOnlyofficeCallbackUrl(String editTicket) {
-        String baseUrl = normalizeConfiguredBaseUrl(properties.getEndpoints().getCallbackBaseUrl());
-        if (!StringUtils.hasText(baseUrl)) {
-            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "cloudnext callback base url is not configured");
-        }
-        return baseUrl + "/api/onlyoffice/callback?editTicket="
-                + URLEncoder.encode(editTicket, StandardCharsets.UTF_8);
-    }
-
-    private DrivePreviewTicketPayload buildEditTicketPayload(AuthLoginResponse session, DriveItem item) {
-        DrivePreviewTicketPayload payload = new DrivePreviewTicketPayload();
-        payload.setItemId(item.getId());
-        payload.setOwnerPersonOaId(item.getOwnerPersonOaId());
-        payload.setViewerPersonOaId(resolveViewerId(session));
-        payload.setViewerPersonOaIdRaw(session.getPersonOaId());
-        payload.setViewerName(resolveOwnerName(session));
-        payload.setViewerIdentityIds(resolveViewerIdentityIds(session));
-        payload.setViewerUnitIds(resolveViewerUnitIds(session));
-        payload.setEffectivePermission(resolveOnlyofficePermission(session, item));
-        payload.setAllowDownload(true);
-        payload.setAllowEdit(true);
-        payload.setScopeType(item.getScopeType().name());
-        payload.setScopeId(item.getScopeId());
-        payload.setDocumentKey(buildOnlyofficeDocumentKey(item));
-        payload.setExpiresAt(Instant.now().plus(resolveOnlyofficeEditTicketTtlSeconds(), ChronoUnit.SECONDS).toEpochMilli());
-        return payload;
-    }
-
-    private DriveOnlyofficeEditTicketResponse buildUnsupportedEditTicket(DriveItem item, String code, String message) {
-        DriveOnlyofficeEditTicketResponse response = new DriveOnlyofficeEditTicketResponse();
-        response.setItemId(item.getId());
-        response.setKind(resolvePreviewKind(item));
-        response.setSupported(false);
-        response.setMode("edit");
-        response.setFileName(item.getName());
-        response.setUnavailableCode(code);
-        response.setUnavailableMessage(message);
-        return response;
-    }
-
-    private String buildOnlyofficeDocumentKey(DriveItem item) {
-        try {
-            String seed = item.getId() + "|" + normalizeSortString(item.getUpdatedAt()) + "|" + item.getSizeBytes();
-            return base64Url(MessageDigest.getInstance("SHA-256").digest(seed.getBytes(StandardCharsets.UTF_8)));
-        } catch (Exception e) {
-            throw new IllegalStateException("cloudnext drive failed to build onlyoffice document key", e);
-        }
-    }
-
-    private String resolveOnlyofficeDocumentType(String extension) {
-        if ("xls".equals(extension) || "xlsx".equals(extension) || "csv".equals(extension)) {
-            return "cell";
-        }
-        if ("ppt".equals(extension) || "pptx".equals(extension)) {
-            return "slide";
-        }
-        return "word";
-    }
-
-    private String signOnlyofficeDocEditorConfig(Map<String, Object> docEditorConfig) {
-        String secret = properties.getDrive().getOnlyoffice().getJwtSecret();
-        if (!StringUtils.hasText(secret)) {
-            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "cloudnext onlyoffice jwt secret is not configured");
-        }
-        try {
-            Map<String, Object> header = new LinkedHashMap<>();
-            header.put("alg", "HS256");
-            header.put("typ", "JWT");
-            String headerPart = base64Url(objectMapper.writeValueAsBytes(header));
-            String payloadPart = base64Url(objectMapper.writeValueAsBytes(docEditorConfig));
-            String signingInput = headerPart + "." + payloadPart;
-            Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
-            String signature = base64Url(mac.doFinal(signingInput.getBytes(StandardCharsets.UTF_8)));
-            return signingInput + "." + signature;
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException("cloudnext drive failed to serialize onlyoffice config", e);
-        } catch (Exception e) {
-            throw new IllegalStateException("cloudnext drive failed to sign onlyoffice config", e);
-        }
-    }
-
-    private String signOnlyofficeCommandPayload(Map<String, Object> payload) {
-        String secret = properties.getDrive().getOnlyoffice().getJwtSecret();
-        if (!StringUtils.hasText(secret)) {
-            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "cloudnext onlyoffice jwt secret is not configured");
-        }
-        try {
-            Map<String, Object> header = new LinkedHashMap<>();
-            header.put("alg", "HS256");
-            header.put("typ", "JWT");
-            String headerPart = base64Url(objectMapper.writeValueAsBytes(header));
-            String payloadPart = base64Url(objectMapper.writeValueAsBytes(payload));
-            String signingInput = headerPart + "." + payloadPart;
-            Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
-            String signature = base64Url(mac.doFinal(signingInput.getBytes(StandardCharsets.UTF_8)));
-            return signingInput + "." + signature;
-        } catch (JsonProcessingException e) {
-            throw new IllegalStateException("cloudnext drive failed to serialize onlyoffice command payload", e);
-        } catch (Exception e) {
-            throw new IllegalStateException("cloudnext drive failed to sign onlyoffice command payload", e);
-        }
-    }
-
-    private String signOnlyofficeJwtPayload(Map<String, Object> payload) {
-        return signOnlyofficeCommandPayload(payload);
-    }
-
-    private DriveOnlyofficeCallbackRequest verifyOnlyofficeCallback(
-            DriveOnlyofficeCallbackRequest request,
-            String authorizationHeader) {
-        if (!Boolean.TRUE.equals(properties.getDrive().getOnlyoffice().getJwtEnabled())) {
-            return request;
-        }
-        String token = firstNonBlank(request.getToken(), stripBearerToken(authorizationHeader));
-        if (!StringUtils.hasText(token)) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "onlyoffice callback jwt token is missing");
-        }
-        Map<String, Object> claims = verifyOnlyofficeJwtToken(token);
-        DriveOnlyofficeCallbackRequest verified = objectMapper.convertValue(claims, DriveOnlyofficeCallbackRequest.class);
-        verified.setToken(null);
-        return verified;
-    }
-
-    @SuppressWarnings("unchecked")
-    private Map<String, Object> verifyOnlyofficeJwtToken(String token) {
-        String secret = properties.getDrive().getOnlyoffice().getJwtSecret();
-        if (!StringUtils.hasText(secret)) {
-            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "cloudnext onlyoffice jwt secret is not configured");
-        }
-        String[] parts = token.split("\\.");
-        if (parts.length != 3) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "onlyoffice callback jwt token is invalid");
-        }
-        try {
-            String signingInput = parts[0] + "." + parts[1];
-            Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
-            String expected = base64Url(mac.doFinal(signingInput.getBytes(StandardCharsets.UTF_8)));
-            if (!MessageDigest.isEqual(expected.getBytes(StandardCharsets.UTF_8), parts[2].getBytes(StandardCharsets.UTF_8))) {
-                throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "onlyoffice callback jwt signature is invalid");
-            }
-            return objectMapper.readValue(
-                    Base64.getUrlDecoder().decode(parts[1]),
-                    Map.class);
-        } catch (ResponseStatusException e) {
-            throw e;
-        } catch (IOException e) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "onlyoffice callback jwt payload is invalid", e);
-        } catch (Exception e) {
-            throw new IllegalStateException("cloudnext drive failed to verify onlyoffice callback jwt", e);
-        }
-    }
-
-    private String stripBearerToken(String authorizationHeader) {
-        if (!StringUtils.hasText(authorizationHeader)) {
-            return "";
-        }
-        String value = authorizationHeader.trim();
-        if (value.toLowerCase(Locale.ROOT).startsWith("bearer ")) {
-            return value.substring(7).trim();
-        }
-        int headerPrefix = value.indexOf(' ');
-        if (headerPrefix > 0 && headerPrefix < value.length() - 1) {
-            return value.substring(headerPrefix + 1).trim();
-        }
-        return value;
-    }
-
-    private boolean isFinalOnlyofficeSaveStatus(Integer status) {
-        return Integer.valueOf(2).equals(status) || Integer.valueOf(6).equals(status);
-    }
-
-    private String buildOnlyofficeCallbackId(String editTicket, DriveOnlyofficeCallbackRequest request) {
-        return editTicket + "|" + request.getKey() + "|" + request.getStatus() + "|" + request.getUrl();
-    }
-
-    private byte[] downloadOnlyofficeSavedContent(String url) {
-        try {
-            ResponseEntity<byte[]> response = restTemplate.exchange(
-                    url,
-                    HttpMethod.GET,
-                    HttpEntity.EMPTY,
-                    byte[].class);
-            if (!response.getStatusCode().is2xxSuccessful() || response.getBody() == null) {
-                throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "onlyoffice saved document is empty");
-            }
-            return response.getBody();
-        } catch (RestClientException e) {
-            throw new ResponseStatusException(HttpStatus.BAD_GATEWAY, "cloudnext could not download onlyoffice saved document", e);
-        }
-    }
-
-    private String resolveOnlyofficePermission(AuthLoginResponse session, DriveItem item) {
-        if (item.getScopeType() == DriveScopeType.WORKSPACE) {
-            return "edit";
-        }
-        if (StringUtils.hasText(item.getOwnerPersonOaId()) && item.getOwnerPersonOaId().equals(session.getPersonOaId())) {
-            return "edit";
-        }
-        return "edit";
-    }
-
-    private Integer coerceInteger(Object value) {
-        if (value instanceof Number) {
-            return ((Number) value).intValue();
-        }
-        if (value instanceof String && StringUtils.hasText((String) value)) {
-            try {
-                return Integer.parseInt(((String) value).trim());
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        }
-        return null;
-    }
-
-    private long resolveOnlyofficeEditTicketTtlSeconds() {
-        Integer ttl = properties.getDrive().getOnlyofficeEditTicketTtlSeconds();
-        if (ttl == null || ttl <= 0) {
-            return 86400L;
-        }
-        return ttl;
-    }
-
-    private DriveItem requireCurrentEditableItem(DrivePreviewTicketPayload payload) {
-        DriveItem item = driveItemRepository.findById(payload.getItemId())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "edit file not found"));
-        if (item.isDeleted() || item.getItemType() != DriveItemType.FILE) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "edit file not found");
-        }
-        if (!"office".equals(resolvePreviewKind(item))) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "current file does not support onlyoffice editing");
-        }
-        if (!StringUtils.pathEquals(item.getOwnerPersonOaId(), payload.getOwnerPersonOaId())
-                || !StringUtils.pathEquals(item.getScopeType().name(), payload.getScopeType())
-                || !StringUtils.pathEquals(item.getScopeId(), payload.getScopeId())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "edit file scope has changed");
-        }
-        requireOnlyofficeEditable(toSyntheticSession(payload), item);
-        return item;
-    }
-
-    private void requireOnlyofficeEditable(AuthLoginResponse session, DriveItem item) {
-        if (!canOnlyofficeEdit(session, item)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "current user cannot edit this file");
-        }
-    }
-
-    private boolean canOnlyofficeEdit(AuthLoginResponse session, DriveItem item) {
-        if (item == null || item.isDeleted() || item.getItemType() != DriveItemType.FILE) {
-            return false;
-        }
-        if (item.getScopeType() == DriveScopeType.WORKSPACE) {
-            return driveScopeAccessService.canActOn(session, item, DriveScopeAction.WRITE);
-        }
-        if (session != null && session.getPersonOaId() != null
-                && session.getPersonOaId().equals(item.getOwnerPersonOaId())) {
-            return true;
-        }
-        return driveShareService.resolveAccess(session, item)
-                .map(access -> access.getEffectivePermission().satisfies(DriveSharePermission.EDIT))
-                .orElse(false);
-    }
-
-    private AuthLoginResponse toSyntheticSession(DrivePreviewTicketPayload payload) {
-        AuthLoginResponse session = new AuthLoginResponse();
-        session.setAuthenticated(true);
-        session.setPersonOaId(payload.getViewerPersonOaIdRaw());
-        session.setPersonName(payload.getViewerName());
-        session.setIdentityList(resolvePayloadIdentities(payload));
-        return session;
-    }
-
-    private List<AuthIdentityDto> resolvePayloadIdentities(DrivePreviewTicketPayload payload) {
-        List<AuthIdentityDto> identities = new ArrayList<>();
-        int identityCount = payload.getViewerIdentityIds() == null ? 0 : payload.getViewerIdentityIds().size();
-        int unitCount = payload.getViewerUnitIds() == null ? 0 : payload.getViewerUnitIds().size();
-        int count = Math.max(identityCount, unitCount);
-        for (int i = 0; i < count; i++) {
-            AuthIdentityDto identity = new AuthIdentityDto();
-            if (i < identityCount) {
-                identity.setId(payload.getViewerIdentityIds().get(i));
-            }
-            if (i < unitCount) {
-                identity.setUnit(payload.getViewerUnitIds().get(i));
-            }
-            identities.add(identity);
-        }
-        return identities;
-    }
-
-    private List<String> resolveViewerIdentityIds(AuthLoginResponse session) {
-        if (session == null || session.getIdentityList() == null) {
-            return Collections.emptyList();
-        }
-        return session.getIdentityList().stream()
-                .filter(identity -> identity != null && StringUtils.hasText(identity.getId()))
-                .map(AuthIdentityDto::getId)
-                .collect(Collectors.toList());
-    }
-
-    private List<String> resolveViewerUnitIds(AuthLoginResponse session) {
-        if (session == null || session.getIdentityList() == null) {
-            return Collections.emptyList();
-        }
-        return session.getIdentityList().stream()
-                .filter(identity -> identity != null && StringUtils.hasText(identity.getUnit()))
-                .map(AuthIdentityDto::getUnit)
-                .collect(Collectors.toList());
-    }
-
-    private void requireOnlyofficeEditEnabled() {
-        if (!properties.getIteration().getOnlyofficeEdit().isEnabled()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "cloudnext onlyoffice edit is disabled");
-        }
-    }
-
-    private String firstNonBlank(String first, String second) {
-        if (StringUtils.hasText(first)) {
-            return first;
-        }
-        return StringUtils.hasText(second) ? second : "";
-    }
-
-    private String base64Url(byte[] value) {
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(value);
-    }
-
-    private String normalizeConfiguredBaseUrl(String baseUrl) {
-        if (!StringUtils.hasText(baseUrl)) {
-            return "";
-        }
-        String normalized = baseUrl.trim();
-        while (normalized.endsWith("/")) {
-            normalized = normalized.substring(0, normalized.length() - 1);
-        }
-        return normalized;
-    }
-
-    private void requireOnlyofficeDocumentServer() {
-        onlyofficePreviewStatusService.requireConfigured();
-    }
-
     private AuthLoginResponse requireSession(String token) {
         return driveAccessService.requireSession(token);
-    }
-
-    private DriveItem requireOwnedItem(String ownerPersonOaId, String itemId) {
-        return driveAccessService.requireOwnedItem(ownerPersonOaId, itemId);
     }
 
     private String normalizeParentId(String parentId) {
@@ -1902,49 +989,6 @@ public class DriveService {
 
     private String resolveOwnerName(AuthLoginResponse session) {
         return StringUtils.hasText(session.getPersonName()) ? session.getPersonName() : session.getPersonOaId();
-    }
-
-    private String resolveViewerId(AuthLoginResponse session) {
-        if (StringUtils.hasText(session.getPersonDistinguishedName())) {
-            return session.getPersonDistinguishedName();
-        }
-        return session.getPersonOaId();
-    }
-
-    /**
-     * Per-{@link AccessContext} viewer id used by the OnlyOffice ticket payload.
-     * For USER contexts this is identical to
-     * {@link #resolveViewerId(AuthLoginResponse)} so the legacy preview flow is
-     * byte-for-byte preserved. For PUBLIC_LINK contexts, the link token is used
-     * as the viewer id so OnlyOffice gets a non-empty identifier and the audit
-     * layer can attribute the request to the token rather than to a user.
-     */
-    private String resolveViewerId(AccessContext context) {
-        if (context.getKind() == AccessContext.Kind.USER) {
-            return resolveViewerId(context.getSession());
-        }
-        return context.getPublicLinkToken();
-    }
-
-    /**
-     * Per-{@link AccessContext} viewer display name used by the OnlyOffice
-     * ticket payload. USER contexts reuse the existing
-     * {@link #resolveOwnerName(AuthLoginResponse)}. PUBLIC_LINK contexts return
-     * an empty string so the OnlyOffice editor config naturally falls back to
-     * {@code item.ownerName} (no external visitor name is leaked).
-     */
-    private String resolveViewerName(AccessContext context) {
-        if (context.getKind() == AccessContext.Kind.USER) {
-            return resolveOwnerName(context.getSession());
-        }
-        return "";
-    }
-
-    private String resolveViewerRawPersonOaId(AccessContext context) {
-        if (context.getKind() == AccessContext.Kind.USER) {
-            return context.getUserId();
-        }
-        return "";
     }
 
     private String generateId() {
@@ -2125,11 +1169,6 @@ public class DriveService {
         }
     }
 
-    private DriveDownloadPayload loadOwnedFilePayload(String ownerPersonOaId, String itemId, boolean touchLastAccessed) {
-        DriveItem item = requireOwnedItem(ownerPersonOaId, itemId);
-        return loadFilePayload(item, touchLastAccessed);
-    }
-
     private DriveDownloadPayload loadFilePayload(DriveItem item, boolean touchLastAccessed) {
         if (item.getItemType() != DriveItemType.FILE || item.isDeleted()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "file not found");
@@ -2149,16 +1188,6 @@ public class DriveService {
             return;
         }
         driveItemRepository.updateLastAccessedAt(item.getId(), Instant.now().toString());
-    }
-
-    private void deleteStorageIfChanged(String previousStorageKey, String currentStorageKey) {
-        if (!StringUtils.hasText(previousStorageKey)) {
-            return;
-        }
-        if (StringUtils.pathEquals(previousStorageKey, currentStorageKey)) {
-            return;
-        }
-        driveStorageService.delete(previousStorageKey);
     }
 
     public static class DriveDownloadPayload {

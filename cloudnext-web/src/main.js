@@ -1,3 +1,4 @@
+import './embedded/runtimeCompatibility.js';
 import { createApp } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
 import App from './App.vue';
@@ -9,12 +10,17 @@ import './next/styles/demo.css';
 import './next/styles/experience.css';
 import { getCurrentSession } from './api/cloudnext';
 import { CLOUDNEXT_AUTH_UNAUTHORIZED_EVENT, CLOUDNEXT_SESSION_CHANGED_EVENT, CLOUDNEXT_TOKEN_KEY,
-  clearStoredSession, getStoredToken, getStoredSession, setStoredSession } from './session';
+  clearStoredSession, getStoredToken, getStoredSession, setStoredSession, isCurrentSessionStorageEvent } from './session';
+import { driveRouteQuery, setDriveRouteContext } from './driveContext';
 import { loginRouteFor, sanitizeReturnPath, normalizeEntryLocation } from './authNavigation';
 import { syncSession, busyUploads } from './next/state';
+import { embedded, embeddedQuery } from './embedded/context.js';
+import { startEmbedded, requestEmbeddedAuth } from './embedded/runtime.js';
 
 normalizeEntryLocation(window.location, window.history);
 const router = createRouter({ history: createWebHistory(), routes });
+router.afterEach(to => { document.documentElement.dataset.shell = to.meta.public ? 'public' : 'app'; });
+if (embedded) { document.documentElement.dataset.embedded = 'true'; void startEmbedded(router); }
 let checkingToken = '', sessionRequest;
 async function checkSession() {
   const token = getStoredToken();
@@ -30,11 +36,22 @@ async function checkSession() {
   } finally { if (checkingToken === token) sessionRequest = null; }
 }
 router.beforeEach(async to => {
+  if (embedded && to.name === 'login') return { name: 'oa-embed', query: driveRouteQuery(), replace: true };
+  if (embedded && !getStoredToken() && !to.meta.public) {
+    return { name: 'oa-embed', query: { ...embeddedQuery(), entryId: to.query.entryId || 'default' }, replace: true };
+  }
+  if (setDriveRouteContext(to.query)) syncSession(getStoredSession());
   const ssoCallback = to.name === 'login' && ['complete', 'error'].includes(to.query.sso);
   if (ssoCallback || (to.meta.public && to.name !== 'login')) return true;
   if (!getStoredToken()) return to.meta.public ? true : loginRouteFor(to.fullPath);
   try {
     if (!await checkSession()) return to.meta.public ? true : loginRouteFor(to.fullPath);
+    if (!to.meta.public) {
+      const context = driveRouteQuery();
+      if (Object.entries(context).some(([key, value]) => to.query[key] !== value)) {
+        return { path: to.path, query: { ...to.query, ...context }, hash: to.hash, replace: true };
+      }
+    }
     return to.name === 'login' ? sanitizeReturnPath(to.query.returnPath) : true;
   } catch (error) {
     if (error.status === 401 || error.name === 'AbortError') return to.meta.public ? true : loginRouteFor(to.fullPath);
@@ -43,12 +60,14 @@ router.beforeEach(async to => {
 });
 const toLogin = () => {
   syncSession(null);
+  if (embedded) { requestEmbeddedAuth(); void router.replace({ name: 'oa-embed', query: { ...driveRouteQuery() } }); return; }
   if (!router.currentRoute.value.meta.public) void router.replace(loginRouteFor(router.currentRoute.value.fullPath));
 };
 window.addEventListener(CLOUDNEXT_SESSION_CHANGED_EVENT, () => syncSession(getStoredSession()));
 window.addEventListener(CLOUDNEXT_AUTH_UNAUTHORIZED_EVENT, toLogin);
+window.addEventListener('focus', () => { if (getStoredToken()) void checkSession().catch(() => {}); });
 window.addEventListener('storage', async event => {
-  if (event.key !== CLOUDNEXT_TOKEN_KEY && event.key !== null) return;
+  if (!isCurrentSessionStorageEvent(event)) return;
   syncSession(null);
   if (!getStoredToken()) { toLogin(); return; }
   try {

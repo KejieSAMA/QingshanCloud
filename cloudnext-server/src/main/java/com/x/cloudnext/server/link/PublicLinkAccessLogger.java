@@ -57,6 +57,10 @@ public class PublicLinkAccessLogger {
     }
 
     public void recordFailure(String token, String ip, String userAgent, String action, ResponseStatusException e) {
+        var attributes = org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+        Object targetDrive = attributes == null ? null : attributes.getAttribute("cloudnext.linkDriveId", 0);
+        if (targetDrive instanceof String && com.x.cloudnext.server.namespace.DriveContext.id() != null
+            && !targetDrive.equals(com.x.cloudnext.server.namespace.DriveContext.id())) return;
         PublicLinkAccessFailReason reason = classify(e);
         persist(token, action, false, reason, ip, userAgent);
         auditLogService.record(
@@ -75,6 +79,11 @@ public class PublicLinkAccessLogger {
                          PublicLinkAccessFailReason reason, String ip, String userAgent) {
         try {
             DrivePublicLinkAccessLog log = new DrivePublicLinkAccessLog();
+            if (com.x.cloudnext.server.namespace.DriveContext.id() == null) {
+                var attributes = org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+                Object drive = attributes == null ? null : attributes.getAttribute("cloudnext.linkDriveId", 0);
+                log.setDriveId(drive instanceof String ? (String) drive : "system");
+            }
             log.setId(UUID.randomUUID().toString());
             log.setToken(token == null ? "" : token);
             log.setActionType(action == null ? "" : action);
@@ -85,7 +94,7 @@ public class PublicLinkAccessLogger {
             log.setAttemptedAt(Instant.now());
             accessLogRepository.save(log);
         } catch (RuntimeException ex) {
-            LOGGER.warn("cloudnext public link access log persistence failed: token={}, action={}", token, action, ex);
+            LOGGER.warn("cloudnext public link access log persistence failed: action={}", action, ex);
         }
     }
 

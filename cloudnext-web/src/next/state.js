@@ -2,16 +2,18 @@ import { reactive } from 'vue';
 import * as api from './api';
 import { defaultPreferences, normalizePreferences } from './preferences';
 import { getStoredSession, getStoredToken, clearStoredSession, emitUnauthorizedSignal, emitDriveRefreshSignal } from '../session';
+import { getActiveDriveId, getDriveStorageScope } from '../driveContext';
 export const ui = reactive({
  session: getStoredSession(), prefs: defaultPreferences(), effectivePrimaryColor: 'blue', accountRevision: 0,
  ready: false, admin: false, recent: [], usage: null, error: '', dialogs: [], popup: null, detail: null, preview: null,
  toast: '', queue: [], processing: false, revision: 0, context: { scopeType: 'PERSONAL', scopeId: '', parentId: '' }
 });
-let toastTimer, nextId = 0, currentToken = getStoredToken();
+let toastTimer, nextId = 0, currentToken = getStoredToken(), currentDrive = getDriveStorageScope();
 const uploads = new Set();
 export function syncSession(session) {
  const token = session?.token || '';
- if (token === currentToken) { ui.session = session; return; }
+ if (token === currentToken && currentDrive === getDriveStorageScope()) { ui.session = session; return; }
+ currentDrive = getDriveStorageScope();
  currentToken = token;
  const dialogs = ui.dialogs.splice(0);
  ui.accountRevision++;
@@ -81,7 +83,7 @@ function upload(entry) {
   uploads.add(xhr);
   body.append('file', entry.file); body.append('parentId', entry.target.parentId || ''); body.append('conflictStrategy', entry.strategy);
   const url = entry.target.scopeType === 'WORKSPACE' ? '/api/workspaces/' + encodeURIComponent(entry.target.scopeId) + '/files' : '/api/drive/me/files';
-  xhr.open('POST', url); xhr.setRequestHeader('X-CloudNext-Token', token);
+  xhr.open('POST', url); xhr.setRequestHeader('X-CloudNext-Token', token); if(getActiveDriveId())xhr.setRequestHeader('X-CloudNext-Drive', getActiveDriveId());
   xhr.upload.onprogress = e => { if(e.lengthComputable) entry.progress = Math.round(e.loaded / e.total * 100); };
   xhr.onabort=aborted;
   xhr.onerror = () => finish(reject,new Error('网络中断，请重试'));

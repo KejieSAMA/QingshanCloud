@@ -24,6 +24,7 @@ import com.x.cloudnext.server.workspace.entity.WorkspaceMember;
  *       must be rejected (task 1.6).</li>
  * </ul>
  */
+@org.springframework.transaction.annotation.Transactional(readOnly = true)
 public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember, String> {
 
     List<WorkspaceMember> findByWorkspaceId(String workspaceId);

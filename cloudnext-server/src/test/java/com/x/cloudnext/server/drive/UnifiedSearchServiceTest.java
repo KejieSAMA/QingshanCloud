@@ -18,7 +18,7 @@ class UnifiedSearchServiceTest {
     private final WorkspaceMemberRepository members = mock(WorkspaceMemberRepository.class);
     private final DriveShareService shares = mock(DriveShareService.class);
     private final UnifiedSearchService service = new UnifiedSearchService(files, spaces, members, shares);
-    private final AuthLoginResponse session = new AuthLoginResponse();
+    private final AuthLoginResponse session = com.x.cloudnext.server.testing.NamespaceTestSupport.session(new AuthLoginResponse());
     UnifiedSearchServiceTest() {
         session.setPersonOaId("me");
         when(files.findByScopeTypeAndScopeIdAndDeletedFalse(any(), anyString())).thenReturn(Collections.emptyList());
@@ -27,7 +27,7 @@ class UnifiedSearchServiceTest {
         when(spaces.findAllById(any())).thenReturn(Collections.emptyList());
     }
     private DriveItem file(String id, String name, String parent) {
-        DriveItem i = new DriveItem(); i.setId(id); i.setName(name); i.setParentId(parent);
+        DriveItem i = com.x.cloudnext.server.testing.NamespaceTestSupport.scoped(new DriveItem()); i.setId(id); i.setName(name); i.setParentId(parent);
         i.setScopeType(DriveScopeType.PERSONAL); i.setScopeId("me"); i.setOwnerPersonOaId("me");
         i.setOwnerName("用户"); i.setItemType(DriveItemType.FILE); i.setUpdatedAt("2026-09-09T00:00:00Z"); return i;
     }
@@ -50,7 +50,7 @@ class UnifiedSearchServiceTest {
         DriveItem root=file("root","公开目录","hidden"); root.setItemType(DriveItemType.FOLDER);
         DriveItem child=file("child","合同.pdf","root");
         for(DriveItem i:Arrays.asList(hidden,root,child)){i.setScopeId("other");i.setOwnerPersonOaId("other");}
-        DriveShare s=new DriveShare(); s.setId("share");s.setItemId("root");s.setPermission(DriveSharePermission.READ);
+        DriveShare s=com.x.cloudnext.server.testing.NamespaceTestSupport.scoped(new DriveShare()); s.setId("share");s.setItemId("root");s.setPermission(DriveSharePermission.READ);
         when(shares.loadMatchedShares(session)).thenReturn(Collections.singletonList(s));
         when(files.findAllById(any())).thenReturn(Collections.singletonList(root));
         when(files.findByScopeTypeAndScopeIdAndDeletedFalse(DriveScopeType.PERSONAL,"other")).thenReturn(Arrays.asList(hidden,root,child));
@@ -61,8 +61,8 @@ class UnifiedSearchServiceTest {
         s.setRevoked(true); assertEquals(0,service.search(session,query("合同")).total);
     }
     @Test void workspaceRolesAndArchivedSpacesRespectVisibility() {
-        Workspace w=new Workspace();w.setId("ws");w.setName("合同空间");w.setRootItemId("root");
-        WorkspaceMember m=new WorkspaceMember();m.setWorkspaceId("ws");m.setRole(WorkspaceRole.VIEWER);
+        Workspace w=com.x.cloudnext.server.testing.NamespaceTestSupport.scoped(new Workspace());w.setId("ws");w.setName("合同空间");w.setRootItemId("root");
+        WorkspaceMember m=com.x.cloudnext.server.testing.NamespaceTestSupport.scoped(new WorkspaceMember());m.setWorkspaceId("ws");m.setRole(WorkspaceRole.VIEWER);
         DriveItem root=file("root","","");root.setItemType(DriveItemType.FOLDER);
         DriveItem child=file("child","合同.pdf","root");
         for(DriveItem i:Arrays.asList(root,child)){i.setScopeType(DriveScopeType.WORKSPACE);i.setScopeId("ws");}
@@ -76,7 +76,7 @@ class UnifiedSearchServiceTest {
         w.setStatus(Workspace.STATUS_ARCHIVED);assertEquals(0,service.search(session,query("合同")).total);
     }
     @Test void invalidExpiryFailsClosedAndRelevanceUsesName() {
-        DriveShare s=new DriveShare();s.setPermission(DriveSharePermission.READ);s.setExpiresAt("invalid");
+        DriveShare s=com.x.cloudnext.server.testing.NamespaceTestSupport.scoped(new DriveShare());s.setPermission(DriveSharePermission.READ);s.setExpiresAt("invalid");
         assertFalse(UnifiedSearchService.activeShare(s,Instant.now()));
         assertEquals(0,UnifiedSearchService.rank("合同","合同"));assertEquals(1,UnifiedSearchService.rank("合同.pdf","合同"));
         assertEquals(2,UnifiedSearchService.rank("2026合同.pdf","合同"));

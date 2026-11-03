@@ -13,9 +13,10 @@ const tables = walk(path.join(root, 'src/main/java')).filter((f) => f.endsWith('
   if (!/@Entity\b/.test(code)) return [];
   const table = /@Table\(\s*name\s*=\s*"([^"]+)"/.exec(code)?.[1];
   if (!table) throw Error(`Entity without explicit table: ${file}`);
-  const parent = /public class \w+ extends (\w+)/.exec(code)?.[1];
+  const parent = /public class \w+ extends ([\w.]+)/.exec(code)?.[1];
   if (parent) {
-    const inherited = fs.readFileSync(path.join(path.dirname(file), `${parent}.java`), 'utf8')
+    const parentFile = parent.includes('.') ? path.join(root, 'src/main/java', parent.replaceAll('.', '/') + '.java') : path.join(path.dirname(file), `${parent}.java`);
+    const inherited = fs.readFileSync(parentFile, 'utf8')
       .replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
     if (!/@MappedSuperclass\b/.test(inherited)) throw Error(`Unsupported inheritance: ${file}`);
     code += '\n' + inherited;
@@ -37,7 +38,7 @@ const tables = walk(path.join(root, 'src/main/java')).filter((f) => f.endsWith('
         primary: /@Id\b/.test(a), unique: /unique\s*=\s*true/.test(col) };
     });
   if (!fields.length || fields.filter((f) => f.primary).length !== 1) throw Error(`Invalid entity fields: ${table}`);
-  const indexes = [...code.matchAll(/@Index\(([^)]*)\)/g)].map((m) => ({
+  const indexes = [...code.matchAll(/@(?:javax\.persistence\.)?Index\(([^)]*)\)/g)].map((m) => ({
     name: /name\s*=\s*"([^"]+)"/.exec(m[1])?.[1],
     columns: /columnList\s*=\s*"([^"]+)"/.exec(m[1])?.[1].split(',').map((s) => s.trim())
   }));
@@ -52,7 +53,7 @@ const tables = walk(path.join(root, 'src/main/java')).filter((f) => f.endsWith('
   }
   return [{ table, fields, indexes, uniques }];
 }).sort((a, b) => a.table.localeCompare(b.table, 'en'));
-if (tables.length !== 28) throw Error(`Expected 28 business tables, found ${tables.length}; review the baseline`);
+if (tables.length !== 29) throw Error(`Expected 29 business tables, found ${tables.length}; review the baseline`);
 const sql = '-- V001: CloudNext MySQL 8.0 baseline. Apply explicitly to an EMPTY dedicated database.\n'
   + '-- No CREATE DATABASE, USE, DROP, IF NOT EXISTS or cross-schema statements.\n\n'
   + tables.map(({ table, fields, indexes, uniques }) => {

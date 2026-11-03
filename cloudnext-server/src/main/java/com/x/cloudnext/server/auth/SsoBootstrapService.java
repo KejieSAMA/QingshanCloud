@@ -24,6 +24,10 @@ public class SsoBootstrapService {
         AuthenticationResult principal=formProvider.exchangeTicket(ticket);
         if(!properties.getAuth().getFormSsoAudience().equals(principal.getAudience()))throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"form sso ticket audience is invalid");
         String authoritativeReturnPath=normalizeReturnPath(principal.getReturnTo());
+        String returnEntry = org.springframework.web.util.UriComponentsBuilder.fromUriString(authoritativeReturnPath).build().getQueryParams().getFirst("entryId");
+        if (returnEntry != null && !returnEntry.equals(StringUtils.hasText(principal.getDriveEntryId()) ? principal.getDriveEntryId() : "default")) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "SSO drive context does not match requested entry");
+        }
         if(StringUtils.hasText(returnPath)&&!authoritativeReturnPath.equals(normalizeReturnPath(returnPath)))throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"form sso ticket return path does not match callback");
         if(principal.isMustChangePassword()) throw new ResponseStatusException(HttpStatus.PRECONDITION_REQUIRED,"form password must be changed before cloudnext login");
         return issuer.issue(principal,authoritativeReturnPath);
@@ -31,7 +35,7 @@ public class SsoBootstrapService {
     @Transactional
     public AuthLoginResponse complete(String raw){
         if(!StringUtils.hasText(raw))throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"cloudnext sso bootstrap cookie is missing");
-        SsoBootstrap b=bootstraps.findById(sha256(raw)).orElseThrow(()->new ResponseStatusException(HttpStatus.UNAUTHORIZED,"cloudnext sso bootstrap is invalid"));bootstraps.delete(b);
+        SsoBootstrap b=bootstraps.findForUpdate(sha256(raw)).orElseThrow(()->new ResponseStatusException(HttpStatus.UNAUTHORIZED,"cloudnext sso bootstrap is invalid"));bootstraps.delete(b);
         if(!Instant.parse(b.getExpiresAt()).isAfter(Instant.now())){sessions.logout(b.getSessionToken());throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"cloudnext sso bootstrap has expired");}
         AuthLoginResponse session=sessions.currentSession(b.getSessionToken());if(session==null)throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"cloudnext sso session is invalid");return session;
     }
@@ -43,5 +47,17 @@ public class SsoBootstrapService {
     private boolean isRelativePath(String value){if(!value.startsWith("/")||value.startsWith("//")||value.indexOf('\\')>=0)return false;for(int i=0;i<value.length();i++){char c=value.charAt(i);if(c<=0x1f||c==0x7f)return false;}return true;}
     private ResponseStatusException invalidReturnPath(){return new ResponseStatusException(HttpStatus.BAD_REQUEST,"returnPath must be a valid relative application path");}
     private String sha256(String value){try{byte[] digest=MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8));StringBuilder b=new StringBuilder();for(byte item:digest)b.append(String.format("%02x",item));return b.toString();}catch(Exception e){throw new IllegalStateException("SHA-256 is unavailable",e);}}
-    public static class BootstrapResult{private final String cookieValue;private final String returnPath;public BootstrapResult(String cookieValue,String returnPath){this.cookieValue=cookieValue;this.returnPath=returnPath;}public String getCookieValue(){return cookieValue;}public String getReturnPath(){return returnPath;}}
+    public static class BootstrapResult {
+        private final String cookieValue;
+        private final String returnPath;
+        private final com.x.cloudnext.server.namespace.DriveDescriptor drive;
+        public BootstrapResult(String cookieValue, String returnPath) { this(cookieValue, returnPath, null); }
+        public BootstrapResult(String cookieValue, String returnPath, com.x.cloudnext.server.namespace.DriveDescriptor drive) {
+            this.cookieValue = cookieValue; this.returnPath = returnPath; this.drive = drive;
+        }
+        public String getCookieValue() { return cookieValue; }
+        public String getReturnPath() { return returnPath; }
+        public com.x.cloudnext.server.namespace.DriveDescriptor getDrive() { return drive; }
+        public String getState() { return com.x.cloudnext.server.namespace.DriveNamespaceService.namespaceId("sso", cookieValue).substring(0, 32); }
+    }
 }

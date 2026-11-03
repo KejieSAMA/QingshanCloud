@@ -53,6 +53,11 @@ public class AuditLogService {
         }
         try {
             AuditLog log = new AuditLog();
+            if (com.x.cloudnext.server.namespace.DriveContext.current() == null) {
+                var attributes = org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+                Object hint = attributes == null ? null : attributes.getAttribute("cloudnext.linkDriveId", 0);
+                log.setDriveId(payload != null && payload.get("driveId") instanceof String ? (String) payload.get("driveId") : hint instanceof String ? (String) hint : "system");
+            }
             log.setId(UUID.randomUUID().toString());
             log.setPersonOaId(personOaId == null ? "" : personOaId);
             log.setAction(action);

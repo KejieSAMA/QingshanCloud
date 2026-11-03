@@ -1,6 +1,12 @@
 package com.x.cloudnext.server.auth;
 
 public class AuthStatusResponse {
+    private java.util.List<String> embeddedOrigins = java.util.Collections.emptyList();
+    public java.util.List<String> getEmbeddedOrigins() { return embeddedOrigins; }
+    public void setEmbeddedOrigins(java.util.List<String> value) { embeddedOrigins = value; }
+    public int getEmbeddedProtocol() { return 1; }
+    private final int driveNamespaceProtocol = 1;
+    public int getDriveNamespaceProtocol() { return driveNamespaceProtocol; }
 
     private String mode;
     private String provider;

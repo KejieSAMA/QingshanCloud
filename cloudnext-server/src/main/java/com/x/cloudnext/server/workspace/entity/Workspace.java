@@ -26,8 +26,9 @@ import javax.persistence.Table;
 @Entity
 @Table(
         name = "cloudnext_workspace",
-        indexes = @Index(name = "idx_workspace_status_updated", columnList = "status, updated_at"))
-public class Workspace {
+        indexes = { @Index(name = "idx_workspace_status_updated", columnList = "status, updated_at"), @javax.persistence.Index(name = "idx_namespace_workspace", columnList = "drive_id") })
+@org.hibernate.annotations.Filter(name = "driveNamespace", condition = "drive_id = :driveId")
+public class Workspace extends com.x.cloudnext.server.namespace.DriveScopedEntity {
 
     public static final String STATUS_ACTIVE = "ACTIVE";
     public static final String STATUS_ARCHIVED = "ARCHIVED";

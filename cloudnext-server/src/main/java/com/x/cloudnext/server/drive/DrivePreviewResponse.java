@@ -1,6 +1,25 @@
 package com.x.cloudnext.server.drive;
 
 public class DrivePreviewResponse {
+    private String status;
+    public String getStatus() { return status; }
+    public void setStatus(String v) { status=v; }
+    private String phase;
+    public String getPhase() { return phase; }
+    public void setPhase(String v) { phase=v; }
+    private String sourceIdentity;
+    public String getSourceIdentity() { return sourceIdentity; }
+    public void setSourceIdentity(String v) { sourceIdentity=v; }
+    private boolean retryable;
+    public boolean getRetryable() { return retryable; }
+    public void setRetryable(boolean v) { retryable=v; }
+    private int pageCount;
+    public int getPageCount() { return pageCount; }
+    public void setPageCount(int v) { pageCount=v; }
+    private long expiresAt;
+    public long getExpiresAt() { return expiresAt; }
+    public void setExpiresAt(long v) { expiresAt=v; }
+
 
     private String itemId;
     private String kind;

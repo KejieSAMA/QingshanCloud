@@ -101,6 +101,7 @@ import com.x.cloudnext.server.drive.repository.DrivePublicLinkRepository;
  */
 @Service
 public class DrivePublicLinkService {
+    @org.springframework.beans.factory.annotation.Autowired private com.x.cloudnext.server.namespace.DriveNamespaceService namespaces;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DrivePublicLinkService.class);
 
@@ -120,6 +121,7 @@ public class DrivePublicLinkService {
     private final DriveStorageService driveStorageService;
     private final AuditLogService auditLogService;
     private final String configuredBaseUrl;
+    @Value("${cloudnext.endpoints.web-base-url:}") private String webBaseUrl;
 
     public DrivePublicLinkService(
             DriveScopeAccessService driveScopeAccessService,
@@ -435,6 +437,7 @@ public class DrivePublicLinkService {
         boolean open = itemAvailable && isStillOpen(link);
 
         DrivePublicLinkMetaResponse response = new DrivePublicLinkMetaResponse();
+        response.setDriveName(com.x.cloudnext.server.namespace.DriveContext.current().drive.getName());
         response.setFileName(itemAvailable ? trimToEmpty(item.getName()) : "");
         response.setFileType(itemAvailable ? trimToEmpty(item.getFileType()) : "");
         response.setPermission(link.getPermission().name().toLowerCase(Locale.ROOT));
@@ -503,7 +506,29 @@ public class DrivePublicLinkService {
         DriveItem item = requireItemOr404(link);
         boolean downloadAllowed = link.getPermission() == PublicLinkPermission.DOWNLOAD;
         AccessContext context = AccessContext.publicLink(link.getToken(), true, downloadAllowed);
-        return driveService.buildPreviewForItem(item, context);
+        return previews.describe(item, context, null, accessTicket);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired @org.springframework.context.annotation.Lazy
+    private com.x.cloudnext.server.preview.DriveFilePreviewService previews;
+    @Transactional(readOnly = true)
+    public DriveItem requirePreviewItem(String token, String accessTicket) {
+        DrivePublicLink link = assertOpen(token, AssertOpenAction.PREVIEW);
+        requireTicketIfPasswordSet(link, accessTicket);
+        return requireItemOr404(link);
+    }
+
+    @Transactional(readOnly = true)
+    public DriveService.DriveDownloadPayload previewContent(String token, String accessTicket) {
+        DrivePublicLink link = assertOpen(token, AssertOpenAction.PREVIEW);
+        requireTicketIfPasswordSet(link, accessTicket);
+        DriveItem item = requireItemOr404(link);
+        if (item.getItemType() != DriveItemType.FILE) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "file not found");
+        if ("office".equals(com.x.cloudnext.server.preview.PreviewSource.kind(item.getName(), item.getContentType())))
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "请通过文件预览查看。");
+        Resource resource = driveStorageService.load(item.getStorageKey());
+        if (resource == null || !resource.exists()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "file not found");
+        return new DriveService.DriveDownloadPayload(item.getName(), item.getContentType(), resource);
     }
 
     /**
@@ -618,8 +643,12 @@ public class DrivePublicLinkService {
         if (!StringUtils.hasText(token)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "link not found");
         }
-        return drivePublicLinkRepository.findByToken(token.trim())
+        DrivePublicLink link = drivePublicLinkRepository.findByToken(token.trim())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "link not found"));
+        var attributes = org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+        if (attributes != null) attributes.setAttribute("cloudnext.linkDriveId", link.getDriveId(), 0);
+        namespaces.enterPublicLink(link.getDriveId());
+        return link;
     }
 
     /**
@@ -920,6 +949,11 @@ public class DrivePublicLinkService {
      * the implicit base.
      */
     private String buildShareUrl(String token) {
+        var context = com.x.cloudnext.server.namespace.DriveContext.current();
+        if (context != null && !context.drive.isDefault()) {
+            return (webBaseUrl == null ? "" : webBaseUrl.replaceAll("/+$", "")) + "/share/" + token
+                + "?driveId=" + context.drive.getId() + "&entryId=" + org.springframework.web.util.UriUtils.encodeQueryParam(context.drive.getEntryId(), java.nio.charset.StandardCharsets.UTF_8);
+        }
         if (configuredBaseUrl.isEmpty()) {
             return "/" + token;
         }

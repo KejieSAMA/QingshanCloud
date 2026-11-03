@@ -31,7 +31,8 @@ import com.x.cloudnext.server.migration.repository.LegacyArchiveMigrationTaskRep
 @org.junit.jupiter.api.extension.ExtendWith(com.x.cloudnext.server.testing.MysqlDatabaseExtension.class)
 @Import({FormDirectorySyncService.class,FormDirectorySyncTransactionService.class,FormDirectoryApplyService.class,
         FormLoginDirectorySync.class,CanonicalBindingService.class,FormAuthenticationProvider.class,ObjectMapper.class,
-        AuthSessionService.class,SsoSessionIssuer.class,SsoBootstrapService.class})
+        AuthSessionService.class,SsoSessionIssuer.class,SsoBootstrapService.class,
+        com.x.cloudnext.server.namespace.DriveNamespaceService.class,com.x.cloudnext.server.namespace.DriveIsolationConfiguration.class})
 @Transactional(propagation=Propagation.NOT_SUPPORTED)
 class FormLoginSyncIntegrationTest {
     @MockBean FormIntegrationClient client;
@@ -53,6 +54,7 @@ class FormLoginSyncIntegrationTest {
     @Autowired SsoBootstrapRepository bootstraps;
 
     @BeforeEach void resetData() {
+        when(client.resolveDrive(anyString(), anyString(), eq("default"), any())).thenReturn("青山云盘");
         bootstraps.deleteAll();sessions.deleteAll();identities.deleteAll();units.deleteAll();principals.deleteAll();states.deleteAll();archives.deleteAll();
         properties.getCutover().setMaintenanceMode(false);
     }

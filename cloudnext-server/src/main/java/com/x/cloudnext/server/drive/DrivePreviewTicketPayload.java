@@ -4,6 +4,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DrivePreviewTicketPayload {
+    private String sourceIdentity;
+    private String publicAccessTicket;
+    public String getSourceIdentity(){return sourceIdentity;} public void setSourceIdentity(String v){sourceIdentity=v;}
+    public String getPublicAccessTicket(){return publicAccessTicket;} public void setPublicAccessTicket(String v){publicAccessTicket=v;}
+    private String driveId;
+    private String publicLinkToken;
+    public String getPublicLinkToken() { return publicLinkToken; }
+    public void setPublicLinkToken(String v) { publicLinkToken = v; }
+    private String tenantId;
+    private String formEmployeeId;
+    private long authVersion;
+    public String getDriveId() { return driveId; }
+    public void setDriveId(String v) { driveId = v; }
+    public String getTenantId() { return tenantId; }
+    public void setTenantId(String v) { tenantId = v; }
+    public String getFormEmployeeId() { return formEmployeeId; }
+    public void setFormEmployeeId(String v) { formEmployeeId = v; }
+    public long getAuthVersion() { return authVersion; }
+    public void setAuthVersion(long v) { authVersion = v; }
     private String versionId;
     public String getVersionId() { return versionId; }
     public void setVersionId(String value) { versionId = value; }

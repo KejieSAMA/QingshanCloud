@@ -52,6 +52,30 @@ public class FormIntegrationClient {
         return readPrincipal(data);
     }
 
+    public String resolveDrive(String tenant, String employee, String entry, Long authVersion) {
+        Map<String,Object> request = new java.util.LinkedHashMap<>();
+        request.put("tenantId", tenant); request.put("employeeId", employee); request.put("entryId", entry);
+        if (authVersion != null) request.put("authVersion", authVersion);
+        String key = "cloudnext.drive-access:" + tenant + ":" + employee + ":" + entry + ":" + authVersion;
+        org.springframework.web.context.request.RequestAttributes attributes = org.springframework.web.context.request.RequestContextHolder.getRequestAttributes();
+        if (attributes != null && attributes.getAttribute(key, 0) instanceof String) return (String) attributes.getAttribute(key, 0);
+        JsonNode result = postForData(properties.getAuth().getFormDriveAccessPath(), request, "drive admission");
+        if (result.path("protocol").asInt() != 1 || !entry.equals(result.path("entryId").asText()) || result.path("name").asText().isBlank()) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "form drive admission protocol is unavailable");
+        }
+        String name = result.path("name").asText();
+        if (attributes != null) attributes.setAttribute(key, name, 0);
+        return name;
+    }
+
+    public boolean driveEnabled(String tenant, String entry) {
+        JsonNode result = postForData(properties.getAuth().getFormDriveStatusPath(), Map.of("tenantId", tenant, "entryId", entry), "drive maintenance status");
+        if (result.path("protocol").asInt() != 1 || !entry.equals(result.path("entryId").asText())) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "form drive maintenance protocol is unavailable");
+        }
+        return result.path("enabled").asBoolean(false) && !result.path("archived").asBoolean(true);
+    }
+
     public SnapshotResponse fetchDirectorySnapshot(String etag){
         requireConfigured();
         HttpHeaders headers=serviceHeaders();
@@ -83,6 +107,9 @@ public class FormIntegrationClient {
             if(root==null) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"form "+action+" returned an empty response");
             return root.has("data")?root.path("data"):root;
         }catch(RestClientResponseException e){
+            if ("drive admission".equals(action) && (e.getRawStatusCode() == 401 || e.getRawStatusCode() == 403 || e.getRawStatusCode() == 404)) {
+                throw new ResponseStatusException(e.getRawStatusCode() == 401 ? HttpStatus.UNAUTHORIZED : HttpStatus.FORBIDDEN, "DRIVE_ACCESS_DENIED");
+            }
             if(e.getRawStatusCode()==400||e.getRawStatusCode()==401||e.getRawStatusCode()==403||e.getRawStatusCode()==404||e.getRawStatusCode()==423){
                 throw new ResponseStatusException(HttpStatus.UNAUTHORIZED,"form credentials or ticket are invalid",e);
             }
@@ -104,6 +131,8 @@ public class FormIntegrationClient {
         result.setRoleList(stringList(data.path("roleCodes")));
         result.setReturnTo(first(data,"returnTo"));
         result.setAudience(first(data,"audience"));
+        result.setDriveEntryId(data.path("driveEntry").path("entryId").asText("default"));
+        result.setDriveProtocol(data.path("driveEntry").path("protocol").asInt(0));
         if(!StringUtils.hasText(result.getTenantId())||!StringUtils.hasText(result.getFormEmployeeId())){
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,"form returned an incomplete cloudnext principal");
         }

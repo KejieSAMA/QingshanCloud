@@ -35,7 +35,7 @@ class CloudNextUnifiedSearchFlowTest extends AbstractDriveIntegrationTest {
             String canonical = type == DriveShareTargetType.PERSON ? DEFAULT_OWNER_ID : type == DriveShareTargetType.UNIT ? "canonical-unit" : "canonical-identity";
             CanonicalAlias alias = new CanonicalAlias(); alias.setId("alias-"+type); alias.setSubjectType(type.name());
             alias.setAliasKey("legacy-"+type); alias.setCanonicalKey(canonical); alias.setRelationType("MERGE"); aliases.saveAndFlush(alias);
-            DriveShare share = new DriveShare(); share.setId("search-share-"+type); share.setItemId(root.getId());
+            DriveShare share = com.x.cloudnext.server.testing.NamespaceTestSupport.scoped(new DriveShare()); share.setId("search-share-"+type); share.setItemId(root.getId());
             share.setOwnerPersonOaId("other-owner"); share.setOwnerName("Other"); share.setTargetType(type);
             share.setTargetId(alias.getAliasKey()); share.setTargetName("Target"); share.setPermission(DriveSharePermission.READ);
             shares.saveAndFlush(share);

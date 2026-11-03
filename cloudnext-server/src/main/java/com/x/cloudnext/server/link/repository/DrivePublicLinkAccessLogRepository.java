@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.x.cloudnext.server.link.entity.DrivePublicLinkAccessLog;
 
+@org.springframework.transaction.annotation.Transactional(readOnly = true)
 public interface DrivePublicLinkAccessLogRepository
         extends JpaRepository<DrivePublicLinkAccessLog, String> {
 

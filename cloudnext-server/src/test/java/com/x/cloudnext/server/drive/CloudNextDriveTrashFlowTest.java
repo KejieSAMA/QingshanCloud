@@ -162,7 +162,7 @@ class CloudNextDriveTrashFlowTest extends AbstractDriveIntegrationTest {
         recentState.setUpdatedAt(recentState.getDeletedAt());
         syncItem(recentState);
 
-        driveTrashCleanupService.cleanupExpiredTrash();
+        com.x.cloudnext.server.testing.NamespaceTestSupport.background(() -> driveTrashCleanupService.cleanupExpiredTrash());
 
         org.junit.jupiter.api.Assertions.assertFalse(driveItemRepository.findById(expired.getId()).isPresent());
         org.junit.jupiter.api.Assertions.assertTrue(driveItemRepository.findById(recent.getId()).isPresent());

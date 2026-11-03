@@ -4,6 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AuthenticationResult {
+    private String driveEntryId;
+    private int driveProtocol;
+    public String getDriveEntryId() { return driveEntryId; }
+    public void setDriveEntryId(String value) { driveEntryId = value; }
+    public int getDriveProtocol() { return driveProtocol; }
+    public void setDriveProtocol(int value) { driveProtocol = value; }
+
     private String tenantId;
     private String formEmployeeId;
     private String employeeNo;

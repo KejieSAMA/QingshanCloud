@@ -694,6 +694,7 @@
   </section>
 </template>
 <script setup>
+import { useEmbeddedBack } from '../../embedded/useEmbeddedBack.js';
 
 import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -707,7 +708,6 @@ import {
   createDriveShares,
   deleteDriveItem,
   downloadDriveItem,
-  editDriveItem,
   getDriveShareSummary,
   getSharedAdminConfig,
   moveDriveItems,
@@ -1321,15 +1321,7 @@ const onPreview = async (item) => {
   }
 };
 
-const onEdit = async (item) => {
-  submitting.value = true;
-  try {
-    await editDriveItem(item);
-  } catch (e) {
-  } finally {
-    submitting.value = false;
-  }
-};
+
 
 const onBatchPreview = async () => {
   if (!selectedFileItems.value.length) {
@@ -1631,7 +1623,6 @@ const mobileSheetActions = computed(() => {
   }
   return [
     { key: 'preview', label: '预览' },
-    { key: 'edit', label: '在线编辑' },
     { key: 'download', label: '下载' },
     { key: 'share', label: '共享' },
     { key: 'rename', label: '重命名' },
@@ -1717,9 +1708,7 @@ const onMobileSheetSelect = (key) => {
     case 'preview':
       void onPreview(item);
       break;
-    case 'edit':
-      void onEdit(item);
-      break;
+
     case 'download':
       void onDownload(item);
       break;
@@ -1829,6 +1818,12 @@ onUnmounted(() => {
   window.clearTimeout(shareSearchTimer);
   window.clearTimeout(pendingFabTimer);
   pendingFabTimer = null;
+});
+
+useEmbeddedBack(() => Boolean(currentParentId.value), () => {
+  const crumbs = breadcrumbs.value || [];
+  const parent = crumbs.length > 1 ? crumbs[crumbs.length - 2] : null;
+  return router.replace({ path: route.path, query: { ...route.query, parentId: parent?.id || '', page: 1 } }).then(() => ({ directory: true }));
 });
 </script>
 <style scoped>

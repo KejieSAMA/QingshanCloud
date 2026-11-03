@@ -123,6 +123,7 @@ public class DriveScopeAccessService {
         if (session == null || item == null || action == null) {
             return false;
         }
+        if (session.getDrive() == null || !session.getDrive().getId().equals(item.getDriveId())) return false;
         DriveScopeType scopeType = item.getScopeType();
         if (scopeType == DriveScopeType.WORKSPACE) {
             WorkspaceRole role = resolveWorkspaceRole(session, item.getScopeId());
@@ -165,7 +166,7 @@ public class DriveScopeAccessService {
         List<DriveItem> personalShared = new ArrayList<>();
         Map<String, List<DriveItem>> workspaceGroups = new HashMap<>();
         for (DriveItem item : items) {
-            if (item == null) {
+            if (item == null || session.getDrive() == null || !session.getDrive().getId().equals(item.getDriveId())) {
                 continue;
             }
             DriveScopeType scopeType = item.getScopeType();

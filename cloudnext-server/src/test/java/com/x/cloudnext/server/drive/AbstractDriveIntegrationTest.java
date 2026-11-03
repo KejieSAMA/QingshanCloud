@@ -47,17 +47,14 @@ import com.x.cloudnext.server.form.repository.PrincipalBindingRepository;
 @ExtendWith(MysqlDatabaseExtension.class)
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {
+        "cloudnext.preview.signing-secret=synthetic-preview-test-secret",
         "cloudnext.endpoints.callback-base-url=http://test-cloudnext-api",
         "cloudnext.endpoints.web-base-url=http://test-cloudnext-web",
         "cloudnext.drive.preview-ticket-ttl-seconds=600",
         "cloudnext.drive.trash-retention-days=30",
-        "cloudnext.drive.onlyoffice.document-server-url=http://test-onlyoffice",
-        "cloudnext.drive.onlyoffice.docservice-api=http://test-onlyoffice/web-apps/apps/api/documents/api.js",
-        "cloudnext.drive.onlyoffice.jwt-enabled=true",
-        "cloudnext.drive.onlyoffice.jwt-secret=test-secret",
-        "cloudnext.drive.onlyoffice.jwt-header=Authorization"
 })
 abstract class AbstractDriveIntegrationTest {
+    @org.junit.jupiter.api.io.TempDir java.nio.file.Path previewFixtureRoot;
 
     protected static final String TOKEN_HEADER = "X-CloudNext-Token";
     protected static final String DEFAULT_OWNER_ID = "person-a";
@@ -148,7 +145,7 @@ abstract class AbstractDriveIntegrationTest {
     }
 
     protected DriveItem seedFolder(String ownerPersonOaId, String parentId, String name) {
-        DriveItem item = new DriveItem();
+        DriveItem item = com.x.cloudnext.server.testing.NamespaceTestSupport.scoped(new DriveItem());
         item.setId(UUID.randomUUID().toString());
         item.setParentId(parentId == null ? "" : parentId);
         item.setOwnerPersonOaId(ownerPersonOaId);
@@ -173,7 +170,7 @@ abstract class AbstractDriveIntegrationTest {
             String contentType,
             byte[] bytes) {
         byte[] content = bytes == null ? new byte[0] : bytes;
-        DriveItem item = new DriveItem();
+        DriveItem item = com.x.cloudnext.server.testing.NamespaceTestSupport.scoped(new DriveItem());
         item.setId(UUID.randomUUID().toString());
         item.setParentId(parentId == null ? "" : parentId);
         item.setOwnerPersonOaId(ownerPersonOaId);
@@ -291,7 +288,10 @@ abstract class AbstractDriveIntegrationTest {
                     }
                 };
             }
+            java.nio.file.Path fixture = previewFixtureRoot.resolve(com.x.cloudnext.server.preview.PreviewSource.hash(storageKey));
+            java.nio.file.Files.write(fixture, bytes);
             return new ByteArrayResource(bytes) {
+                @Override public java.io.File getFile() { return fixture.toFile(); }
                 @Override
                 public String getFilename() {
                     return storageKey;

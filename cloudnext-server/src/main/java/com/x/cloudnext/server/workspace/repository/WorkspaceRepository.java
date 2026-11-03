@@ -10,5 +10,6 @@ import com.x.cloudnext.server.workspace.entity.Workspace;
  * page goes through {@code WorkspaceMemberRepository.findByPersonOaId(...)}
  * because it must be filtered by membership.
  */
+@org.springframework.transaction.annotation.Transactional(readOnly = true)
 public interface WorkspaceRepository extends JpaRepository<Workspace, String> {
 }

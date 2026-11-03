@@ -35,6 +35,7 @@ import com.x.cloudnext.server.drive.entity.DrivePublicLink;
  * read-modify-write race where two concurrent downloads each see
  * {@code downloadCount < downloadLimit} and both proceed.
  */
+@org.springframework.transaction.annotation.Transactional(readOnly = true)
 public interface DrivePublicLinkRepository extends JpaRepository<DrivePublicLink, String> {
 
     Optional<DrivePublicLink> findByToken(String token);
@@ -71,7 +72,7 @@ public interface DrivePublicLinkRepository extends JpaRepository<DrivePublicLink
     @Transactional
     @Query("UPDATE DrivePublicLink l "
             + "SET l.downloadCount = l.downloadCount + 1, l.updatedAt = :now "
-            + "WHERE l.id = :id "
+            + "WHERE l.id = :id AND l.driveId = :#{T(com.x.cloudnext.server.namespace.DriveContext).requireId()} "
             + "AND l.revoked = false "
             + "AND (l.downloadLimit < 0 OR l.downloadCount < l.downloadLimit)")
     int incrementDownloadCountIfWithinLimitInternal(@Param("id") String id, @Param("now") String now);

@@ -48,6 +48,8 @@ cloudnext:
     form-verify-password-path: ${CLOUDNEXT_FORM_VERIFY_PASSWORD_PATH:/internal/v1/cloudnext/auth/verify-password}
     form-exchange-ticket-path: ${CLOUDNEXT_FORM_EXCHANGE_TICKET_PATH:/internal/v1/cloudnext/auth/exchange-ticket}
     form-directory-snapshot-path: ${CLOUDNEXT_FORM_DIRECTORY_SNAPSHOT_PATH:/internal/v1/cloudnext/directory/snapshot}
+    form-drive-access-path: ${CLOUDNEXT_FORM_DRIVE_ACCESS_PATH:/internal/v1/cloudnext/drive-access/resolve}
+    form-drive-status-path: ${CLOUDNEXT_FORM_DRIVE_STATUS_PATH:/internal/v1/cloudnext/drive-status/resolve}
     form-service-token: ${CLOUDNEXT_FORM_SERVICE_TOKEN:}
     form-sso-start-url: ${CLOUDNEXT_FORM_SSO_START_URL:}
     form-sso-audience: ${CLOUDNEXT_FORM_SSO_AUDIENCE:cloudnext}
@@ -65,6 +67,23 @@ cloudnext:
   endpoints:
     callback-base-url: ${CLOUDNEXT_CALLBACK_BASE_URL:}
     web-base-url: ${CLOUDNEXT_WEB_BASE_URL:}
+  preview:
+    cache-root: ${CLOUDNEXT_PREVIEW_CACHE_ROOT:.data/preview-cache}
+    soffice-path: ${CLOUDNEXT_PREVIEW_SOFFICE_PATH:soffice}
+    python-path: ${CLOUDNEXT_PREVIEW_PYTHON_PATH:python3}
+    converter-version: ${CLOUDNEXT_PREVIEW_CONVERTER_VERSION:libreoffice-pdf-v1}
+    font-pack-version: ${CLOUDNEXT_PREVIEW_FONT_PACK_VERSION:cjk-v1}
+    signing-secret: ${CLOUDNEXT_PREVIEW_SIGNING_SECRET:}
+    max-source-bytes: ${CLOUDNEXT_PREVIEW_MAX_SOURCE_BYTES:83886080}
+    max-pdf-bytes: ${CLOUDNEXT_PREVIEW_MAX_PDF_BYTES:104857600}
+    max-pages: ${CLOUDNEXT_PREVIEW_MAX_PAGES:500}
+    timeout-ms: ${CLOUDNEXT_PREVIEW_TIMEOUT_MS:120000}
+    startup-timeout-ms: ${CLOUDNEXT_PREVIEW_STARTUP_TIMEOUT_MS:60000}
+    retention-days: ${CLOUDNEXT_PREVIEW_RETENTION_DAYS:7}
+    max-cache-bytes: ${CLOUDNEXT_PREVIEW_MAX_CACHE_BYTES:10737418240}
+    queue-capacity: ${CLOUDNEXT_PREVIEW_QUEUE_CAPACITY:100}
+    isolate-presentations: ${CLOUDNEXT_PREVIEW_ISOLATE_PRESENTATIONS:false}
+
   drive:
     preview-ticket-ttl-seconds: ${CLOUDNEXT_PREVIEW_TICKET_TTL_SECONDS:600}
     onlyoffice-edit-ticket-ttl-seconds: ${CLOUDNEXT_ONLYOFFICE_EDIT_TICKET_TTL_SECONDS:86400}

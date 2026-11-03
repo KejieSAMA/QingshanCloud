@@ -20,9 +20,9 @@ test('runtime dependency/config cannot fall back to H2 and the converter truncat
   assert.match(read('src/main/java/com/x/cloudnext/server/config/MysqlDataSourceConfig.java'), /setMaximumPoolSize\(5\)/);
 });
 
-test('reviewed schema matches all 28 entity mappings and MySQL index limits', () => {
+test('reviewed schema matches all 29 entity mappings and MySQL index limits', () => {
   execFileSync(process.execPath, [path.join(root, 'tools/mysql-schema.mjs')]);
-  assert.equal(tables.length, 28);
+  assert.equal(tables.length, 29);
   for (const table of tables) {
     for (const index of [...table.indexes, ...table.uniques]) {
       assert.ok(index.name.length <= 64, `${table.table}.${index.name}: identifier too long`);
@@ -37,8 +37,8 @@ test('reviewed schema matches all 28 entity mappings and MySQL index limits', ()
   }
   const schema = read('src/main/resources/db/mysql/V001__cloudnext.sql').replace(/^--.*$/gm, '');
   assert.doesNotMatch(schema, /\b(?:DROP|USE|CREATE DATABASE|IF NOT EXISTS|CLOB)\b/i);
-  assert.equal((schema.match(/ENGINE=InnoDB ROW_FORMAT=DYNAMIC/g) ?? []).length, 28);
-  assert.equal((schema.match(/COLLATE utf8mb4_0900_bin/g) ?? []).length, 28);
+  assert.equal((schema.match(/ENGINE=InnoDB ROW_FORMAT=DYNAMIC/g) ?? []).length, 29);
+  assert.equal((schema.match(/COLLATE utf8mb4_0900_bin/g) ?? []).length, 29);
 });
 
 test('all existing application integration entrypoints use the isolated MySQL initializer', () => {

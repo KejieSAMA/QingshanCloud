@@ -11,13 +11,16 @@ CREATE TABLE `cloudnext_audit_log` (
   `ip_address` VARCHAR(64) NOT NULL,
   `user_agent` VARCHAR(512) NOT NULL,
   `created_at` DATETIME(6) NOT NULL,
+  `drive_id` VARCHAR(64) NOT NULL,
   PRIMARY KEY (`id`),
+  KEY `idx_namespace_audit_log` (`drive_id`),
   KEY `idx_audit_person_created` (`person_oa_id`, `created_at`),
   KEY `idx_audit_action_created` (`action`, `created_at`),
   KEY `idx_audit_target` (`target_type`, `target_id`)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin;
 
 CREATE TABLE `cloudnext_auth_session` (
+  `drive_id` VARCHAR(64) NOT NULL,
   `id` VARCHAR(64) NOT NULL,
   `token` VARCHAR(128) NOT NULL,
   `person_oa_id` VARCHAR(64) NOT NULL,
@@ -90,7 +93,12 @@ CREATE TABLE `cloudnext_drive_item` (
   `created_at` VARCHAR(64) NOT NULL,
   `updated_at` VARCHAR(64) NOT NULL,
   `last_accessed_at` VARCHAR(64) NOT NULL DEFAULT '',
+  `drive_id` VARCHAR(64) NOT NULL,
   PRIMARY KEY (`id`),
+  KEY `idx_namespace_drive_item` (`drive_id`),
+  KEY `idx_drive_namespace_scope` (`drive_id`, `scope_type`, `scope_id`, `deleted`, `parent_id`, `updated_at`),
+  KEY `idx_drive_namespace_trash` (`drive_id`, `owner_person_oa_id`, `deleted`, `deleted_at`),
+  KEY `idx_drive_namespace_recent` (`drive_id`, `owner_person_oa_id`, `deleted`, `last_accessed_at`),
   KEY `idx_drive_item_owner_deleted_parent_type_updated` (`owner_person_oa_id`, `deleted`, `parent_id`, `item_type`, `updated_at`),
   KEY `idx_drive_item_owner_deleted_parent_name` (`owner_person_oa_id`, `deleted`, `parent_id`, `name`),
   KEY `idx_drive_item_owner_deleted_deleted_at` (`owner_person_oa_id`, `deleted`, `deleted_at`),
@@ -110,9 +118,19 @@ CREATE TABLE `cloudnext_drive_item_version` (
   `person_key` VARCHAR(64) NOT NULL,
   `person_name` VARCHAR(255) NOT NULL,
   `created_at` VARCHAR(64) NOT NULL,
+  `drive_id` VARCHAR(64) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_drive_item_version_1` (`item_id`, `version_number`),
-  KEY `idx_version_item` (`item_id`)
+  KEY `idx_version_item` (`item_id`),
+  KEY `idx_namespace_drive_item_version` (`drive_id`)
+) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin;
+
+CREATE TABLE `cloudnext_drive_namespace` (
+  `id` VARCHAR(64) NOT NULL,
+  `tenant_id` VARCHAR(128) NOT NULL,
+  `entry_id` VARCHAR(80) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_drive_namespace_entry` (`tenant_id`, `entry_id`)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin;
 
 CREATE TABLE `cloudnext_drive_public_link` (
@@ -130,8 +148,10 @@ CREATE TABLE `cloudnext_drive_public_link` (
   `revoked` BIT(1) NOT NULL,
   `created_at` VARCHAR(64) NOT NULL,
   `updated_at` VARCHAR(64) NOT NULL,
+  `drive_id` VARCHAR(64) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_drive_public_link_token` (`token`),
+  KEY `idx_namespace_drive_public_link` (`drive_id`),
   KEY `idx_dpl_creator_revoked_created` (`creator_person_oa_id`, `revoked`, `created_at`),
   KEY `idx_dpl_item` (`item_id`)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin;
@@ -145,7 +165,9 @@ CREATE TABLE `cloudnext_drive_public_link_access_log` (
   `ip_address` VARCHAR(64) NOT NULL,
   `user_agent` VARCHAR(512) NOT NULL,
   `attempted_at` DATETIME(6) NOT NULL,
+  `drive_id` VARCHAR(64) NOT NULL,
   PRIMARY KEY (`id`),
+  KEY `idx_namespace_drive_public_link_access_log` (`drive_id`),
   KEY `idx_link_access_token_attempted` (`token`, `attempted_at`),
   KEY `idx_link_access_attempted` (`attempted_at`),
   KEY `idx_link_access_token_success` (`token`, `success`)
@@ -165,7 +187,10 @@ CREATE TABLE `cloudnext_drive_share` (
   `can_reshare` BIT(1) NOT NULL DEFAULT b'0',
   `created_at` VARCHAR(64) NOT NULL,
   `updated_at` VARCHAR(64) NOT NULL,
+  `drive_id` VARCHAR(64) NOT NULL,
   PRIMARY KEY (`id`),
+  KEY `idx_namespace_drive_share` (`drive_id`),
+  KEY `idx_share_namespace_target` (`drive_id`, `target_type`, `target_id`, `revoked`, `expires_at`),
   KEY `idx_drive_share_owner_item_target` (`owner_person_oa_id`, `item_id`, `target_type`, `target_id`),
   KEY `idx_drive_share_owner_revoked_updated` (`owner_person_oa_id`, `revoked`, `updated_at`),
   KEY `idx_drive_share_target_revoked_updated` (`target_type`, `target_id`, `revoked`, `updated_at`)
@@ -177,16 +202,20 @@ CREATE TABLE `cloudnext_drive_user_item` (
   `item_id` VARCHAR(64) NOT NULL,
   `favorite` BIT(1) NOT NULL,
   `opened_at` VARCHAR(64) NOT NULL,
+  `drive_id` VARCHAR(64) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_drive_user_item_1` (`person_key`, `item_id`),
-  KEY `idx_user_item_person` (`person_key`)
+  KEY `idx_user_item_person` (`person_key`),
+  KEY `idx_namespace_drive_user_item` (`drive_id`)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin;
 
 CREATE TABLE `cloudnext_drive_write_receipt` (
   `id` VARCHAR(64) NOT NULL,
   `item_id` VARCHAR(64) NOT NULL,
+  `drive_id` VARCHAR(64) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `idx_receipt_item` (`item_id`)
+  KEY `idx_receipt_item` (`item_id`),
+  KEY `idx_namespace_drive_write_receipt` (`drive_id`)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin;
 
 CREATE TABLE `cloudnext_identity_binding` (
@@ -394,7 +423,9 @@ CREATE TABLE `cloudnext_sso_bootstrap` (
 CREATE TABLE `cloudnext_storage_cleanup` (
   `storage_key` VARCHAR(255) NOT NULL,
   `queued_at` VARCHAR(64) NOT NULL,
-  PRIMARY KEY (`storage_key`)
+  `drive_id` VARCHAR(64) NOT NULL,
+  PRIMARY KEY (`storage_key`),
+  KEY `idx_namespace_storage_cleanup` (`drive_id`)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin;
 
 CREATE TABLE `cloudnext_unit_binding` (
@@ -427,8 +458,10 @@ CREATE TABLE `cloudnext_user_preference` (
   `preference_key` VARCHAR(64) NOT NULL,
   `preference_value` VARCHAR(255) NOT NULL,
   `updated_at` VARCHAR(64) NOT NULL,
+  `drive_id` VARCHAR(64) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `uk_cloudnext_user_preference` (`person_oa_id`, `preference_key`),
+  UNIQUE KEY `uk_cloudnext_user_preference` (`drive_id`, `person_oa_id`, `preference_key`),
+  KEY `idx_namespace_user_preference` (`drive_id`),
   KEY `idx_cloudnext_user_preference_person` (`person_oa_id`)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin;
 
@@ -441,8 +474,10 @@ CREATE TABLE `cloudnext_workspace` (
   `root_item_id` VARCHAR(64) NOT NULL,
   `created_at` VARCHAR(64) NOT NULL,
   `updated_at` VARCHAR(64) NOT NULL,
+  `drive_id` VARCHAR(64) NOT NULL,
   PRIMARY KEY (`id`),
-  KEY `idx_workspace_status_updated` (`status`, `updated_at`)
+  KEY `idx_workspace_status_updated` (`status`, `updated_at`),
+  KEY `idx_namespace_workspace` (`drive_id`)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin;
 
 CREATE TABLE `cloudnext_workspace_member` (
@@ -454,8 +489,10 @@ CREATE TABLE `cloudnext_workspace_member` (
   `created_at` VARCHAR(64) NOT NULL,
   `updated_at` VARCHAR(64) NOT NULL,
   `sort_order` INT,
+  `drive_id` VARCHAR(64) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_ws_member` (`workspace_id`, `person_oa_id`),
+  KEY `idx_namespace_workspace_member` (`drive_id`),
   KEY `idx_ws_member_person` (`person_oa_id`, `workspace_id`),
   KEY `idx_ws_member_workspace_role` (`workspace_id`, `role`)
 ) ENGINE=InnoDB ROW_FORMAT=DYNAMIC DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_bin;

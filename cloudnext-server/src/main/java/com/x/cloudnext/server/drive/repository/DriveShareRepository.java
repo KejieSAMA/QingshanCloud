@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import com.x.cloudnext.server.drive.DriveShareTargetType;
 import com.x.cloudnext.server.drive.entity.DriveShare;
 
+@org.springframework.transaction.annotation.Transactional(readOnly = true)
 public interface DriveShareRepository extends JpaRepository<DriveShare, String> {
 
     List<DriveShare> findByOwnerPersonOaIdOrderByUpdatedAtDesc(String ownerPersonOaId);

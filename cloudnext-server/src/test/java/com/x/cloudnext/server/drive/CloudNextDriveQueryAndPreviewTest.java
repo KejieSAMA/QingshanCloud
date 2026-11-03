@@ -204,7 +204,7 @@ class CloudNextDriveQueryAndPreviewTest extends AbstractDriveIntegrationTest {
     }
 
     @Test
-    void previewAndOnlyofficeEndpoints_coverKindsAndTicketValidation() throws Exception {
+    void previewEndpoints_coverKindsAndTicketValidation() throws Exception {
         DriveItem office = seedFile(
                 DEFAULT_OWNER_ID,
                 "",
@@ -227,7 +227,7 @@ class CloudNextDriveQueryAndPreviewTest extends AbstractDriveIntegrationTest {
                 .andExpect(jsonPath("$.kind").value("office"))
                 .andExpect(jsonPath("$.supported").value(true))
                 .andExpect(jsonPath("$.previewTicket").isNotEmpty())
-                .andExpect(jsonPath("$.previewPageUrl", containsString("/preview/office?ticket=")))
+                .andExpect(jsonPath("$.previewPageUrl", containsString("/preview/file?ticket=")))
                 .andReturn()
                 .getResponse()
                 .getContentAsString();
@@ -246,18 +246,10 @@ class CloudNextDriveQueryAndPreviewTest extends AbstractDriveIntegrationTest {
                 .andExpect(jsonPath("$.kind").value("pdf"))
                 .andExpect(jsonPath("$.supported").value(true));
 
-        mockMvc.perform(get("/api/onlyoffice/view-config")
-                .param("previewTicket", preview.getPreviewTicket()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.fileName").value("slides.pptx"))
-                .andExpect(jsonPath("$.docserviceApi").value("http://test-onlyoffice/web-apps/apps/api/documents/api.js"))
-                .andExpect(jsonPath("$.docEditorConfig.document.fileType").value("pptx"))
-                .andExpect(jsonPath("$.docEditorConfig.document.url", containsString("/api/onlyoffice/content?previewTicket=")))
-                .andExpect(jsonPath("$.docEditorConfig.editorConfig.mode").value("view"))
-                .andExpect(jsonPath("$.docEditorConfig.token").isNotEmpty());
-
-        mockMvc.perform(get("/api/onlyoffice/view-config")
-                .param("previewTicket", preview.getPreviewTicket() + "tampered"))
+        mockMvc.perform(get("/api/previews").header("X-CloudNext-Preview", preview.getPreviewTicket()))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.kind").value("office"))
+                .andExpect(jsonPath("$.status").value("MISSING"));
+        mockMvc.perform(get("/api/previews").header("X-CloudNext-Preview", preview.getPreviewTicket() + "tampered"))
                 .andExpect(status().isUnauthorized());
 
         DrivePreviewTicketPayload expired = new DrivePreviewTicketPayload();
@@ -266,25 +258,21 @@ class CloudNextDriveQueryAndPreviewTest extends AbstractDriveIntegrationTest {
         expired.setViewerPersonOaId("uid=" + DEFAULT_OWNER_ID + ",ou=people,dc=cloudnext");
         expired.setViewerName(DEFAULT_OWNER_NAME);
         expired.setExpiresAt(Instant.now().minusSeconds(5).toEpochMilli());
-        String expiredTicket = drivePreviewTicketService.create(expired);
+        String expiredTicket = com.x.cloudnext.server.testing.NamespaceTestSupport.inDefaultDrive(() -> drivePreviewTicketService.create(expired));
 
-        mockMvc.perform(get("/api/onlyoffice/view-config")
-                .param("previewTicket", expiredTicket))
+        mockMvc.perform(get("/api/previews").header("X-CloudNext-Preview", expiredTicket))
                 .andExpect(status().isUnauthorized());
-
-        mockMvc.perform(get("/api/onlyoffice/content")
-                .param("previewTicket", preview.getPreviewTicket()))
-                .andExpect(status().isOk())
-                .andExpect(content().bytes("office-binary".getBytes()));
+        mockMvc.perform(get("/api/onlyoffice/content").param("previewTicket", preview.getPreviewTicket()))
+                .andExpect(status().isGone());
 
         mockMvc.perform(get("/api/drive/me/recent-opened")
                 .header(TOKEN_HEADER, token)
                 .param("limit", "1"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$[0].id").value(office.getId()));
+                .andExpect(jsonPath("$[0].id").value(pdf.getId()));
 
-        mockMvc.perform(get("/api/onlyoffice/content")
-                .param("previewTicket", preview.getPreviewTicket() + "tampered"))
+        mockMvc.perform(get("/api/previews")
+                .header("X-CloudNext-Preview", preview.getPreviewTicket() + "tampered"))
                 .andExpect(status().isUnauthorized());
     }
 }

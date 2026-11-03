@@ -79,7 +79,6 @@ const {
   dateString,
   filteredRecentFiles,
   onPreview,
-  onEdit,
   onDownload,
   onDelete
 } = useHomePageData();
@@ -100,7 +99,6 @@ const mobileSheetActions = computed(() => {
   }
   return [
     { key: 'preview', label: '预览' },
-    { key: 'edit', label: '在线编辑' },
     { key: 'download', label: '下载' },
     { key: 'delete', label: '删除', danger: true }
   ];
@@ -125,9 +123,7 @@ const onMobileSheetSelect = (key) => {
     case 'preview':
       void onPreview(item);
       break;
-    case 'edit':
-      void onEdit(item);
-      break;
+
     case 'download':
       void onDownload(item);
       break;

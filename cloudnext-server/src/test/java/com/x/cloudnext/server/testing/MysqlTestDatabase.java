@@ -78,7 +78,7 @@ public final class MysqlTestDatabase {
         List<String> tables = new ArrayList<>();
         Matcher matcher = Pattern.compile("CREATE TABLE `([a-z_]+)`").matcher(schema());
         while (matcher.find()) tables.add(matcher.group(1));
-        if (tables.size() != 28) throw new IllegalStateException("Unexpected test schema inventory");
+        if (tables.size() != 29) throw new IllegalStateException("Unexpected test schema inventory");
         return tables;
     }
 

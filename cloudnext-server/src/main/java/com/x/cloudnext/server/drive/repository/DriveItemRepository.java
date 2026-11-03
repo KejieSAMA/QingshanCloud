@@ -15,6 +15,7 @@ import com.x.cloudnext.server.drive.DriveItemType;
 import com.x.cloudnext.server.drive.DriveScopeType;
 import com.x.cloudnext.server.drive.entity.DriveItem;
 
+@org.springframework.transaction.annotation.Transactional(readOnly = true)
 public interface DriveItemRepository extends JpaRepository<DriveItem, String> {
     boolean existsByStorageKey(String storageKey);
 
@@ -86,6 +87,6 @@ public interface DriveItemRepository extends JpaRepository<DriveItem, String> {
     List<DriveItem> findByIdIn(Collection<String> ids);
 
     @Modifying
-    @Query("UPDATE DriveItem i SET i.lastAccessedAt = :lastAccessedAt WHERE i.id = :id")
+    @Query("UPDATE DriveItem i SET i.lastAccessedAt = :lastAccessedAt WHERE i.id = :id AND i.driveId = :#{T(com.x.cloudnext.server.namespace.DriveContext).requireId()}")
     int updateLastAccessedAt(@Param("id") String id, @Param("lastAccessedAt") String lastAccessedAt);
 }

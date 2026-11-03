@@ -31,7 +31,7 @@ class CloudNextDriveSharePermissionTest extends AbstractDriveIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.kind").value("pdf"))
                 .andExpect(jsonPath("$.allowDownload").value(false))
-                .andExpect(jsonPath("$.previewUrl", containsString("/api/drive/items/" + file.getId() + "/content")));
+                .andExpect(jsonPath("$.previewUrl", containsString("/api/previews/content")));
 
         mockMvc.perform(get("/api/drive/items/{id}/content", file.getId())
                 .header(TOKEN_HEADER, viewerToken))
@@ -44,7 +44,7 @@ class CloudNextDriveSharePermissionTest extends AbstractDriveIntegrationTest {
     }
 
     @Test
-    void downloadShareAllowsAttachmentDownloadAndOnlyofficeDownload() throws Exception {
+    void downloadShareAllowsOriginalDownloadAndReadOnlyPreview() throws Exception {
         DriveItem office = seedFile(
                 DEFAULT_OWNER_ID,
                 "",
@@ -72,11 +72,8 @@ class CloudNextDriveSharePermissionTest extends AbstractDriveIntegrationTest {
 
         DrivePreviewResponse preview = objectMapper.readValue(previewJson, DrivePreviewResponse.class);
 
-        mockMvc.perform(get("/api/onlyoffice/view-config")
-                .param("previewTicket", preview.getPreviewTicket()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.docEditorConfig.document.permissions.download").value(true))
-                .andExpect(jsonPath("$.docEditorConfig.document.permissions.print").value(true));
+        mockMvc.perform(get("/api/previews").header("X-CloudNext-Preview", preview.getPreviewTicket()))
+                .andExpect(status().isOk()).andExpect(jsonPath("$.allowDownload").value(true));
 
         mockMvc.perform(get("/api/drive/items/{id}/download", office.getId())
                 .header(TOKEN_HEADER, viewerToken))

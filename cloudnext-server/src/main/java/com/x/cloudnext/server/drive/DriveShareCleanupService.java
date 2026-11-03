@@ -28,6 +28,8 @@ import com.x.cloudnext.server.drive.repository.DriveShareRepository;
  */
 @Service
 public class DriveShareCleanupService {
+    @org.springframework.beans.factory.annotation.Autowired private com.x.cloudnext.server.namespace.DriveNamespaceService namespaces;
+    @org.springframework.beans.factory.annotation.Autowired private org.springframework.transaction.PlatformTransactionManager transactions;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DriveShareCleanupService.class);
 
@@ -42,6 +44,10 @@ public class DriveShareCleanupService {
     }
 
     @Scheduled(cron = "${cloudnext.drive.share-cleanup-cron:0 0 1 * * *}")
+    public void scheduledCleanup() {
+        namespaces.forEachMaintenanceDrive(() -> new org.springframework.transaction.support.TransactionTemplate(transactions).execute(status -> { cleanupExpiredShares(); return null; }));
+    }
+
     @Transactional
     public void cleanupExpiredShares() {
         String nowIso = Instant.now().toString();
@@ -62,6 +68,7 @@ public class DriveShareCleanupService {
                         "DRIVE_SHARE",
                         share.getId(),
                         "itemId", share.getItemId(),
+                        "driveId", share.getDriveId(),
                         "targetType", share.getTargetType() == null ? "" : share.getTargetType().name(),
                         "targetId", share.getTargetId(),
                         "expiresAt", share.getExpiresAt(),

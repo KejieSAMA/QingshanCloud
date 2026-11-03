@@ -102,7 +102,8 @@ public class LocalDriveStorageService implements DriveStorageService {
         if (index < 0 || index == originalFilename.length() - 1) {
             return "";
         }
-        return originalFilename.substring(index);
+        String extension = originalFilename.substring(index);
+        return extension.matches("\\.[\\p{L}\\p{N}_-]{1,32}") ? extension : "";
     }
 
     @FunctionalInterface
@@ -110,7 +111,8 @@ public class LocalDriveStorageService implements DriveStorageService {
 
     /** A failed stream never publishes a partial storage object. */
     private void writeAtomically(Path target, FileWriter writer) throws IOException {
-        Path temporary = Files.createTempFile(rootPath, ".cloudnext-write-", ".tmp");
+        Files.createDirectories(target.getParent());
+        Path temporary = Files.createTempFile(target.getParent(), ".cloudnext-write-", ".tmp");
         try {
             writer.write(temporary);
             try {
@@ -124,7 +126,7 @@ public class LocalDriveStorageService implements DriveStorageService {
     }
 
     private String resolveStorageKey(String itemId, String fileName) {
-        return itemId + resolveExtension(fileName);
+        return "drives/" + com.x.cloudnext.server.namespace.DriveContext.requireId() + "/" + itemId + resolveExtension(fileName);
     }
 
     private Path resolveTargetPath(String storageKey) throws IOException {
@@ -144,7 +146,21 @@ public class LocalDriveStorageService implements DriveStorageService {
     }
 
     private Path resolveSafePath(String storageKey) {
+        var context = com.x.cloudnext.server.namespace.DriveContext.current();
+        if (context != null && StringUtils.hasText(storageKey)) {
+            if (storageKey.startsWith("drives/")) {
+                if (!storageKey.startsWith("drives/" + context.drive.getId() + "/")) {
+                    throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "storage object not found in current drive");
+                }
+            } else if (!context.drive.isDefault()) {
+                throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "legacy storage belongs to the default drive");
+            }
+        }
         Path path = rootPath.resolve(storageKey == null ? "" : storageKey).normalize();
+        if (context != null && path.startsWith(rootPath.resolve("drives"))
+            && !path.startsWith(rootPath.resolve("drives").resolve(context.drive.getId()))) {
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.NOT_FOUND, "storage object not found in current drive");
+        }
         if (!path.startsWith(rootPath)) {
             throw new IllegalArgumentException("storage key escapes configured root");
         }

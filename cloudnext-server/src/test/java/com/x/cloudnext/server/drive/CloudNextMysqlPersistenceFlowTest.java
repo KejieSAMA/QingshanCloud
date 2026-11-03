@@ -19,7 +19,7 @@ class CloudNextMysqlPersistenceFlowTest extends AbstractDriveIntegrationTest {
     @Test void chineseEmojiLongTextAndMicrosecondsRoundTrip() {
         DriveItem folder = seedFolder(DEFAULT_OWNER_ID, "", "中文资料📁 12");
         assertEquals("中文资料📁 12", driveItemRepository.findById(folder.getId()).orElseThrow().getName());
-        AuditLog row = new AuditLog();
+        AuditLog row = com.x.cloudnext.server.testing.NamespaceTestSupport.scoped(new AuditLog());
         row.setId(UUID.randomUUID().toString()); row.setAction(AuditAction.COPY);
         row.setPayload("中文🗂".repeat(20000));
         row.setCreatedAt(Instant.parse("2026-10-13T01:02:03.123456789Z"));

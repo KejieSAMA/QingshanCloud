@@ -18,12 +18,14 @@ import com.x.cloudnext.server.drive.DriveShareTargetType;
 @Entity
 @Table(
         name = "cloudnext_drive_share",
-        indexes = {
+        indexes = { @javax.persistence.Index(name = "idx_namespace_drive_share", columnList = "drive_id"),
+                @Index(name = "idx_share_namespace_target", columnList = "drive_id, target_type, target_id, revoked, expires_at"),
                 @Index(name = "idx_drive_share_owner_item_target", columnList = "owner_person_oa_id, item_id, target_type, target_id"),
                 @Index(name = "idx_drive_share_owner_revoked_updated", columnList = "owner_person_oa_id, revoked, updated_at"),
                 @Index(name = "idx_drive_share_target_revoked_updated", columnList = "target_type, target_id, revoked, updated_at")
         })
-public class DriveShare {
+@org.hibernate.annotations.Filter(name = "driveNamespace", condition = "drive_id = :driveId")
+public class DriveShare extends com.x.cloudnext.server.namespace.DriveScopedEntity {
 
     @Id
     @Column(name = "id", nullable = false, length = 64)

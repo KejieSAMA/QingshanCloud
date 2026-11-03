@@ -92,6 +92,7 @@ import com.x.cloudnext.server.drive.repository.DrivePublicLinkRepository;
 @org.junit.jupiter.api.extension.ExtendWith(com.x.cloudnext.server.testing.MysqlDatabaseExtension.class)
 @AutoConfigureMockMvc
 @TestPropertySource(properties = {
+        "cloudnext.preview.signing-secret=synthetic-preview-test-secret",
         // Iteration gate: this is the whole point of the test — flip
         // public-links on so CloudNextLinkController and
         // CloudNextPublicLinkController are registered.
@@ -110,13 +111,9 @@ import com.x.cloudnext.server.drive.repository.DrivePublicLinkRepository;
         "cloudnext.endpoints.web-base-url=http://test-cloudnext-web",
         "cloudnext.drive.preview-ticket-ttl-seconds=600",
         "cloudnext.drive.trash-retention-days=30",
-        "cloudnext.drive.onlyoffice.document-server-url=http://test-onlyoffice",
-        "cloudnext.drive.onlyoffice.docservice-api=http://test-onlyoffice/web-apps/apps/api/documents/api.js",
-        "cloudnext.drive.onlyoffice.jwt-enabled=true",
-        "cloudnext.drive.onlyoffice.jwt-secret=test-secret",
-        "cloudnext.drive.onlyoffice.jwt-header=Authorization"
 })
 class CloudNextPublicLinkFlowTest {
+    @org.junit.jupiter.api.io.TempDir java.nio.file.Path previewFixtureRoot;
 
     private static final String TOKEN_HEADER = "X-CloudNext-Token";
 
@@ -506,7 +503,7 @@ class CloudNextPublicLinkFlowTest {
      */
     private DriveItem seedAlicePersonalFile(String name, String fileType, String contentType, String content) {
         byte[] bytes = content.getBytes(StandardCharsets.UTF_8);
-        DriveItem item = new DriveItem();
+        DriveItem item = com.x.cloudnext.server.testing.NamespaceTestSupport.scoped(new DriveItem());
         item.setId(UUID.randomUUID().toString());
         item.setParentId("");
         item.setOwnerPersonOaId(ALICE_ID);
@@ -611,7 +608,10 @@ class CloudNextPublicLinkFlowTest {
                     }
                 };
             }
+            java.nio.file.Path fixture=previewFixtureRoot.resolve(com.x.cloudnext.server.preview.PreviewSource.hash(storageKey));
+            java.nio.file.Files.write(fixture,bytes);
             return new ByteArrayResource(bytes) {
+                @Override public java.io.File getFile(){return fixture.toFile();}
                 @Override
                 public String getFilename() {
                     return storageKey;

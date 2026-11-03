@@ -14,6 +14,7 @@ import com.x.cloudnext.server.link.*;
 @RestController
 @RequestMapping("/api")
 public class CloudNextExperienceController {
+ @org.springframework.beans.factory.annotation.Autowired private com.x.cloudnext.server.preview.DriveFilePreviewService previews;
  private final DriveExperienceService experience;
  private final DriveVersionService versions;
  private final DriveAccessService auth;
@@ -63,14 +64,8 @@ public class CloudNextExperienceController {
  @GetMapping("/drive/items/{id}/versions/{versionId}/preview")
  public Object versionPreview(@RequestHeader(name="X-CloudNext-Token",required=false)String t,@PathVariable String id,@PathVariable String versionId){
   DriveItemVersion version=versions.requireVersion(session(t),id,versionId);
-  DrivePreviewResponse response=drive.getPreview(t,id);
-  response.setFileName(version.fileName);response.setContentType(version.contentType);response.setAllowDownload(true);
-  if("office".equals(response.getKind())&&Boolean.TRUE.equals(response.getSupported())){
-   if("current".equals(version.id))return response;
-   DrivePreviewTicketPayload p=tickets.parse(response.getPreviewTicket());p.setVersionId(version.id);p.setAllowEdit(false);p.setAllowDownload(true);
-   String ticket=tickets.create(p);response.setPreviewTicket(ticket);
-  }else response.setPreviewUrl("/api/drive/items/"+id+"/versions/"+versionId+"/content");
-  return response;
+  var item=drive.requireDownloadItem(t,id);
+  return previews.describe(item,AccessContext.user(session(t)),version,null);
  }
  @GetMapping("/drive/items/{id}/versions/{versionId}/{operation:content|download}")
  public ResponseEntity<Resource> versionContent(@RequestHeader(name="X-CloudNext-Token",required=false)String t,@PathVariable String id,@PathVariable String versionId,@PathVariable String operation){

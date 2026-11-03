@@ -304,7 +304,7 @@ class DriveScopeAccessServiceTest {
     // ---------------------------------------------------------------
 
     private static DriveItem personalItem(String ownerId) {
-        DriveItem item = new DriveItem();
+        DriveItem item = com.x.cloudnext.server.testing.NamespaceTestSupport.scoped(new DriveItem());
         item.setId(ITEM_ID);
         item.setName("file.txt");
         item.setItemType(DriveItemType.FILE);
@@ -316,7 +316,7 @@ class DriveScopeAccessServiceTest {
     }
 
     private static DriveItem workspaceItem(String workspaceId) {
-        DriveItem item = new DriveItem();
+        DriveItem item = com.x.cloudnext.server.testing.NamespaceTestSupport.scoped(new DriveItem());
         item.setId(ITEM_ID);
         item.setName("doc.txt");
         item.setItemType(DriveItemType.FILE);
@@ -328,7 +328,7 @@ class DriveScopeAccessServiceTest {
     }
 
     private static AuthLoginResponse session(String personOaId) {
-        AuthLoginResponse session = new AuthLoginResponse();
+        AuthLoginResponse session = com.x.cloudnext.server.testing.NamespaceTestSupport.session(new AuthLoginResponse());
         session.setAuthenticated(true);
         session.setPersonOaId(personOaId);
         session.setPersonName(personOaId);

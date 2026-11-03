@@ -57,7 +57,7 @@ class CloudNextSearchFlowTest extends AbstractDriveIntegrationTest {
         personalOther.setUpdatedAt("2026-05-09T10:00:00Z");
         syncItem(personalOther);
 
-        Workspace workspace = new Workspace();
+        Workspace workspace = com.x.cloudnext.server.testing.NamespaceTestSupport.scoped(new Workspace());
         workspace.setId("ws-1");
         workspace.setName("Team One");
         workspace.setCreatorPersonOaId(DEFAULT_OWNER_ID);
@@ -65,7 +65,7 @@ class CloudNextSearchFlowTest extends AbstractDriveIntegrationTest {
         workspace.setStatus("ACTIVE");
         workspaceRepository.saveAndFlush(workspace);
 
-        WorkspaceMember owner = new WorkspaceMember();
+        WorkspaceMember owner = com.x.cloudnext.server.testing.NamespaceTestSupport.scoped(new WorkspaceMember());
         owner.setId("wsm-1");
         owner.setWorkspaceId(workspace.getId());
         owner.setPersonOaId(DEFAULT_OWNER_ID);
@@ -73,7 +73,7 @@ class CloudNextSearchFlowTest extends AbstractDriveIntegrationTest {
         owner.setRole(WorkspaceRole.OWNER);
         workspaceMemberRepository.saveAndFlush(owner);
 
-        DriveItem workspaceItem = new DriveItem();
+        DriveItem workspaceItem = com.x.cloudnext.server.testing.NamespaceTestSupport.scoped(new DriveItem());
         workspaceItem.setId("ws-item-1");
         workspaceItem.setParentId("");
         workspaceItem.setOwnerPersonOaId(DEFAULT_OWNER_ID);
@@ -100,7 +100,7 @@ class CloudNextSearchFlowTest extends AbstractDriveIntegrationTest {
         sharedItem.setUpdatedAt("2026-05-12T10:00:00Z");
         syncItem(sharedItem);
 
-        DriveShare share = new DriveShare();
+        DriveShare share = com.x.cloudnext.server.testing.NamespaceTestSupport.scoped(new DriveShare());
         share.setId("share-1");
         share.setItemId(sharedItem.getId());
         share.setOwnerPersonOaId("person-b");

@@ -47,7 +47,7 @@ import com.x.cloudnext.server.drive.PublicLinkPermission;
         uniqueConstraints = @UniqueConstraint(
                 name = "uk_drive_public_link_token",
                 columnNames = "token"),
-        indexes = {
+        indexes = { @javax.persistence.Index(name = "idx_namespace_drive_public_link", columnList = "drive_id"),
                 @Index(
                         name = "idx_dpl_creator_revoked_created",
                         columnList = "creator_person_oa_id, revoked, created_at"),
@@ -55,7 +55,8 @@ import com.x.cloudnext.server.drive.PublicLinkPermission;
                         name = "idx_dpl_item",
                         columnList = "item_id")
         })
-public class DrivePublicLink {
+@org.hibernate.annotations.Filter(name = "driveNamespace", condition = "drive_id = :driveId")
+public class DrivePublicLink extends com.x.cloudnext.server.namespace.DriveScopedEntity {
     @org.hibernate.annotations.ColumnDefault("b'0'")
     @Column(name = "record_hidden", nullable = false)
     private boolean recordHidden;

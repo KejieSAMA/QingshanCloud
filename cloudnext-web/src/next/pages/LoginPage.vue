@@ -1,12 +1,12 @@
 <template>
   <main class="desktop-login">
-    <section class="login-intro" aria-label="青山云盘">
-      <div class="login-brand"><span class="brand-symbol"><Icon name="folder"/></span><div><strong>青山云盘</strong><span>企业文件工作台</span></div></div>
+    <section class="login-intro" :aria-label="driveName">
+      <div class="login-brand"><span class="brand-symbol"><Icon name="folder"/></span><div><strong>{{driveName}}</strong><span>企业文件工作台</span></div></div>
       <div><h1>让文件井然有序，<br>让协作自然发生。</h1><p>个人资料、共享文件与团队空间，一处连接日常工作。</p></div>
       <ul class="login-features"><li v-for="feature in features" :key="feature.title"><Icon :name="feature.icon"/><div><strong>{{feature.title}}</strong><p>{{feature.text}}</p></div></li></ul>
     </section>
     <section class="login-panel" aria-labelledby="login-title">
-      <h2 id="login-title">{{recoveryCode ? '免登未完成' : '登录青山云盘'}}</h2>
+      <h2 id="login-title">{{recoveryCode ? '免登未完成' : '登录' + driveName}}</h2>
       <p class="form-note">使用 Form 工号或手机号登录。</p>
       <section v-if="recoveryCode" class="login-recovery">
         <p class="login-error" role="alert">{{ssoRecoveryMessage(recoveryCode)}}</p>
@@ -30,7 +30,7 @@
 <script setup>
 import Icon from '../components/Icon.vue';
 import { useLoginForm } from '../../auth/useLoginController';
-const { status, form, showPassword, error, message, submitting, recoveryCode, oaUrl, onSubmit, onSsoLogin, ssoRecoveryMessage } = useLoginForm();
+const { status, form, showPassword, error, message, submitting, recoveryCode, oaUrl, driveName, onSubmit, onSsoLogin, ssoRecoveryMessage } = useLoginForm();
 const features = [
   {icon:'folder',title:'统一文件入口',text:'集中整理个人文件，快速找到所需资料。'},
   {icon:'people',title:'团队协作空间',text:'让部门与项目协作拥有清晰的访问边界。'},

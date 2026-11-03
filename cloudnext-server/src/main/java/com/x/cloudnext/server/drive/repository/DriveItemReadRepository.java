@@ -26,6 +26,7 @@ import com.x.cloudnext.server.drive.DriveScopeType;
 import com.x.cloudnext.server.drive.entity.DriveItem;
 
 @Repository
+@org.springframework.transaction.annotation.Transactional(readOnly = true)
 public class DriveItemReadRepository {
 
     private static final int DEFAULT_PAGE = 1;

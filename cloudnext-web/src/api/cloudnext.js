@@ -1,4 +1,7 @@
 import { clearStoredSession, emitUnauthorizedSignal, getStoredToken } from '../session';
+import { embedded } from '../embedded/context.js';
+import { usesHostFiles, hostFileAction } from '../embedded/transport.js';
+import { getActiveDriveId, getActiveEntryId, getDriveStorageScope, withDriveContext } from '../driveContext';
 
 /**
  * N+2.7 F5: Blob URL 保留时长（毫秒）。openBlobPreview 创建的 object URL
@@ -8,6 +11,7 @@ const BLOB_URL_RETENTION_MS = 60_000;
 
 let sharedAdminConfigPromise = null;
 let sharedAdminConfigToken = '';
+const requestSessionContext = () => `${getDriveStorageScope()}:${getStoredToken()}`;
 
 function parseJsonSafely(text) {
   if (!text) {
@@ -28,15 +32,29 @@ async function createHttpError(response) {
       ? data.message
       : `请求失败: ${response.status}`;
   const error = new Error(message);
+  if (message === 'DRIVE_ACCESS_DENIED' || message === 'DRIVE_CONTEXT_REQUIRED') {
+    error.code = message;
+    error.message = message === 'DRIVE_ACCESS_DENIED' ? '该云盘已停用或您没有访问权限，请联系管理员。' : '当前页面未绑定对应云盘，请从专属入口重新进入。';
+  }
   error.status = response.status;
   error.data = data;
   return error;
 }
 
+async function rejectAuthenticatedResponse(response, expectedContext) {
+  const error = await createHttpError(response);
+  assertRequestSession(expectedContext);
+  if (response.status === 401 || error.code === 'DRIVE_ACCESS_DENIED' || error.code === 'DRIVE_CONTEXT_REQUIRED') handleUnauthorized();
+  throw error;
+}
+
+export function previewAuthHeaders(headers = {}) { return getAuthHeaders(headers); }
+
 function getAuthHeaders(headers = {}) {
   const token = getStoredToken();
   return {
     ...(token ? { 'X-CloudNext-Token': token } : {}),
+    ...(getActiveDriveId() ? { 'X-CloudNext-Drive': getActiveDriveId() } : {}),
     ...headers
   };
 }
@@ -47,7 +65,7 @@ function handleUnauthorized() {
 }
 
 function assertRequestSession(token) {
-  if (token === getStoredToken()) return;
+  if (token === requestSessionContext()) return;
   const error = new Error('账号已切换，忽略上一会话的请求');
   error.name = 'AbortError';
   throw error;
@@ -66,7 +84,7 @@ function buildQuery(params = {}) {
 }
 
 export async function fetchJson(url, options = {}) {
-  const requestToken = getStoredToken();
+  const requestToken = requestSessionContext();
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -77,10 +95,7 @@ export async function fetchJson(url, options = {}) {
 
   assertRequestSession(requestToken);
   if (!response.ok) {
-    if (response.status === 401) {
-      handleUnauthorized();
-    }
-    throw await createHttpError(response);
+    return rejectAuthenticatedResponse(response, requestToken);
   }
 
   const text = await response.text();
@@ -88,7 +103,7 @@ export async function fetchJson(url, options = {}) {
   return parseJsonSafely(text);
 }
 
-async function fetchUnauthenticatedJson(url, options = {}) {
+export async function fetchUnauthenticatedJson(url, options = {}) {
   const response = await fetch(url, {
     ...options,
     headers: {
@@ -106,7 +121,7 @@ async function fetchUnauthenticatedJson(url, options = {}) {
 }
 
 export async function fetchMultipart(url, formData) {
-  const requestToken = getStoredToken();
+  const requestToken = requestSessionContext();
   const response = await fetch(url, {
     method: 'POST',
     headers: getAuthHeaders(),
@@ -115,10 +130,7 @@ export async function fetchMultipart(url, formData) {
 
   assertRequestSession(requestToken);
   if (!response.ok) {
-    if (response.status === 401) {
-      handleUnauthorized();
-    }
-    throw await createHttpError(response);
+    return rejectAuthenticatedResponse(response, requestToken);
   }
 
   const text = await response.text();
@@ -127,7 +139,7 @@ export async function fetchMultipart(url, formData) {
 }
 
 export async function fetchBlob(url, options = {}) {
-  const requestToken = getStoredToken();
+  const requestToken = requestSessionContext();
   const response = await fetch(url, {
     ...options,
     headers: getAuthHeaders(options.headers || {})
@@ -135,10 +147,7 @@ export async function fetchBlob(url, options = {}) {
 
   assertRequestSession(requestToken);
   if (!response.ok) {
-    if (response.status === 401) {
-      handleUnauthorized();
-    }
-    throw await createHttpError(response);
+    return rejectAuthenticatedResponse(response, requestToken);
   }
 
   const blob = await response.blob();
@@ -169,12 +178,12 @@ export function getAdminConfig(options = {}) {
 }
 
 export function getSharedAdminConfig(options = {}) {
-  const token = getStoredToken() || '';
+  const token = requestSessionContext();
   const force = options?.force === true;
   if (!sharedAdminConfigPromise || force || sharedAdminConfigToken !== token) {
     sharedAdminConfigToken = token;
     sharedAdminConfigPromise = getAdminConfig(options).catch((error) => {
-      sharedAdminConfigPromise = null;
+      if (sharedAdminConfigToken === token) sharedAdminConfigPromise = null;
       throw error;
     });
   }
@@ -267,7 +276,7 @@ export function getAuthStatus() {
 export function login(payload) {
   return fetchUnauthenticatedJson('/api/auth/login', {
     method: 'POST',
-    body: JSON.stringify(payload)
+    body: JSON.stringify({ ...payload, entryId: getActiveEntryId() })
   });
 }
 
@@ -275,15 +284,15 @@ export function getCurrentSession() {
   return fetchJson('/api/auth/me');
 }
 
-export function completeSsoLogin() {
-  return fetchUnauthenticatedJson('/api/auth/sso/complete', {
+export function completeSsoLogin(state) {
+  return fetchUnauthenticatedJson('/api/auth/sso/complete' + buildQuery({ state }), {
     method: 'POST',
     credentials: 'same-origin'
   });
 }
 
 export function buildSsoStartUrl(returnPath = '/') {
-  return `/api/auth/sso/start${buildQuery({ returnPath })}`;
+  return `/api/auth/sso/start${buildQuery({ returnPath, entryId: getActiveEntryId() })}`;
 }
 
 export function logout() {
@@ -335,24 +344,6 @@ export function getDriveItemPreview(id) {
   return fetchJson(`/api/drive/items/${encodeURIComponent(id)}/preview`);
 }
 
-export function getDriveItemEdit(id) {
-  return fetchJson(`/api/drive/items/${encodeURIComponent(id)}/edit`);
-}
-
-export function forceSaveDriveItem(editTicket) {
-  return fetchJson(`/api/onlyoffice/force-save${buildQuery({ editTicket })}`, {
-    method: 'POST'
-  });
-}
-
-export function getOnlyofficeSaveStatus(editTicket) {
-  return fetchJson(`/api/onlyoffice/save-status${buildQuery({ editTicket })}`);
-}
-
-export function getOnlyofficeHealth() {
-  return fetchJson('/api/onlyoffice/health');
-}
-
 export function getCurrentAdminStatus() {
   return fetchJson('/api/admin/whoami');
 }
@@ -365,40 +356,9 @@ export function getLinkAccessLogs(linkId, page = 1, size = 20) {
   return fetchJson(`/api/links/${encodeURIComponent(linkId)}/access-logs${buildQuery({ page, size })}`);
 }
 
-export async function editDriveItem(item) {
-  const edit = await getDriveItemEdit(item.id);
-  if (!edit || edit.supported === false) {
-    throw new Error(edit?.unavailableMessage || '当前文件暂不支持在线编辑。');
-  }
-  if (!edit.editPageUrl) {
-    throw new Error('Office 编辑地址未配置。');
-  }
-  window.open(edit.editPageUrl, '_blank', 'noopener');
-  return edit;
-}
-
 export async function previewDriveItem(item) {
-  const preview = await getDriveItemPreview(item.id);
-  if (!preview || preview.supported === false) {
-    if (preview?.kind === 'office' && preview?.unavailableCode === 'onlyoffice_not_configured') {
-      throw new Error(preview.unavailableMessage || 'OnlyOffice preview is not configured.');
-    }
-    if (preview?.allowDownload === false) {
-      throw new Error('当前共享权限不允许下载此文件。');
-    }
-    await downloadDriveItem(item);
-    return preview;
-  }
-  if (preview.kind === 'office') {
-    if (!preview.previewPageUrl) {
-      throw new Error('Office 预览地址未配置');
-    }
-    window.open(preview.previewPageUrl, '_blank', 'noopener');
-    return preview;
-  }
-  const blob = await fetchBlob(preview.previewUrl || `/api/drive/items/${encodeURIComponent(item.id)}/download`);
-  openBlobPreview(blob);
-  return preview;
+  const { ui } = await import('../next/state.js');
+  ui.preview = { item, id: Date.now() };
 }
 
 export function deleteDriveItem(id) {
@@ -510,6 +470,7 @@ export function clearTrashItems() {
 }
 
 export async function downloadDriveItem(item) {
+  if (usesHostFiles()) return hostFileAction({ itemIds: [item.id], action: 'SAVE' });
   const blob = await fetchBlob(`/api/drive/items/${encodeURIComponent(item.id)}/download`);
   const objectUrl = window.URL.createObjectURL(blob);
   const link = document.createElement('a');
@@ -522,6 +483,7 @@ export async function downloadDriveItem(item) {
 }
 
 export async function batchDownloadDriveItems(itemIds, zipName) {
+  if (usesHostFiles()) return hostFileAction({ itemIds, zipName, archive: true, action: 'SAVE' });
   const ids = (itemIds || []).filter(Boolean);
   if (!ids.length) {
     throw new Error('请选择要打包下载的项目');
@@ -726,11 +688,12 @@ export function revokeLink(id) {
  */
 async function fetchPublicJson(url, options = {}) {
   const response = await fetch(url, {
+    ...options,
     headers: {
       'Content-Type': 'application/json',
+      ...(getActiveEntryId() !== 'default' ? getAuthHeaders() : {}),
       ...(options.headers || {})
-    },
-    ...options
+    }
   });
 
   if (!response.ok) {

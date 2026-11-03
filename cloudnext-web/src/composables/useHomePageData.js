@@ -4,7 +4,7 @@
 // 暴露：
 //   - 状态：session / service / sync / stats / recentItems / incomingSharedItems / driveError
 //   - 计算：greeting / dateString / normalizedRecentFiles / normalizedIncomingSharedFiles / filteredRecentFiles
-//   - 交互：activeFilter / onPreview / onEdit / onDownload / onDelete
+//   - 交互：activeFilter / onPreview / onDownload / onDelete
 //   - 生命周期：自动 onMounted 拉取所有数据 + 监听 storage / 退出时清理
 
 import { computed, onMounted, onUnmounted, ref } from 'vue';
@@ -12,7 +12,6 @@ import { useRouter } from 'vue-router';
 import {
   deleteDriveItem,
   downloadDriveItem,
-  editDriveItem,
   getIncomingDriveShares,
   getRecentDriveItems,
   getStatus,
@@ -23,6 +22,7 @@ import {
 import {
   CLOUDNEXT_DRIVE_REFRESH_EVENT,
   CLOUDNEXT_DRIVE_REFRESH_KEY,
+  sessionStorageKey,
   emitDriveRefreshSignal,
   getSessionPersonKey,
   getStoredSession
@@ -148,13 +148,7 @@ export function useHomePageData() {
     }
   };
 
-  const onEdit = async (item) => {
-    try {
-      await editDriveItem(item);
-    } catch (error) {
-      driveError.value = error.message || '编辑失败';
-    }
-  };
+
 
   const onDownload = async (item) => {
     try {
@@ -184,7 +178,7 @@ export function useHomePageData() {
   };
 
   const onStorageChange = (event) => {
-    if (event.key === CLOUDNEXT_DRIVE_REFRESH_KEY) {
+    if (event.key === sessionStorageKey(CLOUDNEXT_DRIVE_REFRESH_KEY)) {
       void loadRecentItems();
       void loadIncomingSharedItems();
     }
@@ -225,7 +219,6 @@ export function useHomePageData() {
     filteredRecentFiles,
     // 交互
     onPreview,
-    onEdit,
     onDownload,
     onDelete,
     // 加载（外部可触发刷新）

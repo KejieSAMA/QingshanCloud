@@ -31,16 +31,14 @@ cloudnext:
   endpoints:
     callback-base-url: ${CLOUDNEXT_CALLBACK_BASE_URL:}
     web-base-url: ${CLOUDNEXT_WEB_BASE_URL:}
-  iteration:
-    onlyoffice-edit:
-      enabled: ${CLOUDNEXT_ONLYOFFICE_EDIT_ENABLED:false}
-  drive:
-    onlyoffice:
-      document-server-url: ${CLOUDNEXT_ONLYOFFICE_DOCUMENT_SERVER_URL:}
-      docservice-api: ${CLOUDNEXT_ONLYOFFICE_DOCSERVICE_API:}
-      jwt-enabled: ${CLOUDNEXT_ONLYOFFICE_JWT_ENABLED:false}
-      jwt-secret: ${CLOUDNEXT_ONLYOFFICE_JWT_SECRET:}
-      jwt-header: ${CLOUDNEXT_ONLYOFFICE_JWT_HEADER:Authorization}
+  preview:
+    cache-root: ${CLOUDNEXT_PREVIEW_CACHE_ROOT:.data/preview-cache}
+    soffice-path: ${CLOUDNEXT_PREVIEW_SOFFICE_PATH:soffice}
+    python-path: ${CLOUDNEXT_PREVIEW_PYTHON_PATH:python3}
+    signing-secret: ${CLOUDNEXT_PREVIEW_SIGNING_SECRET:}
+    converter-version: ${CLOUDNEXT_PREVIEW_CONVERTER_VERSION:libreoffice-pdf-v1}
+    font-pack-version: ${CLOUDNEXT_PREVIEW_FONT_PACK_VERSION:cjk-v1}
+    isolate-presentations: ${CLOUDNEXT_PREVIEW_ISOLATE_PRESENTATIONS:false}
   storage:
     local:
       root: ${CLOUDNEXT_STORAGE_LOCAL_ROOT:./cloudnext-server/.data/drive-storage}

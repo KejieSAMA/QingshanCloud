@@ -27,7 +27,8 @@
       </nav>
       <div class="m-drawer-footer">
         <RouterLink to="/admin" class="m-drawer-link" @click="$emit('close')">查看系统状态</RouterLink>
-        <button class="m-drawer-logout" type="button" @click="onLogout">退出登录</button>
+        <button v-if="embedded" class="m-drawer-logout" type="button" @click="$emit('close'); postHost('return-oa')">返回 OA</button>
+        <button v-else class="m-drawer-logout" type="button" @click="onLogout">退出登录</button>
       </div>
     </aside>
   </Teleport>
@@ -35,6 +36,8 @@
 
 <script setup>
 import { busyUploads, confirm } from '../../next/state';
+import { embedded } from '../../embedded/context.js';
+import { postHost } from '../../embedded/runtime.js';
 import { computed } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import AppIcon from '../icons/AppIcon.vue';

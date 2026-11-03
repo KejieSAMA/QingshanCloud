@@ -1,9 +1,13 @@
 import { computed, ref } from 'vue';
+import { nativeMobile } from '../embedded/context.js';
 
 const MOBILE_MAX = 559;
 const TABLET_MAX = 959;
 
 const width = ref(typeof window !== 'undefined' ? window.innerWidth : 1280);
+function syncExperience() {
+  if (typeof document !== 'undefined') document.documentElement.dataset.experience = nativeMobile || width.value <= MOBILE_MAX ? 'mobile' : 'desktop';
+}
 
 let listenerAttached = false;
 function ensureListener() {
@@ -15,6 +19,7 @@ function ensureListener() {
     'resize',
     () => {
       width.value = window.innerWidth;
+      syncExperience();
     },
     { passive: true }
   );
@@ -22,8 +27,9 @@ function ensureListener() {
 
 export function useBreakpoint() {
   ensureListener();
-  const isMobile = computed(() => width.value <= MOBILE_MAX);
-  const isTablet = computed(() => width.value > MOBILE_MAX && width.value <= TABLET_MAX);
-  const isDesktop = computed(() => width.value > TABLET_MAX);
+  syncExperience();
+  const isMobile = computed(() => nativeMobile || width.value <= MOBILE_MAX);
+  const isTablet = computed(() => !nativeMobile && width.value > MOBILE_MAX && width.value <= TABLET_MAX);
+  const isDesktop = computed(() => !nativeMobile && width.value > TABLET_MAX);
   return { width, isMobile, isTablet, isDesktop };
 }
